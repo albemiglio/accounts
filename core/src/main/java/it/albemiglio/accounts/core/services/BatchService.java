@@ -1,19 +1,35 @@
 package it.albemiglio.accounts.core.services;
 
+import it.albemiglio.accounts.core.modules.MigrationException;
+import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Task;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class BatchService {
+
+    private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final int TTL_EXTENSION_INTERVAL = 10;
+
     private final RedisService redisService;
+    private final TaskQueue queue;
+    private final Collection<Module> modules;
+    private final int maxRetries;
 
     private final ConcurrentLinkedQueue<Task> localQueue = new ConcurrentLinkedQueue<>();
     private boolean isProcessing = false;
-    private static final int TTL_EXTENSION_INTERVAL = 10;
     private final String instanceId;
 
-    public BatchService(RedisService redisService) {
+    public BatchService(RedisService redisService, Collection<Module> modules) {
+        this(redisService, redisService, modules, DEFAULT_MAX_RETRIES);
+    }
+
+    public BatchService(RedisService redisService, TaskQueue queue, Collection<Module> modules, int maxRetries) {
         this.redisService = redisService;
+        this.queue = queue;
+        this.modules = modules;
+        this.maxRetries = maxRetries;
         this.instanceId = redisService.getInstanceId();
     }
 
@@ -63,8 +79,7 @@ public class BatchService {
     private void processBatch() {
         while (!localQueue.isEmpty()) {
             Task task = localQueue.poll();
-
-            // task performing logic
+            process(task);
         }
 
 
@@ -77,6 +92,26 @@ public class BatchService {
         else {
             redisService.clearLeader();
             isProcessing = false;
+        }
+    }
+
+    public void process(Task task) {
+        boolean anyFailed = false;
+        for (Module module : modules) {
+            if (!module.isEnabled()) {
+                continue;
+            }
+            try {
+                module.execute(task.getMigration());
+            } catch (MigrationException e) {
+                anyFailed = true;
+            }
+        }
+        if (anyFailed) {
+            task.setCurrFailures(task.getCurrFailures() + 1);
+            if (task.getCurrFailures() < maxRetries) {
+                queue.addToQueue(task);
+            }
         }
     }
 

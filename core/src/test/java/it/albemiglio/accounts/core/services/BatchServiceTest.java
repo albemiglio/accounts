@@ -16,7 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TransferServiceTest {
+class BatchServiceTest {
 
     private static final UUID OLD = new UUID(0L, 1L);
     private static final UUID NEW = new UUID(0L, 2L);
@@ -75,11 +75,15 @@ class TransferServiceTest {
         return t;
     }
 
+    private static BatchService batchService(TaskQueue queue, List<Module> modules, int maxRetries) {
+        return new BatchService(new RedisService(), queue, modules, maxRetries);
+    }
+
     @Test
-    void runsMigrationThroughEnabledModulesOnly() {
+    void processRunsMigrationThroughEnabledModulesOnly() {
         RecordingModule enabled = new RecordingModule(true);
         RecordingModule disabled = new RecordingModule(false);
-        TransferService service = new TransferService(new FakeQueue(), List.of(enabled, disabled));
+        BatchService service = batchService(new FakeQueue(), List.of(enabled, disabled), 3);
 
         service.process(task(OLD, NEW, "Notch"));
 
@@ -88,9 +92,9 @@ class TransferServiceTest {
     }
 
     @Test
-    void requeuesTaskWithIncrementedFailuresWhenAModuleFails() {
+    void processRequeuesTaskWithIncrementedFailuresWhenAModuleFails() {
         FakeQueue queue = new FakeQueue();
-        TransferService service = new TransferService(queue, List.of(new FailingModule()), 3);
+        BatchService service = batchService(queue, List.of(new FailingModule()), 3);
 
         service.process(task(OLD, NEW, "Notch"));
 
@@ -99,25 +103,11 @@ class TransferServiceTest {
     }
 
     @Test
-    void drainProcessesEveryQueuedTask() {
+    void processDropsTaskWhenRetriesAreExhausted() {
         FakeQueue queue = new FakeQueue();
-        queue.addToQueue(task(OLD, NEW, "Notch"));
-        queue.addToQueue(task(new UUID(0L, 3L), new UUID(0L, 4L), "Jeb"));
-        RecordingModule module = new RecordingModule(true);
-        TransferService service = new TransferService(queue, List.of(module));
-
-        service.drain();
-
-        assertEquals(2, module.executed.size());
-        assertEquals(0, queue.queueSize());
-    }
-
-    @Test
-    void dropsTaskWhenRetriesAreExhausted() {
-        FakeQueue queue = new FakeQueue();
-        TransferService service = new TransferService(queue, List.of(new FailingModule()), 3);
+        BatchService service = batchService(queue, List.of(new FailingModule()), 3);
         Task exhausted = task(OLD, NEW, "Notch");
-        exhausted.setCurrFailures(2); // the next failure reaches the ceiling of 3
+        exhausted.setCurrFailures(2);
 
         service.process(exhausted);
 
