@@ -8,4 +8,9 @@ public class MariaDB extends DB {
         super(host, port, username, password, database);
         this.type = DBType.MARIADB;
     }
+
+    @Override
+    public String jdbcUrl() {
+        return "jdbc:mariadb://" + getHost() + ":" + getPort() + "/" + getDatabase();
+    }
 }

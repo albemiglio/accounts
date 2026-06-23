@@ -8,4 +8,9 @@ public class MySQL extends DB {
         super(host, port, username, password, database);
         this.type = DBType.MYSQL;
     }
+
+    @Override
+    public String jdbcUrl() {
+        return "jdbc:mysql://" + getHost() + ":" + getPort() + "/" + getDatabase();
+    }
 }
