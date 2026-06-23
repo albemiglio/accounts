@@ -12,6 +12,7 @@ import java.util.*;
 
 public abstract class Module {
 
+    @Getter
     private final String name;
     private final Platform platform;
     private boolean running;

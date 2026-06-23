@@ -1,32 +1,44 @@
 package it.albemiglio.accounts.core.services;
 
-import java.util.concurrent.ConcurrentHashMap;
 import it.albemiglio.accounts.core.modules.Module;
+import it.albemiglio.accounts.core.modules.YamlModuleLoader;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ModuleService {
 
-    private ConcurrentHashMap<String, Module> modules;
-    private RedisService redisService;
+    private final ConcurrentHashMap<String, Module> modules;
+    private final ActiveModulesReporter reporter;
+    private final YamlModuleLoader loader;
 
-    public ModuleService(RedisService redisService) {
-        modules = new ConcurrentHashMap<>();
-        this.redisService = redisService;
+    public ModuleService(ActiveModulesReporter reporter) {
+        this(reporter, new YamlModuleLoader());
     }
 
-    public void loadModules() {
+    public ModuleService(ActiveModulesReporter reporter, YamlModuleLoader loader) {
+        this.modules = new ConcurrentHashMap<>();
+        this.reporter = reporter;
+        this.loader = loader;
+    }
 
-        // module loading logic
-        // resolve modules using resolvers, then load them
+    public void loadModules(Path directory) {
+        for (Module module : loader.load(directory)) {
+            modules.put(module.getName(), module);
+        }
+        reporter.updateActiveModules(activeModuleCount());
+    }
 
-        int activeModules = modules.reduceValuesToInt(10, m -> m.isEnabled() ? 1 : 0, 0, Integer::sum);
-        this.redisService.updateActiveModules(activeModules);
+    public Collection<Module> getModules() {
+        return modules.values();
     }
 
     public void unloadModules() {
-
+        modules.clear();
     }
 
-    public void reloadModules() {
-
+    private int activeModuleCount() {
+        return (int) modules.values().stream().filter(Module::isEnabled).count();
     }
 }
