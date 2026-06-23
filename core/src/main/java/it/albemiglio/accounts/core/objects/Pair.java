@@ -1,9 +1,11 @@
 package it.albemiglio.accounts.core.objects;
 
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode
 @AllArgsConstructor
 public class Pair<L, R> {
 
