@@ -10,35 +10,36 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class BatchService {
 
     private static final int DEFAULT_MAX_RETRIES = 3;
+    private static final long DEFAULT_BATCH_WINDOW_MILLIS = 5000;
     private static final int TTL_EXTENSION_INTERVAL = 10;
 
-    private final RedisService redisService;
-    private final TaskQueue queue;
+    private final Coordinator coordinator;
     private final Collection<Module> modules;
     private final int maxRetries;
+    private final long batchWindowMillis;
 
     private final ConcurrentLinkedQueue<Task> localQueue = new ConcurrentLinkedQueue<>();
     private boolean isProcessing = false;
     private final String instanceId;
 
     public BatchService(RedisService redisService, Collection<Module> modules) {
-        this(redisService, redisService, modules, DEFAULT_MAX_RETRIES);
+        this(redisService, modules, DEFAULT_MAX_RETRIES, DEFAULT_BATCH_WINDOW_MILLIS);
     }
 
-    public BatchService(RedisService redisService, TaskQueue queue, Collection<Module> modules, int maxRetries) {
-        this.redisService = redisService;
-        this.queue = queue;
+    public BatchService(Coordinator coordinator, Collection<Module> modules, int maxRetries, long batchWindowMillis) {
+        this.coordinator = coordinator;
         this.modules = modules;
         this.maxRetries = maxRetries;
-        this.instanceId = redisService.getInstanceId();
+        this.batchWindowMillis = batchWindowMillis;
+        this.instanceId = coordinator.getInstanceId();
     }
 
     // future API methods will call this method to handle migrations
     public synchronized void handleRequest(Task task) {
-        redisService.addToQueue(task);
+        coordinator.addToQueue(task);
 
-        if (!isProcessing && (redisService.getLeader() == null || redisService.getLeader().isEmpty())) {
-            if (redisService.trySetLeader()) {
+        if (!isProcessing && (coordinator.getLeader() == null || coordinator.getLeader().isEmpty())) {
+            if (coordinator.trySetLeader()) {
                 startNewBatch();
             }
         }
@@ -51,47 +52,41 @@ public class BatchService {
 
         new Thread(() -> {
             try {
-                // wait some seconds to allow instances to fill the common queue for a little more
-                Thread.sleep(5000);
+                // wait some time to let instances fill the common queue a little more
+                Thread.sleep(batchWindowMillis);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-
-            if (instanceId.equals(redisService.getLeader())) {
-                fillLocalQueueFromRedis();
-                processBatch();
-            } else {
-                // no more leader -> stop processing
-                isProcessing = false;
-            }
+            runBatch();
         }).start();
     }
 
+    void runBatch() {
+        while (isLeader()) {
+            fillLocalQueueFromRedis();
+            while (!localQueue.isEmpty()) {
+                process(localQueue.poll());
+            }
+            if (coordinator.queueSize() == 0) {
+                break;
+            }
+        }
+        if (isLeader()) {
+            coordinator.clearLeader();
+        }
+        isProcessing = false;
+    }
+
+    private boolean isLeader() {
+        return instanceId.equals(coordinator.getLeader());
+    }
+
     private void fillLocalQueueFromRedis() {
-        while (redisService.queueSize() > 0) {
-            Task task = redisService.popFromQueue();
+        while (coordinator.queueSize() > 0) {
+            Task task = coordinator.popFromQueue();
             if (task != null) {
                 localQueue.add(task);
             }
-        }
-    }
-
-    private void processBatch() {
-        while (!localQueue.isEmpty()) {
-            Task task = localQueue.poll();
-            process(task);
-        }
-
-
-        // reschedule failed operations from redis service, reverting them and putting them on redis queue
-
-        if (redisService.queueSize() > 0 && instanceId.equals(redisService.getLeader())) {
-            // restart processing in case of new tasks (or previous reverted ones)
-            startNewBatch();
-        }
-        else {
-            redisService.clearLeader();
-            isProcessing = false;
         }
     }
 
@@ -110,7 +105,7 @@ public class BatchService {
         if (anyFailed) {
             task.setCurrFailures(task.getCurrFailures() + 1);
             if (task.getCurrFailures() < maxRetries) {
-                queue.addToQueue(task);
+                coordinator.addToQueue(task);
             }
         }
     }
@@ -120,8 +115,8 @@ public class BatchService {
             while (isProcessing) {
                 try {
                     Thread.sleep(TTL_EXTENSION_INTERVAL * 1000);
-                    if (instanceId.equals(redisService.getLeader())) {
-                        redisService.extendLeaderTTL();
+                    if (isLeader()) {
+                        coordinator.extendLeaderTTL();
                     } else {
                         break;
                     }

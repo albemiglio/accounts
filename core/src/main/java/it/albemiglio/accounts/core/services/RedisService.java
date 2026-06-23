@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 
-public class RedisService implements IService, TaskQueue, ActiveModulesReporter {
+public class RedisService implements IService, Coordinator, ActiveModulesReporter {
 
     private final ConcurrentHashMap<ListenerHandler, Thread> listeners;
     @Getter
