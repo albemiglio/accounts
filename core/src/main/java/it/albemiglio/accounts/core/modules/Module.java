@@ -6,7 +6,8 @@ import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 import lombok.Getter;
 
-import java.io.File;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 public abstract class Module {
@@ -18,20 +19,25 @@ public abstract class Module {
     private boolean enabled;
     private Optional<String> pluginName;
 
-    private Set<Replacer> replacers;
+    private final DB database;
+    private final Set<Replacer> replacers;
 
-    /**
-     *
-     * @param name
-     * @param platform
-     */
     public Module(String name, Platform platform) {
+        this(name, platform, null);
+    }
+
+    public Module(String name, Platform platform, DB database) {
         this.name = name;
         this.platform = platform;
+        this.database = database;
         this.running = false;
         this.enabled = false;
         this.pluginName = Optional.empty();
-        this.replacers = new HashSet<>();
+        this.replacers = new LinkedHashSet<>();
+    }
+
+    protected void addReplacer(Replacer replacer) {
+        this.replacers.add(replacer);
     }
 
     public void enable() {
@@ -44,8 +50,24 @@ public abstract class Module {
 
     public void reload() {}
 
-    public void execute(Pair<UUID, UUID> task) {
-
+    public void execute(Pair<UUID, UUID> migration) {
+        try (Connection connection = database.getConnection()) {
+            boolean autoCommit = connection.getAutoCommit();
+            connection.setAutoCommit(false);
+            try {
+                for (Replacer replacer : replacers) {
+                    replacer.replace(connection, migration.getLeft(), migration.getRight());
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                connection.rollback();
+                throw new MigrationException("Migration failed for module " + name, e);
+            } finally {
+                connection.setAutoCommit(autoCommit);
+            }
+        } catch (SQLException e) {
+            throw new MigrationException("Migration failed for module " + name, e);
+        }
     }
 
     public void executeBatch(Collection<Pair<UUID, UUID>> tasks) {
