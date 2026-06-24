@@ -1,0 +1,8 @@
+{
+  "id": "accounts",
+  "name": "Accounts",
+  "version": "1.0-SNAPSHOT",
+  "authors": ["albemiglio"],
+  "main": "it.albemiglio.accounts.velocity.AccountsPlugin",
+  "dependencies": []
+}
