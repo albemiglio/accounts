@@ -35,10 +35,17 @@ public abstract class DB {
 
     public abstract String jdbcUrl();
 
+    /**
+     * The JDBC driver class. Named explicitly (not left to DriverManager) because a bundled driver in
+     * a plugin's isolated classloader is invisible to DriverManager's classpath-scoped auto-registration.
+     */
+    public abstract String driverClassName();
+
     public synchronized Connection getConnection() throws SQLException {
         if (dataSource == null) {
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(jdbcUrl());
+            config.setDriverClassName(driverClassName());
             if (username != null) {
                 config.setUsername(username);
             }

@@ -13,4 +13,9 @@ public class MySQL extends DB {
     public String jdbcUrl() {
         return "jdbc:mysql://" + getHost() + ":" + getPort() + "/" + getDatabase();
     }
+
+    @Override
+    public String driverClassName() {
+        return "com.mysql.cj.jdbc.Driver";
+    }
 }

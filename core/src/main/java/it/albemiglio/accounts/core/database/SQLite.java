@@ -14,4 +14,9 @@ public class SQLite extends DB {
         return "jdbc:sqlite:" + getDatabase();
     }
 
+    @Override
+    public String driverClassName() {
+        return "org.sqlite.JDBC";
+    }
+
 }

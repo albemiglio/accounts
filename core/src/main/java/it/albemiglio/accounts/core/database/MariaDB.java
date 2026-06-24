@@ -13,4 +13,9 @@ public class MariaDB extends DB {
     public String jdbcUrl() {
         return "jdbc:mariadb://" + getHost() + ":" + getPort() + "/" + getDatabase();
     }
+
+    @Override
+    public String driverClassName() {
+        return "org.mariadb.jdbc.Driver";
+    }
 }
