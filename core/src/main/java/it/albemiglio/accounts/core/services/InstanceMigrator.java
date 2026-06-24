@@ -1,6 +1,5 @@
 package it.albemiglio.accounts.core.services;
 
-import it.albemiglio.accounts.core.modules.MigrationException;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Task;
 
@@ -36,7 +35,9 @@ public final class InstanceMigrator {
             }
             try {
                 module.execute(task.getMigration());
-            } catch (MigrationException e) {
+            } catch (RuntimeException e) {
+                // Any module failure (a MigrationException, or an unexpected one like a driver/pool
+                // error) is recorded and retried later, never propagated to crash the caller.
                 anyFailed = true;
             }
         }

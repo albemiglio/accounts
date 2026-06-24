@@ -50,6 +50,18 @@ class InstanceMigratorTest {
         }
     }
 
+    static class ExplodingModule extends Module {
+        ExplodingModule() {
+            super("explode", Platform.SPIGOT, null);
+            enable();
+        }
+
+        @Override
+        public void execute(Pair<UUID, UUID> migration) {
+            throw new RuntimeException("driver pool blew up");
+        }
+    }
+
     static class FakeLog implements MigrationLog {
         final Set<String> applied = new HashSet<>();
         final Set<String> failed = new HashSet<>();
@@ -110,6 +122,19 @@ class InstanceMigratorTest {
         InstanceMigrator migrator = new InstanceMigrator("inst-1", List.of(failing), log);
 
         migrator.apply(task(OLD, NEW));
+
+        String id = InstanceMigrator.migrationId(task(OLD, NEW));
+        assertFalse(log.applied.contains(id + "@inst-1"));
+        assertTrue(log.failed.contains(id + "@inst-1"));
+    }
+
+    @Test
+    void recordsFailureInsteadOfCrashingWhenAModuleThrowsUnexpectedly() {
+        ExplodingModule exploding = new ExplodingModule();
+        FakeLog log = new FakeLog();
+        InstanceMigrator migrator = new InstanceMigrator("inst-1", List.of(exploding), log);
+
+        migrator.apply(task(OLD, NEW)); // must not propagate
 
         String id = InstanceMigrator.migrationId(task(OLD, NEW));
         assertFalse(log.applied.contains(id + "@inst-1"));
