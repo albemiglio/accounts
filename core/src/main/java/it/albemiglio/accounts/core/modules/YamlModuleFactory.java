@@ -65,6 +65,10 @@ public class YamlModuleFactory {
                 return new MySQL(host, port, username, password, database);
             case MARIADB:
                 return new MariaDB(host, port, username, password, database);
+            case H2:
+                throw new IllegalArgumentException(
+                        "H2 cannot be migrated live: the plugin owning the .mv.db file holds an exclusive "
+                        + "lock. Configure that plugin to use SQLite or MySQL instead (both migrate fine).");
             default:
                 throw new IllegalArgumentException("Unsupported database type: " + type);
         }
