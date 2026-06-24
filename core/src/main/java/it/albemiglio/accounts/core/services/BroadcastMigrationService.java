@@ -30,8 +30,12 @@ public final class BroadcastMigrationService {
         publisher.publish(task);
     }
 
-    /** A migration broadcast by another instance arrived. */
+    /**
+     * A migration broadcast by another instance (or by Nyx) arrived. Records it too, so durability
+     * does not depend on who published it: any online instance persists it for the offline ones.
+     */
     public void handle(Task task) {
+        store.record(task);
         migrator.apply(task);
     }
 

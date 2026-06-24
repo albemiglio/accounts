@@ -118,6 +118,17 @@ class BroadcastMigrationServiceTest {
     }
 
     @Test
+    void handleAlsoRecordsSoOfflineInstancesCanCatchUp() {
+        RecordingModule module = new RecordingModule();
+        FakeStore store = new FakeStore();
+        RecordingPublisher pub = new RecordingPublisher();
+
+        service(module, store, pub).handle(task(OLD, NEW));
+
+        assertTrue(store.recorded.containsKey(InstanceMigrator.migrationId(task(OLD, NEW))));
+    }
+
+    @Test
     void recoverPendingAppliesEverythingThisInstanceStillOwes() {
         RecordingModule module = new RecordingModule();
         FakeStore store = new FakeStore();
