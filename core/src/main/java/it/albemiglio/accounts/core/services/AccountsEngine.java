@@ -1,11 +1,13 @@
 package it.albemiglio.accounts.core.services;
 
 import it.albemiglio.accounts.core.modules.Module;
+import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.Task;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * Wires the broadcast stack a platform plugin needs and is the one handle it keeps: build it on
@@ -43,6 +45,15 @@ public final class AccountsEngine implements AutoCloseable {
     }
 
     public void migrate(Task task) {
+        service.migrate(task);
+    }
+
+    /** Convenience entry for callers (the admin command, Nyx) that have the raw ids. */
+    public void migrate(UUID from, UUID to, String username) {
+        Task task = new Task();
+        task.setMigration(Pair.of(from, to));
+        task.setUsername(username == null ? "" : username);
+        task.setCurrFailures(0);
         service.migrate(task);
     }
 

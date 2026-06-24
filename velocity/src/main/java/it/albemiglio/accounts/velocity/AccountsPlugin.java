@@ -9,6 +9,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
+import it.albemiglio.accounts.api.MigrationService;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.InstanceId;
 import it.albemiglio.accounts.core.services.ModuleService;
@@ -20,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Velocity entry point: boots the migration engine and exposes {@code /accounts migrate}. The proxy
@@ -27,7 +29,7 @@ import java.util.Map;
  * modules configured in the data folder.
  */
 @Plugin(id = "accounts", name = "Accounts", version = "1.0-SNAPSHOT", authors = {"albemiglio"})
-public class AccountsPlugin {
+public class AccountsPlugin implements MigrationService {
 
     private final ProxyServer proxy;
     private final Logger logger;
@@ -74,6 +76,13 @@ public class AccountsPlugin {
     public void onShutdown(ProxyShutdownEvent event) {
         if (engine != null) {
             engine.close();
+        }
+    }
+
+    @Override
+    public void migrate(UUID from, UUID to, String username) {
+        if (engine != null) {
+            engine.migrate(from, to, username);
         }
     }
 

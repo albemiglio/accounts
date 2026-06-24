@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.bungee;
 
+import it.albemiglio.accounts.api.MigrationService;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.InstanceId;
 import it.albemiglio.accounts.core.services.ModuleService;
@@ -13,12 +14,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 /**
  * BungeeCord entry point. Same broadcast engine as the other platforms; a network running Bungee
  * proxies (one or several) gets the same migration fan-out and restart catch-up as Velocity.
  */
-public final class AccountsPlugin extends Plugin {
+public final class AccountsPlugin extends Plugin implements MigrationService {
 
     private AccountsEngine engine;
 
@@ -51,6 +53,13 @@ public final class AccountsPlugin extends Plugin {
     public void onDisable() {
         if (engine != null) {
             engine.close();
+        }
+    }
+
+    @Override
+    public void migrate(UUID from, UUID to, String username) {
+        if (engine != null) {
+            engine.migrate(from, to, username);
         }
     }
 
