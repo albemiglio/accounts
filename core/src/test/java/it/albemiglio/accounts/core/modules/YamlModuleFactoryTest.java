@@ -6,6 +6,7 @@ import it.albemiglio.accounts.core.objects.Pair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -86,6 +87,25 @@ class YamlModuleFactoryTest {
         config.put("database", dbConfig);
 
         assertThrows(IllegalArgumentException.class, () -> new YamlModuleFactory().build(config));
+    }
+
+    @Test
+    void buildsAFileModuleWhenTypeIsFile(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve(OLD + ".yml"), "money: 5");
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("name", "essentials");
+        config.put("platform", "SPIGOT");
+        config.put("type", "file");
+        config.put("directory", dir.toString());
+        config.put("extension", "yml");
+        config.put("enabled", true);
+
+        Module module = new YamlModuleFactory().build(config);
+        module.execute(Pair.of(OLD, NEW));
+
+        assertTrue(module.isEnabled());
+        assertTrue(Files.exists(dir.resolve(NEW + ".yml")));
     }
 
     private static String single(DB db, String sql) throws Exception {

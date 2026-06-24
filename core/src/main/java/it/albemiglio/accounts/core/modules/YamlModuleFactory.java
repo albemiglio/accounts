@@ -9,18 +9,37 @@ import it.albemiglio.accounts.core.modules.replacers.Replacer;
 import it.albemiglio.accounts.core.objects.enums.DBType;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class YamlModuleFactory {
 
-    @SuppressWarnings("unchecked")
     public Module build(Map<String, Object> config) {
         String name = (String) config.get("name");
         Platform platform = Platform.valueOf(((String) config.get("platform")).toUpperCase());
-        DB database = buildDatabase((Map<String, Object>) config.get("database"));
+        String type = (String) config.getOrDefault("type", "sql");
 
+        Module module = "file".equalsIgnoreCase(type)
+                ? buildFileModule(name, platform, config)
+                : buildSqlModule(name, platform, config);
+
+        if (Boolean.TRUE.equals(config.get("enabled"))) {
+            module.enable();
+        }
+        return module;
+    }
+
+    private Module buildFileModule(String name, Platform platform, Map<String, Object> config) {
+        Path directory = Path.of((String) config.get("directory"));
+        String extension = (String) config.get("extension");
+        return new FileModule(name, platform, directory, extension);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Module buildSqlModule(String name, Platform platform, Map<String, Object> config) {
+        DB database = buildDatabase((Map<String, Object>) config.get("database"));
         List<Replacer> replacers = new ArrayList<>();
         List<Map<String, Object>> replacerConfigs = (List<Map<String, Object>>) config.get("replacers");
         if (replacerConfigs != null) {
@@ -28,12 +47,7 @@ public class YamlModuleFactory {
                 replacers.add(new ColumnReplacer((String) replacer.get("table"), (String) replacer.get("column")));
             }
         }
-
-        YamlModule module = new YamlModule(name, platform, database, replacers);
-        if (Boolean.TRUE.equals(config.get("enabled"))) {
-            module.enable();
-        }
-        return module;
+        return new YamlModule(name, platform, database, replacers);
     }
 
     private DB buildDatabase(Map<String, Object> config) {
