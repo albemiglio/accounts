@@ -5,12 +5,13 @@ import com.velocitypowered.api.command.CommandManager;
 import com.velocitypowered.api.command.CommandMeta;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
-import it.albemiglio.accounts.core.services.BatchService;
+import it.albemiglio.accounts.core.services.AccountsEngine;
+import it.albemiglio.accounts.core.services.InstanceId;
 import it.albemiglio.accounts.core.services.ModuleService;
-import it.albemiglio.accounts.core.services.RedisService;
 import org.slf4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 
@@ -32,7 +33,7 @@ public class AccountsPlugin {
     private final Logger logger;
     private final Path dataDirectory;
 
-    private RedisService redis;
+    private AccountsEngine engine;
 
     @Inject
     public AccountsPlugin(ProxyServer proxy, Logger logger, @DataDirectory Path dataDirectory) {
@@ -46,27 +47,33 @@ public class AccountsPlugin {
         try {
             Map<String, Object> config = loadConfig();
             Map<String, Object> redisConfig = section(config, "redis");
-            this.redis = new RedisService(
-                    (String) redisConfig.getOrDefault("host", "localhost"),
-                    ((Number) redisConfig.getOrDefault("port", 6379)).intValue(),
-                    (String) redisConfig.getOrDefault("password", ""));
-            redis.start();
 
-            ModuleService moduleService = new ModuleService(redis);
+            ModuleService moduleService = new ModuleService(count -> { });
             Path modulesDir = dataDirectory.resolve((String) config.getOrDefault("modules-dir", "modules"));
             Files.createDirectories(modulesDir);
             moduleService.loadModules(modulesDir);
-            redis.updateActiveModules(moduleService.getModules().size());
 
-            BatchService batchService = new BatchService(redis, moduleService.getModules());
+            this.engine = AccountsEngine.start(
+                    (String) redisConfig.getOrDefault("host", "localhost"),
+                    ((Number) redisConfig.getOrDefault("port", 6379)).intValue(),
+                    (String) redisConfig.getOrDefault("password", ""),
+                    InstanceId.loadOrCreate(dataDirectory),
+                    moduleService.getModules());
 
             CommandManager commands = proxy.getCommandManager();
             CommandMeta meta = commands.metaBuilder("accounts").build();
-            commands.register(meta, new MigrateCommand(batchService));
+            commands.register(meta, new MigrateCommand(engine));
 
             logger.info("Accounts ready: {} module(s) loaded", moduleService.getModules().size());
         } catch (Exception e) {
             logger.error("Accounts failed to start", e);
+        }
+    }
+
+    @Subscribe
+    public void onShutdown(ProxyShutdownEvent event) {
+        if (engine != null) {
+            engine.close();
         }
     }
 
