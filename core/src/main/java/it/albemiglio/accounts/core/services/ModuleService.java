@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.core.services;
 
+import it.albemiglio.accounts.core.modules.JarModuleLoader;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.modules.YamlModuleLoader;
 
@@ -25,6 +26,14 @@ public class ModuleService {
 
     public void loadModules(Path directory) {
         for (Module module : loader.load(directory)) {
+            modules.put(module.getName(), module);
+        }
+        reporter.updateActiveModules(activeModuleCount());
+    }
+
+    /** Loads community-contributed compiled modules from jars in {@code jarDirectory}. */
+    public void loadJarModules(Path jarDirectory) {
+        for (Module module : new JarModuleLoader().load(jarDirectory)) {
             modules.put(module.getName(), module);
         }
         reporter.updateActiveModules(activeModuleCount());

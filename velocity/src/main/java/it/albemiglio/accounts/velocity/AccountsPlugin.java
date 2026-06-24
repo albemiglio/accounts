@@ -54,6 +54,7 @@ public class AccountsPlugin implements MigrationService {
             Path modulesDir = dataDirectory.resolve((String) config.getOrDefault("modules-dir", "modules"));
             Files.createDirectories(modulesDir);
             moduleService.loadModules(modulesDir);
+            moduleService.loadJarModules(dataDirectory.resolve("jar-modules"));
 
             this.engine = AccountsEngine.start(
                     (String) redisConfig.getOrDefault("host", "localhost"),
