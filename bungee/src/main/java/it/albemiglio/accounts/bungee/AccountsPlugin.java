@@ -1,0 +1,69 @@
+package it.albemiglio.accounts.bungee;
+
+import it.albemiglio.accounts.core.services.AccountsEngine;
+import it.albemiglio.accounts.core.services.InstanceId;
+import it.albemiglio.accounts.core.services.ModuleService;
+import net.md_5.bungee.api.plugin.Plugin;
+import net.md_5.bungee.config.Configuration;
+import net.md_5.bungee.config.ConfigurationProvider;
+import net.md_5.bungee.config.YamlConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+/**
+ * BungeeCord entry point. Same broadcast engine as the other platforms; a network running Bungee
+ * proxies (one or several) gets the same migration fan-out and restart catch-up as Velocity.
+ */
+public final class AccountsPlugin extends Plugin {
+
+    private AccountsEngine engine;
+
+    @Override
+    public void onEnable() {
+        try {
+            Configuration config = loadConfig();
+            Path dataDir = getDataFolder().toPath();
+            Path modulesDir = dataDir.resolve(config.getString("modules-dir", "modules"));
+            Files.createDirectories(modulesDir);
+
+            ModuleService moduleService = new ModuleService(count -> { });
+            moduleService.loadModules(modulesDir);
+
+            this.engine = AccountsEngine.start(
+                    config.getString("redis.host", "localhost"),
+                    config.getInt("redis.port", 6379),
+                    config.getString("redis.password", ""),
+                    InstanceId.loadOrCreate(dataDir),
+                    moduleService.getModules());
+
+            getProxy().getPluginManager().registerCommand(this, new MigrateCommand(engine));
+            getLogger().info("Accounts ready: " + moduleService.getModules().size() + " module(s) loaded");
+        } catch (Exception e) {
+            getLogger().severe("Accounts failed to start: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onDisable() {
+        if (engine != null) {
+            engine.close();
+        }
+    }
+
+    private Configuration loadConfig() throws IOException {
+        if (!getDataFolder().exists()) {
+            getDataFolder().mkdirs();
+        }
+        File file = new File(getDataFolder(), "config.yml");
+        if (!file.exists()) {
+            try (InputStream in = getResourceAsStream("config.yml")) {
+                Files.copy(in, file.toPath());
+            }
+        }
+        return ConfigurationProvider.getProvider(YamlConfiguration.class).load(file);
+    }
+}

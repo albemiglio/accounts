@@ -1,0 +1,4 @@
+name: Accounts
+main: it.albemiglio.accounts.bungee.AccountsPlugin
+version: 1.0-SNAPSHOT
+author: albemiglio

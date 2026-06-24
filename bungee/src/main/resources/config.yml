@@ -1,0 +1,7 @@
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+
+# Folder (under this plugin's data directory) holding one YAML per local database to migrate.
+modules-dir: modules
