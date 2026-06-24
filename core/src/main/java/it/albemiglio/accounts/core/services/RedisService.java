@@ -26,10 +26,22 @@ public class RedisService implements IService, Coordinator, ActiveModulesReporte
     private static final int LEADER_TTL = 30;
     @Getter
     private final String instanceId;
+    @Getter
+    private final String host;
+    @Getter
+    private final int port;
+    private final String password;
 
     public RedisService() {
+        this("localhost", 6379, null);
+    }
+
+    public RedisService(String host, int port, String password) {
         this.listeners = new ConcurrentHashMap<>();
         this.instanceId = "instance-" + System.currentTimeMillis();
+        this.host = host;
+        this.port = port;
+        this.password = password;
     }
 
     public void register(RedisListener listener) {
@@ -60,7 +72,10 @@ public class RedisService implements IService, Coordinator, ActiveModulesReporte
     }
 
     public void start() {
-        jedis = new Jedis("localhost");
+        jedis = new Jedis(host, port);
+        if (password != null && !password.isEmpty()) {
+            jedis.auth(password);
+        }
     }
 
     public void end() {
