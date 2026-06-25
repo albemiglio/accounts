@@ -196,4 +196,28 @@ class BroadcastMigrationServiceTest {
         store.markApplied(id, "b");
         assertTrue(service.isComplete(id));
     }
+
+    @Test
+    void isInProgressWhileRecordedButNotFullyApplied() {
+        FakeStore store = new FakeStore();
+        String id = InstanceMigrator.migrationId(task(OLD, NEW));
+        store.recordExpected(id, Set.of("a", "b"));
+        BroadcastMigrationService service = new BroadcastMigrationService("a",
+                new InstanceMigrator("a", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
+
+        store.markApplied(id, "a");
+        assertTrue(service.isInProgress(id));
+
+        store.markApplied(id, "b");
+        assertFalse(service.isInProgress(id));
+    }
+
+    @Test
+    void isNotInProgressForAnUnknownMigration() {
+        FakeStore store = new FakeStore();
+        BroadcastMigrationService service = new BroadcastMigrationService("a",
+                new InstanceMigrator("a", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
+
+        assertFalse(service.isInProgress("nope>nope"));
+    }
 }

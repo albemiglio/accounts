@@ -64,6 +64,11 @@ public final class AccountsPlugin extends Plugin implements MigrationService {
         }
     }
 
+    @Override
+    public boolean isMigrationInProgress(UUID from, UUID to) {
+        return engine != null && engine.isInProgress(from, to);
+    }
+
     private Configuration loadConfig() throws IOException {
         if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();

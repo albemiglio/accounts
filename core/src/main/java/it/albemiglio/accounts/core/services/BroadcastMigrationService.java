@@ -44,6 +44,12 @@ public final class BroadcastMigrationService {
         return !expected.isEmpty() && store.appliedInstances(migrationId).containsAll(expected);
     }
 
+    /** Whether this migration was started but isn't done yet — Nyx blocks the player's login while true. */
+    public boolean isInProgress(String migrationId) {
+        Set<String> expected = store.expectedInstances(migrationId);
+        return !expected.isEmpty() && !store.appliedInstances(migrationId).containsAll(expected);
+    }
+
     /**
      * A migration broadcast by another instance (or by Nyx) arrived. Records it too, so durability
      * does not depend on who published it: any online instance persists it for the offline ones.

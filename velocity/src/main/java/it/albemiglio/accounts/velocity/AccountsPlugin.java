@@ -87,6 +87,11 @@ public class AccountsPlugin implements MigrationService {
         }
     }
 
+    @Override
+    public boolean isMigrationInProgress(UUID from, UUID to) {
+        return engine != null && engine.isInProgress(from, to);
+    }
+
     private Map<String, Object> loadConfig() throws IOException {
         Files.createDirectories(dataDirectory);
         Path configFile = dataDirectory.resolve("config.yml");

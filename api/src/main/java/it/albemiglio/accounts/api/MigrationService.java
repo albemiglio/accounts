@@ -16,4 +16,10 @@ public interface MigrationService {
      * metadata for the migration record.
      */
     void migrate(UUID from, UUID to, String username);
+
+    /**
+     * Whether a migration {@code from -> to} is started but not yet finished across the network. Nyx
+     * blocks the player's premium login while this is true, so they can't re-enter mid-transfer.
+     */
+    boolean isMigrationInProgress(UUID from, UUID to);
 }

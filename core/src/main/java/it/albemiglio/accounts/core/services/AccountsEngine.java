@@ -79,6 +79,11 @@ public final class AccountsEngine implements AutoCloseable {
         return service.isComplete(InstanceMigrator.migrationId(from, to));
     }
 
+    /** Whether the migration from -> to is started but not yet finished (Nyx's login lock). */
+    public boolean isInProgress(UUID from, UUID to) {
+        return service.isInProgress(InstanceMigrator.migrationId(from, to));
+    }
+
     @Override
     public void close() {
         heartbeat.shutdownNow();
