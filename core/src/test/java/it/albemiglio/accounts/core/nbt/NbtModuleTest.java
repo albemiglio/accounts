@@ -68,6 +68,40 @@ class NbtModuleTest {
         return ((IntArrayTag) players.get(0)).getValue();
     }
 
+    @Test
+    void rewritesAPlayerHeadHeldInAnotherPlayersInventory(@TempDir Path worldDir) throws IOException {
+        UUID thirdParty = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        writePlayerdataHoldingAHeadOf(worldDir, thirdParty, OLD);
+
+        new NbtModule("world", Platform.SPIGOT, worldDir).execute(Pair.of(OLD, NEW));
+
+        assertArrayEquals(UuidNbtRewriter.toIntArray(NEW), readHeldHeadId(worldDir, thirdParty));
+    }
+
+    private static void writePlayerdataHoldingAHeadOf(Path worldDir, UUID holder, UUID head) throws IOException {
+        CompoundTag skullOwner = new CompoundTag();
+        skullOwner.putIntArray("Id", UuidNbtRewriter.toIntArray(head));
+        CompoundTag tag = new CompoundTag();
+        tag.put("SkullOwner", skullOwner);
+        CompoundTag item = new CompoundTag();
+        item.putString("id", "minecraft:player_head");
+        item.put("tag", tag);
+        ListTag<CompoundTag> inventory = new ListTag<>(CompoundTag.class);
+        inventory.add(item);
+        CompoundTag root = new CompoundTag();
+        root.put("Inventory", inventory);
+
+        Path playerdata = worldDir.resolve("playerdata");
+        Files.createDirectories(playerdata);
+        NBTUtil.write(new NamedTag("", root), playerdata.resolve(holder + ".dat").toFile());
+    }
+
+    private static int[] readHeldHeadId(Path worldDir, UUID holder) throws IOException {
+        NamedTag nt = NBTUtil.read(worldDir.resolve("playerdata").resolve(holder + ".dat").toFile());
+        ListTag<?> inventory = ((CompoundTag) nt.getTag()).getListTag("Inventory");
+        return ((CompoundTag) inventory.get(0)).getCompoundTag("tag").getCompoundTag("SkullOwner").getIntArray("Id");
+    }
+
     private static void writeRegionWithOwnedWolf(Path worldDir, UUID owner) throws IOException {
         CompoundTag wolf = new CompoundTag();
         wolf.putString("id", "minecraft:wolf");

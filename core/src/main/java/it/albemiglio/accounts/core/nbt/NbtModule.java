@@ -44,25 +44,35 @@ public class NbtModule extends Module {
     public void execute(Pair<UUID, UUID> migration) {
         UuidNbtRewriter rewriter = new UuidNbtRewriter(migration.getLeft(), migration.getRight());
         regionFiles().parallelStream().forEach(file -> rewriteRegion(file, rewriter));
-        datFiles().forEach(file -> rewriteDat(file, rewriter));
+        datFiles().parallelStream().forEach(file -> rewriteDat(file, rewriter));
     }
 
-    /** {@code level.dat} plus anything under {@code data/} (raids, scoreboard, ...) — gzipped NBT. */
+    /**
+     * The gzipped-NBT {@code .dat} files: {@code level.dat}, anything under {@code data/} (raids,
+     * scoreboard, ...) and every player file under {@code playerdata/}. Scanning playerdata content
+     * (not just renaming the migrant's own file) is what lets a player-head another player is holding
+     * follow the migrant too.
+     */
     private List<Path> datFiles() {
         List<Path> files = new ArrayList<>();
         Path level = worldDir.resolve("level.dat");
         if (Files.isRegularFile(level)) {
             files.add(level);
         }
-        Path dataDir = worldDir.resolve("data");
-        if (Files.isDirectory(dataDir)) {
-            try (Stream<Path> list = Files.list(dataDir)) {
-                list.filter(p -> p.toString().endsWith(".dat")).forEach(files::add);
-            } catch (IOException e) {
-                throw new MigrationException("Failed to scan " + dataDir, e);
-            }
-        }
+        addDatFilesIn(worldDir.resolve("data"), files);
+        addDatFilesIn(worldDir.resolve("playerdata"), files);
         return files;
+    }
+
+    private void addDatFilesIn(Path dir, List<Path> into) {
+        if (!Files.isDirectory(dir)) {
+            return;
+        }
+        try (Stream<Path> list = Files.list(dir)) {
+            list.filter(p -> p.toString().endsWith(".dat")).forEach(into::add);
+        } catch (IOException e) {
+            throw new MigrationException("Failed to scan " + dir, e);
+        }
     }
 
     private void rewriteDat(Path file, UuidNbtRewriter rewriter) {
