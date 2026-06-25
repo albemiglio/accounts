@@ -2,6 +2,7 @@ package it.albemiglio.accounts.core.services;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -21,13 +22,13 @@ public final class InstanceId {
             Files.createDirectories(dataDirectory);
             Path file = dataDirectory.resolve("instance-id");
             if (Files.exists(file)) {
-                String existing = Files.readString(file).trim();
+                String existing = new String(Files.readAllBytes(file), StandardCharsets.UTF_8).trim();
                 if (!existing.isEmpty()) {
                     return existing;
                 }
             }
             String id = UUID.randomUUID().toString();
-            Files.writeString(file, id);
+            Files.write(file, id.getBytes(StandardCharsets.UTF_8));
             return id;
         } catch (IOException e) {
             throw new UncheckedIOException("Could not read or create the accounts instance id", e);

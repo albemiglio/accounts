@@ -32,7 +32,9 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.5-R0.1-SNAPSHOT</version>
+            <!-- Compile against 1.13.2 (Java 8, oldest cached API still exposing the 1.12+
+                 Skull#getOwningPlayer we capability-guard). Java 8 bytecode runs on every 1.8+ server. -->
+            <version>1.13.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

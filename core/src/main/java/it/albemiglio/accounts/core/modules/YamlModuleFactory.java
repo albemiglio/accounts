@@ -11,6 +11,7 @@ import it.albemiglio.accounts.core.objects.enums.DBType;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,10 @@ public class YamlModuleFactory {
                 module = buildFileModule(name, platform, config);
                 break;
             case "world":
-                module = new NbtModule(name, platform, Path.of((String) config.get("directory")));
+                module = new NbtModule(name, platform, Paths.get((String) config.get("directory")));
                 break;
             case "json":
-                module = new JsonModule(name, platform, Path.of((String) config.get("directory")));
+                module = new JsonModule(name, platform, Paths.get((String) config.get("directory")));
                 break;
             default:
                 module = buildSqlModule(name, platform, config);
@@ -44,7 +45,7 @@ public class YamlModuleFactory {
     }
 
     private Module buildFileModule(String name, Platform platform, Map<String, Object> config) {
-        Path directory = Path.of((String) config.get("directory"));
+        Path directory = Paths.get((String) config.get("directory"));
         String extension = (String) config.get("extension");
         return new FileModule(name, platform, directory, extension);
     }

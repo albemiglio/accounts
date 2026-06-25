@@ -12,6 +12,8 @@
     <artifactId>accounts-velocity</artifactId>
 
     <properties>
+        <!-- Velocity requires Java 17; the rest of the project targets Java 8 for old backends. -->
+        <java.version>17</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

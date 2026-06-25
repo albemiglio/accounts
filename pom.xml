@@ -36,7 +36,9 @@
     </distributionManagement>
 
     <properties>
-        <java.version>11</java.version>
+        <!-- Java 8 so the core + Spigot backend run on 1.8-1.16 servers (which run on Java 8); the
+             Velocity module overrides this to 17 since Velocity requires it. -->
+        <java.version>8</java.version>
         <lombok.version>1.18.46</lombok.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>

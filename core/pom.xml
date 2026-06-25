@@ -32,7 +32,8 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>5.0.1</version>
+            <!-- 4.x is the last Java 8 line; 5.x is Java 11 bytecode and won't load on a 1.8 backend. -->
+            <version>4.0.3</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

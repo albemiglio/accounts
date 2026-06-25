@@ -4,6 +4,7 @@ import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -41,10 +42,10 @@ public class JsonModule extends Module {
             return;
         }
         try {
-            String content = Files.readString(file);
+            String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
             String replaced = content.replace(oldId, newId);
             if (!replaced.equals(content)) {
-                Files.writeString(file, replaced);
+                Files.write(file, replaced.getBytes(StandardCharsets.UTF_8));
             }
         } catch (IOException e) {
             throw new MigrationException("JSON migration failed for " + file, e);
