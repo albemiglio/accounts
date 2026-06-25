@@ -76,13 +76,20 @@ public class NbtModule extends Module {
     }
 
     private void rewriteDat(Path file, UuidNbtRewriter rewriter) {
+        NamedTag tag;
         try {
-            NamedTag tag = NBTUtil.read(file.toFile());
+            tag = NBTUtil.read(file.toFile());
+        } catch (IOException | RuntimeException e) {
+            // Not parseable as NBT (e.g. Bukkit's 16-byte uid.dat, or a corrupt file): it cannot hold a
+            // migratable UUID, so skip it rather than abort — never wedge the login gate open over one file.
+            return;
+        }
+        try {
             if (rewriter.rewrite(tag.getTag()) > 0) {
                 NBTUtil.write(tag, file.toFile());
             }
         } catch (IOException e) {
-            throw new MigrationException("NBT migration failed for " + file, e);
+            throw new MigrationException("NBT migration failed writing " + file, e);
         }
     }
 
@@ -98,20 +105,26 @@ public class NbtModule extends Module {
     }
 
     private void rewriteRegion(Path file, UuidNbtRewriter rewriter) {
+        MCAFile mca;
         try {
-            MCAFile mca = MCAUtil.read(file.toFile(), LoadFlags.RAW);
-            int changed = 0;
-            for (int i = 0; i < CHUNKS_PER_REGION; i++) {
-                Chunk chunk = mca.getChunk(i);
-                if (chunk != null) {
-                    changed += rewriter.rewrite(chunk.getHandle());
-                }
+            mca = MCAUtil.read(file.toFile(), LoadFlags.RAW);
+        } catch (IOException | RuntimeException e) {
+            return; // unreadable or corrupt region: skip it rather than abort the whole world migration
+        }
+        int changed = 0;
+        for (int i = 0; i < CHUNKS_PER_REGION; i++) {
+            Chunk chunk = mca.getChunk(i);
+            if (chunk != null) {
+                changed += rewriter.rewrite(chunk.getHandle());
             }
-            if (changed > 0) {
-                MCAUtil.write(mca, file.toFile());
-            }
+        }
+        if (changed == 0) {
+            return;
+        }
+        try {
+            MCAUtil.write(mca, file.toFile());
         } catch (IOException e) {
-            throw new MigrationException("NBT migration failed for " + file, e);
+            throw new MigrationException("NBT migration failed writing " + file, e);
         }
     }
 }

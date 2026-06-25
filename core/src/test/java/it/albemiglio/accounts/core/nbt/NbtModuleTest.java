@@ -69,6 +69,18 @@ class NbtModuleTest {
     }
 
     @Test
+    void skipsAnUnreadableDatFileInsteadOfFailingTheWholeMigration(@TempDir Path worldDir) throws IOException {
+        writeLevelDatWithBossBarViewer(worldDir, OLD);               // a good file that must still migrate
+        Path data = worldDir.resolve("data");
+        Files.createDirectories(data);
+        Files.write(data.resolve("uid.dat"), new byte[]{0, 1, 2, 3, 4, 5}); // not NBT (Bukkit's uid.dat is 16 raw bytes)
+
+        new NbtModule("world", Platform.SPIGOT, worldDir).execute(Pair.of(OLD, NEW)); // must not throw
+
+        assertArrayEquals(UuidNbtRewriter.toIntArray(NEW), readBossBarViewer(worldDir));
+    }
+
+    @Test
     void rewritesAPlayerHeadHeldInAnotherPlayersInventory(@TempDir Path worldDir) throws IOException {
         UUID thirdParty = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
         writePlayerdataHoldingAHeadOf(worldDir, thirdParty, OLD);
