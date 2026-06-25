@@ -30,12 +30,19 @@ import java.util.concurrent.ExecutionException;
  * a tamed pet near another player, a placed player-head, a head in an online player's inventory — this
  * rewrites the live objects through the Bukkit API instead, so the server persists the migrated value.
  *
+ * <p>Works on every server from 1.8 up. A tamed pet's owner is a UUID on all versions and is migrated
+ * everywhere. Player-heads are keyed by UUID only since 1.12; the {@code OwningPlayer} API is probed
+ * once and the head passes are skipped on older servers — there they are keyed by name, which a
+ * cracked&rarr;premium switch leaves unchanged, so the file scan handling the stored NBT is enough. No
+ * per-version NMS, and nothing throws {@code NoSuchMethodError} on an old server.
+ *
  * <p>The Bukkit API is single-threaded, so the work is marshalled onto the main server thread; a
  * broadcast handled on the Redis thread waits for it, an admin's console migrate runs it inline.
  */
 public final class LiveWorldModule extends Module {
 
     private final Plugin plugin;
+    private final boolean headOwnerByUuid = supportsHeadOwnerByUuid();
 
     public LiveWorldModule(Plugin plugin) {
         super("live-world", Platform.SPIGOT);
@@ -66,35 +73,47 @@ public final class LiveWorldModule extends Module {
     private void rewriteLoaded(UUID oldId, UUID newId) {
         OfflinePlayer newOwner = Bukkit.getOfflinePlayer(newId);
         for (World world : Bukkit.getWorlds()) {
-            for (Entity entity : world.getEntities()) {
-                if (entity instanceof Tameable) {
-                    Tameable pet = (Tameable) entity;
-                    AnimalTamer owner = pet.getOwner();
-                    if (owner != null && oldId.equals(owner.getUniqueId())) {
-                        pet.setOwner(newOwner);
-                    }
-                }
-            }
-            for (Chunk chunk : world.getLoadedChunks()) {
-                for (BlockState state : chunk.getTileEntities()) {
-                    if (state instanceof Skull) {
-                        Skull skull = (Skull) state;
-                        OfflinePlayer head = skull.getOwningPlayer();
-                        if (head != null && oldId.equals(head.getUniqueId())) {
-                            skull.setOwningPlayer(newOwner);
-                            skull.update(true, false);
-                        }
-                    }
-                }
+            migratePets(world, oldId, newOwner);                 // a pet owner is a UUID on every version
+            if (headOwnerByUuid) {
+                migrateSkullBlocks(world, oldId, newOwner);      // UUID-keyed player-heads (1.12+)
             }
         }
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            rewriteHeads(player.getInventory(), oldId, newOwner);
-            rewriteHeads(player.getEnderChest(), oldId, newOwner);
+        if (headOwnerByUuid) {
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                migrateHeadItems(player.getInventory(), oldId, newOwner);
+                migrateHeadItems(player.getEnderChest(), oldId, newOwner);
+            }
         }
     }
 
-    private void rewriteHeads(Inventory inventory, UUID oldId, OfflinePlayer newOwner) {
+    private void migratePets(World world, UUID oldId, OfflinePlayer newOwner) {
+        for (Entity entity : world.getEntities()) {
+            if (entity instanceof Tameable) {
+                Tameable pet = (Tameable) entity;
+                AnimalTamer owner = pet.getOwner();
+                if (owner != null && oldId.equals(owner.getUniqueId())) {
+                    pet.setOwner(newOwner);
+                }
+            }
+        }
+    }
+
+    private void migrateSkullBlocks(World world, UUID oldId, OfflinePlayer newOwner) {
+        for (Chunk chunk : world.getLoadedChunks()) {
+            for (BlockState state : chunk.getTileEntities()) {
+                if (state instanceof Skull) {
+                    Skull skull = (Skull) state;
+                    OfflinePlayer head = skull.getOwningPlayer();
+                    if (head != null && oldId.equals(head.getUniqueId())) {
+                        skull.setOwningPlayer(newOwner);
+                        skull.update(true, false);
+                    }
+                }
+            }
+        }
+    }
+
+    private void migrateHeadItems(Inventory inventory, UUID oldId, OfflinePlayer newOwner) {
         ItemStack[] contents = inventory.getContents();
         for (int slot = 0; slot < contents.length; slot++) {
             ItemStack item = contents[slot];
@@ -112,6 +131,16 @@ public final class LiveWorldModule extends Module {
                 item.setItemMeta(skullMeta);
                 inventory.setItem(slot, item);
             }
+        }
+    }
+
+    /** Whether this server exposes a player-head's owner as a UUID (Skull#getOwningPlayer, since 1.12). */
+    private static boolean supportsHeadOwnerByUuid() {
+        try {
+            Skull.class.getMethod("getOwningPlayer");
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
         }
     }
 }
