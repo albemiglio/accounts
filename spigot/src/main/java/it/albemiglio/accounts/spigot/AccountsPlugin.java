@@ -1,5 +1,7 @@
 package it.albemiglio.accounts.spigot;
 
+import it.albemiglio.accounts.core.modules.Module;
+import it.albemiglio.accounts.core.nbt.NbtModule;
 import it.albemiglio.accounts.core.objects.Task;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.InstanceId;
@@ -13,6 +15,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Spigot entry point: a backend runs this so its own local databases are migrated when a UUID
@@ -40,14 +44,23 @@ public final class AccountsPlugin extends JavaPlugin {
         moduleService.loadModules(modulesDir);
         moduleService.loadJarModules(dataDir.resolve("jar-modules"));
 
+        // When the world is being migrated on disk (NbtModule), also migrate whatever is loaded in
+        // memory through the Bukkit API, so the server's next save doesn't overwrite the rewrite.
+        List<Module> modules = new ArrayList<>(moduleService.getModules());
+        if (modules.stream().anyMatch(module -> module instanceof NbtModule)) {
+            LiveWorldModule liveWorld = new LiveWorldModule(this);
+            liveWorld.enable();
+            modules.add(liveWorld);
+        }
+
         this.engine = AccountsEngine.start(
                 config.getString("redis.host", "localhost"),
                 config.getInt("redis.port", 6379),
                 config.getString("redis.password", ""),
                 InstanceId.loadOrCreate(dataDir),
-                moduleService.getModules());
+                modules);
 
-        getLogger().info("Accounts ready: " + moduleService.getModules().size() + " module(s) loaded");
+        getLogger().info("Accounts ready: " + modules.size() + " module(s) loaded");
     }
 
     @Override
