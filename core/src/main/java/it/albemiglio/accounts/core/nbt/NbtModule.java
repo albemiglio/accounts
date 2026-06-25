@@ -1,0 +1,107 @@
+package it.albemiglio.accounts.core.nbt;
+
+import it.albemiglio.accounts.core.modules.MigrationException;
+import it.albemiglio.accounts.core.modules.Module;
+import it.albemiglio.accounts.core.objects.Pair;
+import it.albemiglio.accounts.core.objects.enums.Platform;
+import net.querz.mca.Chunk;
+import net.querz.mca.LoadFlags;
+import net.querz.mca.MCAFile;
+import net.querz.mca.MCAUtil;
+import net.querz.nbt.io.NBTUtil;
+import net.querz.nbt.io.NamedTag;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+/**
+ * Migrates the vanilla world itself: every {@code .mca} region/entities/poi file is rewritten so any
+ * reference to the player's old UUID (a tamed pet's {@code Owner}, a player-head's {@code SkullOwner},
+ * a boss-bar viewer, a leashed mob, ...) follows them to the new UUID. Each chunk is read raw and
+ * scanned whole by {@link UuidNbtRewriter}, so vanilla, modded and datapack tags are all caught and
+ * nothing is lost. Files are scanned in parallel — the region scan is the bottleneck for the
+ * sub-5-minute budget. The backend that owns the world migrates its own files, as the broadcast wants.
+ */
+public class NbtModule extends Module {
+
+    private static final int CHUNKS_PER_REGION = 1024;
+
+    private final Path worldDir;
+
+    public NbtModule(String name, Platform platform, Path worldDir) {
+        super(name, platform);
+        this.worldDir = worldDir;
+    }
+
+    @Override
+    public void execute(Pair<UUID, UUID> migration) {
+        UuidNbtRewriter rewriter = new UuidNbtRewriter(migration.getLeft(), migration.getRight());
+        regionFiles().parallelStream().forEach(file -> rewriteRegion(file, rewriter));
+        datFiles().forEach(file -> rewriteDat(file, rewriter));
+    }
+
+    /** {@code level.dat} plus anything under {@code data/} (raids, scoreboard, ...) — gzipped NBT. */
+    private List<Path> datFiles() {
+        List<Path> files = new ArrayList<>();
+        Path level = worldDir.resolve("level.dat");
+        if (Files.isRegularFile(level)) {
+            files.add(level);
+        }
+        Path dataDir = worldDir.resolve("data");
+        if (Files.isDirectory(dataDir)) {
+            try (Stream<Path> list = Files.list(dataDir)) {
+                list.filter(p -> p.toString().endsWith(".dat")).forEach(files::add);
+            } catch (IOException e) {
+                throw new MigrationException("Failed to scan " + dataDir, e);
+            }
+        }
+        return files;
+    }
+
+    private void rewriteDat(Path file, UuidNbtRewriter rewriter) {
+        try {
+            NamedTag tag = NBTUtil.read(file.toFile());
+            if (rewriter.rewrite(tag.getTag()) > 0) {
+                NBTUtil.write(tag, file.toFile());
+            }
+        } catch (IOException e) {
+            throw new MigrationException("NBT migration failed for " + file, e);
+        }
+    }
+
+    private List<Path> regionFiles() {
+        if (!Files.isDirectory(worldDir)) {
+            return Collections.emptyList();
+        }
+        try (Stream<Path> walk = Files.walk(worldDir)) {
+            return walk.filter(p -> p.toString().endsWith(".mca")).collect(Collectors.toList());
+        } catch (IOException e) {
+            throw new MigrationException("Failed to scan world " + worldDir, e);
+        }
+    }
+
+    private void rewriteRegion(Path file, UuidNbtRewriter rewriter) {
+        try {
+            MCAFile mca = MCAUtil.read(file.toFile(), LoadFlags.RAW);
+            int changed = 0;
+            for (int i = 0; i < CHUNKS_PER_REGION; i++) {
+                Chunk chunk = mca.getChunk(i);
+                if (chunk != null) {
+                    changed += rewriter.rewrite(chunk.getHandle());
+                }
+            }
+            if (changed > 0) {
+                MCAUtil.write(mca, file.toFile());
+            }
+        } catch (IOException e) {
+            throw new MigrationException("NBT migration failed for " + file, e);
+        }
+    }
+}
