@@ -1,0 +1,9 @@
+# EssentialsX stores each player's data in userdata/<uuid>.yml. Migration renames the file from the old
+# UUID to the new one; the contents are untouched because the file name is the key. Works for any plugin
+# that uses one <uuid>.<ext> file per player (set "extension" to match).
+name: essentialsx
+platform: SPIGOT
+type: file
+directory: plugins/Essentials/userdata
+extension: yml
+enabled: true

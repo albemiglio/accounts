@@ -1,0 +1,8 @@
+# Vanilla world data: tamed pets, player-heads, boss-bar viewers, anything in the world that points at
+# a player by UUID. One module per world folder (world, world_nether, world_the_end). Copy this file
+# into plugins/Accounts/modules/ to enable it on a backend.
+name: world
+platform: SPIGOT
+type: world
+directory: world
+enabled: true

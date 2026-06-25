@@ -1,0 +1,7 @@
+# The vanilla server-root JSON stores keyed by UUID: ops.json, whitelist.json, banned-players.json and
+# usercache.json. "directory" is the server root (where those files live). Backend-side.
+name: vanilla-json
+platform: SPIGOT
+type: json
+directory: .
+enabled: true
