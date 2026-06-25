@@ -2,6 +2,8 @@ package it.albemiglio.accounts.core.services;
 
 import it.albemiglio.accounts.core.objects.Task;
 
+import java.util.Set;
+
 /**
  * Drives migrations in the broadcast model: every accounts instance runs one of these. Initiating a
  * migration records it durably, applies it locally, and broadcasts it; receiving one applies it; and
@@ -14,20 +16,32 @@ public final class BroadcastMigrationService {
     private final InstanceMigrator migrator;
     private final MigrationStore store;
     private final MigrationPublisher publisher;
+    private final InstanceRegistry registry;
 
-    public BroadcastMigrationService(String instanceId, InstanceMigrator migrator,
-                                     MigrationStore store, MigrationPublisher publisher) {
+    public BroadcastMigrationService(String instanceId, InstanceMigrator migrator, MigrationStore store,
+                                     MigrationPublisher publisher, InstanceRegistry registry) {
         this.instanceId = instanceId;
         this.migrator = migrator;
         this.store = store;
         this.publisher = publisher;
+        this.registry = registry;
     }
 
-    /** Entry point for a new migration (admin command or Nyx): record, apply here, broadcast. */
+    /**
+     * Entry point for a new migration (admin command or Nyx): snapshot who must apply it (the barrier),
+     * record it, apply it here, and broadcast it to the rest.
+     */
     public void migrate(Task task) {
+        store.recordExpected(InstanceMigrator.migrationId(task), registry.activeInstances());
         store.record(task);
         migrator.apply(task);
         publisher.publish(task);
+    }
+
+    /** Whether every instance expected to apply this migration has done so (Nyx's unlock gate). */
+    public boolean isComplete(String migrationId) {
+        Set<String> expected = store.expectedInstances(migrationId);
+        return !expected.isEmpty() && store.appliedInstances(migrationId).containsAll(expected);
     }
 
     /**

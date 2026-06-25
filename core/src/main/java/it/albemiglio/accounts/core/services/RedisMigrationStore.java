@@ -8,17 +8,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Redis-backed {@link MigrationStore}. Migrations live in a hash (id -> serialized Task) so they
- * survive restarts; the applied/failed sets hold {@code migrationId@instanceId} members. This is the
- * durability that lets an instance recover what it missed and makes partial migrations observable.
+ * survive restarts; the applied/expected/failed sets are per-migration ({@code accounts:applied:<id>}
+ * etc.) so the completion barrier can read who has applied vs who must.
  */
 public final class RedisMigrationStore implements MigrationStore {
 
     private static final String MIGRATIONS = "accounts:migrations";
-    private static final String APPLIED = "accounts:applied";
-    private static final String FAILED = "accounts:failed";
+    private static final String APPLIED = "accounts:applied:";
+    private static final String EXPECTED = "accounts:expected:";
+    private static final String FAILED = "accounts:failed:";
 
     private final JedisPool pool;
 
@@ -39,7 +41,7 @@ public final class RedisMigrationStore implements MigrationStore {
             Map<String, String> all = jedis.hgetAll(MIGRATIONS);
             List<Task> out = new ArrayList<>();
             for (Map.Entry<String, String> entry : all.entrySet()) {
-                if (!jedis.sismember(APPLIED, member(entry.getKey(), instanceId))) {
+                if (!jedis.sismember(APPLIED + entry.getKey(), instanceId)) {
                     out.add(Task.fromString(entry.getValue()));
                 }
             }
@@ -50,25 +52,45 @@ public final class RedisMigrationStore implements MigrationStore {
     @Override
     public boolean hasApplied(String migrationId, String instanceId) {
         try (Jedis jedis = pool.getResource()) {
-            return jedis.sismember(APPLIED, member(migrationId, instanceId));
+            return jedis.sismember(APPLIED + migrationId, instanceId);
         }
     }
 
     @Override
     public void markApplied(String migrationId, String instanceId) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.sadd(APPLIED, member(migrationId, instanceId));
+            jedis.sadd(APPLIED + migrationId, instanceId);
         }
     }
 
     @Override
     public void markFailed(String migrationId, String instanceId) {
         try (Jedis jedis = pool.getResource()) {
-            jedis.sadd(FAILED, member(migrationId, instanceId));
+            jedis.sadd(FAILED + migrationId, instanceId);
         }
     }
 
-    private static String member(String migrationId, String instanceId) {
-        return migrationId + "@" + instanceId;
+    @Override
+    public void recordExpected(String migrationId, Set<String> instances) {
+        if (instances.isEmpty()) {
+            return;
+        }
+        try (Jedis jedis = pool.getResource()) {
+            jedis.sadd(EXPECTED + migrationId, instances.toArray(new String[0]));
+        }
+    }
+
+    @Override
+    public Set<String> expectedInstances(String migrationId) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.smembers(EXPECTED + migrationId);
+        }
+    }
+
+    @Override
+    public Set<String> appliedInstances(String migrationId) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.smembers(APPLIED + migrationId);
+        }
     }
 }

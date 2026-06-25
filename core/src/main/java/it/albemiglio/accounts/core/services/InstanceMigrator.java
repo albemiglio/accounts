@@ -4,6 +4,7 @@ import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Task;
 
 import java.util.Collection;
+import java.util.UUID;
 
 /**
  * Applies a migration to one instance's local modules. Idempotent: if the migration is already
@@ -49,6 +50,10 @@ public final class InstanceMigrator {
     }
 
     public static String migrationId(Task task) {
-        return task.getMigration().getLeft() + ">" + task.getMigration().getRight();
+        return migrationId(task.getMigration().getLeft(), task.getMigration().getRight());
+    }
+
+    public static String migrationId(UUID from, UUID to) {
+        return from + ">" + to;
     }
 }
