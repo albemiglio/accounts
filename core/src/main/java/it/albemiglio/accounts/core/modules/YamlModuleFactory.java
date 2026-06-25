@@ -6,6 +6,7 @@ import it.albemiglio.accounts.core.database.MySQL;
 import it.albemiglio.accounts.core.database.SQLite;
 import it.albemiglio.accounts.core.modules.replacers.ColumnReplacer;
 import it.albemiglio.accounts.core.modules.replacers.Replacer;
+import it.albemiglio.accounts.core.nbt.NbtModule;
 import it.albemiglio.accounts.core.objects.enums.DBType;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 
@@ -21,9 +22,20 @@ public class YamlModuleFactory {
         Platform platform = Platform.valueOf(((String) config.get("platform")).toUpperCase());
         String type = (String) config.getOrDefault("type", "sql");
 
-        Module module = "file".equalsIgnoreCase(type)
-                ? buildFileModule(name, platform, config)
-                : buildSqlModule(name, platform, config);
+        Module module;
+        switch (type.toLowerCase()) {
+            case "file":
+                module = buildFileModule(name, platform, config);
+                break;
+            case "world":
+                module = new NbtModule(name, platform, Path.of((String) config.get("directory")));
+                break;
+            case "json":
+                module = new JsonModule(name, platform, Path.of((String) config.get("directory")));
+                break;
+            default:
+                module = buildSqlModule(name, platform, config);
+        }
 
         if (Boolean.TRUE.equals(config.get("enabled"))) {
             module.enable();
