@@ -3,6 +3,7 @@ package it.albemiglio.accounts.core.nbt;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntArrayTag;
 import net.querz.nbt.tag.ListTag;
+import net.querz.nbt.tag.StringTag;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -50,5 +51,55 @@ class UuidNbtRewriterTest {
 
         assertEquals(0, count);
         assertArrayEquals(newArr, root.getIntArray("SomeOtherUuid"));
+    }
+
+    @Test
+    void rewritesStringFormUuidsUsedBeforeMc1_16() {
+        CompoundTag root = new CompoundTag();
+        root.putString("OwnerUUID", OLD.toString());            // pre-1.16 pet owner
+        CompoundTag skull = new CompoundTag();
+        skull.putString("Id", OLD.toString().toUpperCase());    // some writers used upper-case
+        root.put("SkullOwner", skull);
+        ListTag<StringTag> trusted = new ListTag<>(StringTag.class);
+        trusted.add(new StringTag(OLD.toString()));             // a plugin's trusted-uuid list
+        root.put("Trusted", trusted);
+
+        int count = new UuidNbtRewriter(OLD, NEW).rewrite(root);
+
+        assertEquals(3, count);
+        assertEquals(NEW.toString(), root.getString("OwnerUUID"));
+        assertEquals(NEW.toString(), root.getCompoundTag("SkullOwner").getString("Id"));
+        assertEquals(NEW.toString(), ((StringTag) root.getListTag("Trusted").get(0)).getValue());
+    }
+
+    @Test
+    void rewritesMostLeastLongPairUuidsUsedBeforeMc1_16() {
+        CompoundTag root = new CompoundTag();
+        root.putLong("OwnerUUIDMost", OLD.getMostSignificantBits());   // pre-1.16 projectile/pet owner
+        root.putLong("OwnerUUIDLeast", OLD.getLeastSignificantBits());
+        root.putLong("score", 42L);
+
+        int count = new UuidNbtRewriter(OLD, NEW).rewrite(root);
+
+        assertEquals(1, count);
+        assertEquals(NEW.getMostSignificantBits(), root.getLong("OwnerUUIDMost"));
+        assertEquals(NEW.getLeastSignificantBits(), root.getLong("OwnerUUIDLeast"));
+        assertEquals(42L, root.getLong("score"));
+    }
+
+    @Test
+    void leavesNonMatchingStringsAndLongPairsAlone() {
+        CompoundTag root = new CompoundTag();
+        root.putString("name", "Notch");                     // not a uuid
+        root.putString("SomeOtherUuid", NEW.toString());     // already the new id
+        root.putLong("ScoreMost", 1L);                       // a Most/Least pair that isn't the old uuid
+        root.putLong("ScoreLeast", 2L);
+
+        int count = new UuidNbtRewriter(OLD, NEW).rewrite(root);
+
+        assertEquals(0, count);
+        assertEquals("Notch", root.getString("name"));
+        assertEquals(1L, root.getLong("ScoreMost"));
+        assertEquals(2L, root.getLong("ScoreLeast"));
     }
 }
