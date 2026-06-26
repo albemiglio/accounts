@@ -17,18 +17,13 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-    </repositories>
-
     <dependencies>
         <dependency>
             <groupId>net.md-5</groupId>
+            <!-- 1.21-R0.4 is on Maven Central; the old 1.20 snapshot lived on the now-dead oss.sonatype
+                 repo, so a clean checkout couldn't resolve it. The API we use is unchanged. -->
             <artifactId>bungeecord-api</artifactId>
-            <version>1.20-R0.1-SNAPSHOT</version>
+            <version>1.21-R0.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
