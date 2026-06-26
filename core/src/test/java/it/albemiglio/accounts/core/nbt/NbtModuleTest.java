@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class NbtModuleTest {
 
@@ -88,6 +89,35 @@ class NbtModuleTest {
         new NbtModule("world", Platform.SPIGOT, worldDir).execute(Pair.of(OLD, NEW));
 
         assertArrayEquals(UuidNbtRewriter.toIntArray(NEW), readHeldHeadId(worldDir, thirdParty));
+    }
+
+    @Test
+    void rewritesAPreMc116StringSkullIdInPlayerdata(@TempDir Path worldDir) throws IOException {
+        // 1.8-1.15 store a player-head's owner as a dashed string Id; an offline player's inventory head
+        // is migrated at rest by the file scan (the live API can't reach a UUID-keyed head before 1.12).
+        UUID thirdParty = UUID.fromString("00000000-0000-0000-0000-0000000000ff");
+        CompoundTag skullOwner = new CompoundTag();
+        skullOwner.putString("Id", OLD.toString());            // pre-1.16 string form
+        CompoundTag tag = new CompoundTag();
+        tag.put("SkullOwner", skullOwner);
+        CompoundTag item = new CompoundTag();
+        item.putString("id", "minecraft:skull");
+        item.put("tag", tag);
+        ListTag<CompoundTag> inventory = new ListTag<>(CompoundTag.class);
+        inventory.add(item);
+        CompoundTag root = new CompoundTag();
+        root.put("Inventory", inventory);
+        Path playerdata = worldDir.resolve("playerdata");
+        Files.createDirectories(playerdata);
+        NBTUtil.write(new NamedTag("", root), playerdata.resolve(thirdParty + ".dat").toFile());
+
+        new NbtModule("world", Platform.SPIGOT, worldDir).execute(Pair.of(OLD, NEW));
+
+        NamedTag out = NBTUtil.read(playerdata.resolve(thirdParty + ".dat").toFile());
+        ListTag<?> inventoryOut = ((CompoundTag) out.getTag()).getListTag("Inventory");
+        String migrated = ((CompoundTag) inventoryOut.get(0))
+                .getCompoundTag("tag").getCompoundTag("SkullOwner").getString("Id");
+        assertEquals(NEW.toString(), migrated);
     }
 
     private static void writePlayerdataHoldingAHeadOf(Path worldDir, UUID holder, UUID head) throws IOException {
