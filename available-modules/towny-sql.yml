@@ -1,0 +1,19 @@
+# Towny (TownyAdvanced) on the MySQL backend. Schema confirmed against TownySQLSource.java
+# (TownyAdvanced/Towny, 0.100.x+): residents are written with res_hm.put("uuid", resident.getUUID()
+# .toString()) and updated by the "uuid" column, i.e. a dashed UUID string. The table is
+# <SQL_prefix>RESIDENTS; the prefix is config.yml [database] SQL_prefix, default "TOWNY_". Change the
+# table name below if you set a custom prefix. (For the flatfile backend use towny-flatfile.yml instead.)
+name: towny-sql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: towny
+replacers:
+  - table: TOWNY_RESIDENTS
+    column: uuid

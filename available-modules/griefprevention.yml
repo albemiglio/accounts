@@ -1,0 +1,24 @@
+# GriefPrevention on the MySQL backend. Schema confirmed against DatabaseDataStore.java
+# (TechFortress/GriefPrevention): the per-player table is created as
+# "griefprevention_playerdata (name VARCHAR(50), lastlogin DATETIME, accruedblocks INTEGER, bonusblocks
+# INTEGER)" - the UUID lives in the column literally named "name", bound via playerID.toString() (dashed).
+# Claims store their owner the same way: "griefprevention_claimdata (id INTEGER, owner VARCHAR(50), ...)",
+# owner = claim.ownerID.toString(). These table names are fixed (no configurable prefix).
+# Flatfile note: GriefPrevention's flatfile player files (GriefPreventionData/PlayerData/<uuid>) have NO
+# extension, which the file module can't match, so only the SQL backend is templated here.
+name: griefprevention
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: griefprevention
+replacers:
+  - table: griefprevention_playerdata
+    column: name
+  - table: griefprevention_claimdata
+    column: owner

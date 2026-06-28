@@ -1,0 +1,23 @@
+# PlayerPoints on an SQL backend. Schema confirmed against the migration that creates the tables
+# (Rosewood-Development/PlayerPoints, _1_Create_Tables.java + _2_Add_Table_Username_Cache.java): both the
+# balance table and the username cache key players by "uuid VARCHAR(36) NOT NULL", a dashed string bound
+# with uuid.toString() in DataManager. Table prefix defaults to "playerpoints_"; adjust if you changed it.
+name: playerpoints
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/PlayerPoints/storage.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: playerpoints
+replacers:
+  - table: playerpoints_points
+    column: uuid
+  - table: playerpoints_username_cache
+    column: uuid

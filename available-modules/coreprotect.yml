@@ -1,0 +1,25 @@
+# CoreProtect on an SQL backend. Schema confirmed against CoreProtect's Database.java (PlayPro/CoreProtect,
+# v23.x): the user table keeps a dashed UUID string. MySQL: "user varchar(100),uuid varchar(64)";
+# SQLite: "user TEXT, uuid TEXT". The username-change log carries the same dashed uuid column. All the
+# logging tables (co_block, co_container, ...) reference co_user.rowid, not the UUID, so renaming the two
+# uuid columns below is enough. The "co_" prefix is configurable in CoreProtect's config; adjust if changed.
+# NOTE: CoreProtect databases predating UUID support (pre-2014) leave uuid empty - nothing to migrate there.
+name: coreprotect
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/CoreProtect/database.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: coreprotect
+replacers:
+  - table: co_user
+    column: uuid
+  - table: co_username_log
+    column: uuid

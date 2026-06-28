@@ -1,0 +1,27 @@
+# CMI (Zrips) on an SQL backend. CMI is closed source, so this is based on CMI's own runtime SQL as seen
+# in a server error log (Zrips/CMI issue #1306): it creates `users` (id ..., `player_uuid` text, ...), i.e.
+# the user table is "users" and the UUID column is "player_uuid" (TEXT). The table and column are observed
+# from CMI itself; the UUID *encoding* is not - "text" could be a dashed or an undashed string and could not
+# be confirmed from the closed source.
+#
+# UNVERIFIED - confirm schema before use. Check one row of your CMI `users` table: if player_uuid is a
+# 36-char dashed UUID, the default below is correct; if it is 32 hex chars with no hyphens, add
+# "format: undashed" to the replacer. Do not run blind, or balances/homes silently won't migrate.
+name: cmi
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/CMI/Database.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: cmi
+replacers:
+  - table: users
+    column: player_uuid
+#    format: undashed   # uncomment if your CMI stores player_uuid without hyphens (verify first)

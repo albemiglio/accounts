@@ -1,0 +1,11 @@
+# Towny (TownyAdvanced) on the flatfile backend. Confirmed against TownyFlatFileSource.java
+# (TownyAdvanced/Towny, 0.100.x+): getResidentFilename returns "residents"/<uuid>.txt, so each resident
+# is one file keyed by a dashed UUID. Migration renames the file old-uuid.txt -> new-uuid.txt; the
+# contents (which reference towns/nations by their own UUIDs) are untouched. Older name-keyed installs
+# are auto-converted to UUID filenames by Towny itself before this applies.
+name: towny-flatfile
+platform: SPIGOT
+type: file
+directory: plugins/Towny/data/residents
+extension: txt
+enabled: true
