@@ -1,0 +1,67 @@
+name: Bug report
+description: A migration didn't do what you expected, or something broke.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Because `accounts` rewrites live player data, the most useful bug reports
+        say exactly **what UUID-encoding / storage format** was involved — that's where migrations
+        silently miss data.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you expected to migrate vs. what actually moved (or didn't).
+      placeholder: "Ran /accounts migrate ... — LuckPerms rank moved, but the EssentialsX home didn't."
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Spigot / Paper
+        - BungeeCord
+        - Velocity
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: accounts version / commit
+      placeholder: "1.0-SNAPSHOT @ 32e1caf"
+    validations:
+      required: true
+  - type: textarea
+    id: module
+    attributes:
+      label: The module template involved
+      description: Paste the YAML from plugins/Accounts/modules/ (redact passwords). Which plugin, which type, which format?
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: storage
+    attributes:
+      label: How the affected plugin stores the UUID
+      description: >
+        One row of the target table/file. Is the UUID a dashed string, undashed hex, BINARY(16), or a
+        filename? This is usually the root cause.
+      placeholder: "e.g. SELECT uuid FROM theplugin_users LIMIT 1; → 069a79f444e94726a5befca90e38aaf5 (undashed!)"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Any errors from the console (MigrationException, SQL errors, Redis connection issues).
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Confirmations
+      options:
+        - label: I took a backup before migrating.
+        - label: Redis is running and reachable from every instance.
+        - label: I verified the template's assumed UUID encoding against a real row.

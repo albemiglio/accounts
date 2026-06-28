@@ -1,0 +1,46 @@
+name: Feature request / new plugin template
+description: Suggest a feature, or request support for a plugin we don't template yet.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Requesting support for a plugin? If you can tell us **how it stores the player UUID**, you've
+        done most of the work — a template is usually just a few lines of YAML.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is this?
+      options:
+        - New plugin template (add a plugin to the catalog)
+        - New module type (a storage format the 5 built-ins don't cover)
+        - Engine / core feature
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe it
+      description: What should it do, and why? What problem does it solve?
+    validations:
+      required: true
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin (if requesting a template)
+      placeholder: "e.g. exampleplugin 2.x"
+  - type: textarea
+    id: storage
+    attributes:
+      label: How does it store the player UUID? (if known)
+      description: >
+        Table + column + encoding (dashed / undashed / BINARY(16)), a per-UUID filename + extension, or
+        a world/NBT/JSON location. Link the source or schema if you can — it's how we keep templates
+        trustworthy.
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to open a PR with the template/feature.

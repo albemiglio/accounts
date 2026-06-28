@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/albemiglio/accounts/security/advisories/new
+    about: Please report security issues privately, not as a public issue. See SECURITY.md.
+  - name: Question / usage help
+    url: https://github.com/albemiglio/accounts/discussions
+    about: For "how do I migrate X?" and general questions, start a discussion.
