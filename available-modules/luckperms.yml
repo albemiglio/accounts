@@ -15,8 +15,13 @@ database:
 #   username: minecraft
 #   password: secret
 #   database: luckperms
+# Each column defaults to a dashed UUID string. If a plugin stores UUIDs another way, set "format":
+# "undashed" for 32 hex chars with no hyphens, or "binary" for a BINARY(16) column (bound as raw bytes).
 replacers:
   - table: luckperms_players
     column: uuid
   - table: luckperms_user_permissions
     column: uuid
+#  - table: some_binary_table
+#    column: uuid
+#    format: binary

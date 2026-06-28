@@ -6,6 +6,7 @@ import it.albemiglio.accounts.core.database.MySQL;
 import it.albemiglio.accounts.core.database.SQLite;
 import it.albemiglio.accounts.core.modules.replacers.ColumnReplacer;
 import it.albemiglio.accounts.core.modules.replacers.Replacer;
+import it.albemiglio.accounts.core.modules.replacers.UuidCodec;
 import it.albemiglio.accounts.core.nbt.NbtModule;
 import it.albemiglio.accounts.core.objects.enums.DBType;
 import it.albemiglio.accounts.core.objects.enums.Platform;
@@ -57,7 +58,9 @@ public class YamlModuleFactory {
         List<Map<String, Object>> replacerConfigs = (List<Map<String, Object>>) config.get("replacers");
         if (replacerConfigs != null) {
             for (Map<String, Object> replacer : replacerConfigs) {
-                replacers.add(new ColumnReplacer((String) replacer.get("table"), (String) replacer.get("column")));
+                UuidCodec codec = UuidCodec.of((String) replacer.get("format"));
+                replacers.add(new ColumnReplacer(
+                        (String) replacer.get("table"), (String) replacer.get("column"), codec));
             }
         }
         return new YamlModule(name, platform, database, replacers);

@@ -9,18 +9,24 @@ public class ColumnReplacer extends Replacer {
 
     private final String table;
     private final String column;
+    private final UuidCodec codec;
 
     public ColumnReplacer(String table, String column) {
+        this(table, column, UuidCodec.DASHED);
+    }
+
+    public ColumnReplacer(String table, String column, UuidCodec codec) {
         this.table = table;
         this.column = column;
+        this.codec = codec;
     }
 
     @Override
     public void replace(Connection connection, UUID oldId, UUID newId) throws SQLException {
         String sql = "UPDATE " + table + " SET " + column + " = ? WHERE " + column + " = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, newId.toString());
-            ps.setString(2, oldId.toString());
+            codec.bind(ps, 1, newId);
+            codec.bind(ps, 2, oldId);
             ps.executeUpdate();
         }
     }
