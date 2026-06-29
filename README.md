@@ -238,6 +238,8 @@ classloader identity and the cast fails.
 - [Multi-instance (Redis) setup](docs/multi-instance-redis.md) — why Redis is required, the keys it
   uses, and how the completion barrier works across servers.
 - [Quickstart example](docs/quickstart-example.md) — one real end-to-end migration, including the world.
+- [Live-test rig](livetest/README.md) — a runnable `docker compose` + script that migrates a real player
+  across a real MySQL and a flat file and asserts the result. The end-to-end proof, in the repo.
 
 ---
 

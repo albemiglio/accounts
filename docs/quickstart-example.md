@@ -140,6 +140,17 @@ ls plugins/Essentials/userdata/c06f8906-4c8a-4911-9c29-ea1dbd1aab82.yml   # exis
 Log in with the premium account: same rank, same home, same wolf following you. Steve is Steve again —
 just with the right UUID this time.
 
+## Run this exact migration yourself
+
+Everything above is wired up as a runnable rig in [`livetest/`](../livetest/README.md): a `docker compose`
+that brings up a real MySQL and Redis, seeds this same Steve player by his old UUID, then runs the
+migration through the engine's own code and asserts the SQL row and the EssentialsX file are now keyed by
+the new UUID (it exits non-zero if not). One command:
+
+```bash
+cd livetest && docker compose up -d && ./run.sh
+```
+
 ## Where to go next
 
 - [How the engine works](how-the-engine-works.md) — what "durable / idempotent / atomic / complete"

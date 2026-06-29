@@ -24,6 +24,17 @@
         <module>velocity</module>
     </modules>
 
+    <!-- Opt-in: `-Plive` adds the live-test harness module (livetest/). Off by default so the normal
+         build stays offline. Driven by livetest/run.sh against the dockerized backends. -->
+    <profiles>
+        <profile>
+            <id>live</id>
+            <modules>
+                <module>livetest</module>
+            </modules>
+        </profile>
+    </profiles>
+
     <distributionManagement>
         <repository>
             <id>codemc-releases</id>

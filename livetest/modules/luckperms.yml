@@ -1,0 +1,18 @@
+# Same shape as available-modules/luckperms.yml, pointed at the dockerized MySQL (the mysql block the
+# template ships commented out). host/port match docker-compose.yml's published port.
+name: luckperms
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: 127.0.0.1
+  port: 33070
+  username: minecraft
+  password: secret
+  database: luckperms
+replacers:
+  - table: luckperms_players
+    column: uuid
+  - table: luckperms_user_permissions
+    column: uuid

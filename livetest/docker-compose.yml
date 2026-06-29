@@ -1,0 +1,31 @@
+# Real backends for the live-test rig: a MySQL the LuckPerms-style schema lives in, and the Redis the
+# engine coordinates the migration through. Ports are published on non-default host ports so this never
+# clashes with a MySQL/Redis you already run. The harness reads the same host/port from run.sh.
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: livetest
+      MYSQL_DATABASE: luckperms
+      MYSQL_USER: minecraft
+      MYSQL_PASSWORD: secret
+    ports:
+      - "33070:3306"
+    # The seed runs once, on first init of an empty data dir, before the harness connects.
+    volumes:
+      - ./seed/luckperms.sql:/docker-entrypoint-initdb.d/01-luckperms.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uminecraft", "-psecret"]
+      interval: 3s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4.1-alpine
+    ports:
+      - "63790:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 20

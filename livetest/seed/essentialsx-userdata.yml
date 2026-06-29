@@ -1,0 +1,16 @@
+# EssentialsX userdata for Steve. run.sh copies this to fixtures/userdata/<OLD-uuid>.yml before each run;
+# the migration renames that file to <NEW-uuid>.yml (the file name is the key, contents untouched).
+timestamps:
+  login: 1700000000000
+  logout: 1700000600000
+ip-address: 127.0.0.1
+last-account-name: Steve
+money: '1250.00'
+homes:
+  base:
+    world: world
+    x: 128.5
+    y: 64.0
+    z: -310.5
+    yaw: 90.0
+    pitch: 0.0

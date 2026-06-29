@@ -1,0 +1,8 @@
+# Same shape as available-modules/essentialsx.yml, pointed at the fixture userdata dir (run.sh copies
+# fixtures/userdata to a scratch dir and sets this directory to it before running).
+name: essentialsx
+platform: SPIGOT
+type: file
+directory: fixtures/userdata
+extension: yml
+enabled: true
