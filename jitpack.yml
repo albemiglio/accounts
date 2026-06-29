@@ -1,0 +1,7 @@
+# JitPack publishes the embeddable engine modules (api + core). The platform plugin modules
+# (spigot/bungee/velocity) are end-user jars from Releases, not library deps, and bungee pulls
+# a brigadier artifact that isn't on public repos — so they're intentionally out of scope here.
+jdk:
+  - openjdk17
+install:
+  - mvn -q -pl api -am -DskipTests install
