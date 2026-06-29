@@ -1,0 +1,25 @@
+# mcMMO on the MySQL backend. Schema confirmed against SQLDatabaseManager.java (mcMMO-Dev/mcMMO,
+# master): the users table is created as `<tablePrefix>users` with a `` `uuid` varchar(36) `` column,
+# and the value is written dashed via `setString(2, uuid.toString())` (also in saveUserUUID). The table
+# prefix is config-driven (Database.MySQL.Database.TablePrefix, default "mcmmo_"); change the table name
+# below if you set a custom prefix.
+#
+# mcMMO has NO SQLite backend — its only database option is MySQL (DatabaseManagerFactory picks between
+# FlatFileDatabaseManager and the MySQL-driver SQLDatabaseManager). The flatfile backend is a single
+# shared `mcmmo.users` file with the UUID as a field on each line (FlatFileDatabaseManager, UUID_INDEX),
+# not one file per player, so it can't be migrated by a file rename — use MySQL for mcMMO, or migrate it
+# in place there is nothing renamable. Point the database block at the same DB mcMMO uses.
+name: mcmmo
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: mcmmo
+replacers:
+  - table: mcmmo_users
+    column: uuid

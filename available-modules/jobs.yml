@@ -1,0 +1,24 @@
+# Jobs Reborn on an SQL backend. Schema confirmed against JobsDAO.java (Zrips/Jobs, master): the per-
+# player table is `<prefix>users` with the UUID column declared `player_uuid("varchar(36)")` in the
+# UserTableFields enum and written dashed via `setString(1, uuid.toString())`. Every other table
+# (`<prefix>jobs`, points, log, ...) references this row by the integer `userid`, not the UUID, so the
+# one column below is enough. The table prefix defaults to "jobs_"; adjust the table name if you changed
+# DatabaseGetName/prefix in config. SQLite default file is plugins/Jobs/jobs.sqlite.db (JobsSQLite.java:
+# new File(folder, "jobs.sqlite.db")); for MySQL swap the commented database block.
+name: jobs
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/Jobs/jobs.sqlite.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: jobs
+replacers:
+  - table: jobs_users
+    column: player_uuid

@@ -25,6 +25,9 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `towny-flatfile.yml` | file | `plugins/Towny/data/residents/<uuid>.txt` (rename) | filename | `TownyFlatFileSource.java` |
 | `griefprevention.yml` | sql | `griefprevention_playerdata` (`name`), `griefprevention_claimdata` (`owner`) | dashed | `DatabaseDataStore.java` |
 | `playerpoints.yml` | sql | `playerpoints_points`, `playerpoints_username_cache` (`uuid`) | dashed | `_1_Create_Tables.java` |
+| `mcmmo.yml` | sql | `mcmmo_users` (`uuid`) | dashed | `SQLDatabaseManager.java`, mcMMO master |
+| `jobs.yml` | sql | `jobs_users` (`player_uuid`) | dashed | `JobsDAO.java`, Jobs master |
+| `quickshop-hikari.yml` | sql | `qs_data` (`owner`) | dashed | `DataTables.java`/`QUserImpl.java`, hikari |
 | `cmi.yml` | sql | `users` (`player_uuid`) | **TEXT — unverified** | CMI runtime SQL (issue #1306) |
 | `world.yml` | world | a world folder's NBT (pets, heads, boss-bars, ...) | NBT, all 3 forms | — |
 | `vanilla-json.yml` | json | `ops.json`, `whitelist.json`, `banned-players.json`, `usercache.json` | — | — |
@@ -45,6 +48,16 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
   extension, which the `file` type can't match.
 - **PlayerPoints** — both tables key on `uuid VARCHAR(36)` (dashed). Table prefix defaults to
   `playerpoints_`.
+- **mcMMO** — **MySQL only.** mcMMO has no SQLite backend, and its flatfile is one shared `mcmmo.users`
+  with the UUID as a field per line (not one file per player), so nothing is renamable — migrate it on
+  MySQL. The `mcmmo_` table prefix is configurable; adjust the table name if you changed it.
+- **Jobs Reborn** — per-player UUID lives in `<prefix>users` (`player_uuid`, dashed); other tables join
+  by integer `userid`, so the one column is enough. Prefix defaults to `jobs_`; SQLite file is
+  `plugins/Jobs/jobs.sqlite.db`.
+- **QuickShop-Hikari** — ownership is `data.owner` (dashed UUID), *not* on `shops` (which only foreign-
+  keys into `data`). The template targets **MySQL** (table `qs_data`): the default H2 backend can't be
+  migrated live anyway. The `owner` column also holds bracketed `[username]` virtual owners and the
+  all-zero server UUID, but a UUID `UPDATE` only matches the real old UUID, so those rows are left alone.
 - **CMI** — ⚠️ **unverified.** CMI is closed source; the table/column come from CMI's own runtime SQL in
   a server error log, but the encoding ("TEXT" — dashed or undashed?) couldn't be confirmed. **Check one
   row before use** and add `format: undashed` if needed. Don't run blind.

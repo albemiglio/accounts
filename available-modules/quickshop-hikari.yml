@@ -1,0 +1,29 @@
+# QuickShop-Hikari (QuickShop-Community/QuickShop-Hikari, branch hikari) on its MySQL backend. Schema
+# confirmed against DataTables.java: shop ownership lives on the `data` table, column
+# `owner VARCHAR(128) NOT NULL` (the `shops` table only carries an INT `data` foreign key into it). The
+# owner is QUser.serialize() (QUserImpl.java) which for a real player is `uniqueId.toString()` — a
+# dashed, lowercase 36-char UUID; QuickShop's own reader (CommonUtil.isUUID) requires the 5 dash-
+# segments, so an undashed form would not even parse. A plain `UPDATE data SET owner=? WHERE owner=?`
+# only touches the exact old UUID, so it naturally skips the two non-UUID owner forms that also live in
+# this column: virtual/plugin-owned shops stored as a bracketed `[username]`, and server shops stored as
+# the all-zero nil UUID. (The same serialized owner string is also copied into data.tax_account and the
+# log_purchase/log_transaction history tables; this template rewrites live ownership, not those logs.)
+#
+# Table prefix: on a default install QuickShop uses H2, where dbPrefix stays "" (tables are bare
+# `data`/`shops`). H2 CANNOT be migrated live anyway — the plugin holds an exclusive lock on shops.mv.db
+# (the engine rejects type: h2). So this template targets MySQL, where the prefix IS applied and defaults
+# to "qs_" (config.yml prefix: "qs_") → table `qs_data`. If you run a custom prefix, change it below.
+name: quickshop-hikari
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: quickshop
+replacers:
+  - table: qs_data
+    column: owner
