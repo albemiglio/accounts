@@ -3,7 +3,7 @@
 **Move a player's entire history to a new UUID — across every plugin on your network — in one command.**
 
 [![Build](https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/build.yml?branch=main)](../../actions)
-[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/version-1.0--SNAPSHOT-orange.svg)](pom.xml)
 [![Java](https://img.shields.io/badge/Java-8%2B-red.svg)](pom.xml)
 [![Platforms](https://img.shields.io/badge/platforms-Spigot%20%7C%20Bungee%20%7C%20Velocity-green.svg)](#supported-platforms)
@@ -262,6 +262,5 @@ PRs welcome — new plugin templates especially. See [CONTRIBUTING.md](CONTRIBUT
 
 ## License
 
-[GPL-3.0](LICENSE). See the [License section in CONTRIBUTING](CONTRIBUTING.md#license) — note the repo
-currently carries a GPL-3.0 `LICENSE` file while `pom.xml` declares MIT; this needs reconciling before a
-public release (the maintainer's call — see CONTRIBUTING).
+Released under the [MIT License](LICENSE) © 2023 Alberto Migliorato — permissive, so you can embed
+`accounts` in closed- or open-source plugins alike.

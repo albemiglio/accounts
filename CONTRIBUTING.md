@@ -58,21 +58,5 @@ mvn -q clean install   # builds core, api, spigot, bungee, velocity and runs the
 
 ## License
 
-By contributing you agree your contribution is licensed under the project's license.
-
-> **Maintainer note (unresolved):** the repository ships a **GPL-3.0** `LICENSE` file, but `pom.xml`
-> declares the project license as **MIT**. These contradict each other and must be reconciled before a
-> public release. The two options:
->
-> - **GPL-3.0** (what the `LICENSE` file says): strong copyleft. Anyone distributing a plugin that links
->   `accounts` must release their source under a compatible license. Good if the goal is to keep
->   derivatives open; a real consideration for a Bukkit/proxy library, since it can affect plugins that
->   bundle it.
-> - **MIT** (what `pom.xml` says): permissive. Anyone can use it in closed-source plugins. Maximises
->   adoption and stars; the usual choice for a library meant to be embedded widely.
->
-> **Recommended default: MIT**, because `accounts` is a *library/engine* designed to be embedded by other
-> plugins (including the `api` jar shipped as a `provided` dependency), and the `pom.xml` already declares
-> MIT — permissive licensing removes friction for exactly the integrators who'd otherwise avoid it.
-> Whichever you pick, make both files agree: keep one `LICENSE` and set `pom.xml` `<licenses>` to match.
-> **This is the maintainer's decision to confirm.**
+By contributing you agree your contribution is licensed under the project's
+[MIT License](LICENSE). Both the `LICENSE` file and `pom.xml` declare MIT.
