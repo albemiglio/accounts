@@ -9,7 +9,8 @@
 </p>
 
 <p align="center">
-  <a href="../../actions"><img src="https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/build.yml?branch=main" alt="Build"></a>
+  <a href="../../actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/build.yml?branch=main&label=build" alt="Build"></a>
+  <a href="../../actions/workflows/livetest.yml"><img src="https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/livetest.yml?branch=main&label=live-test" alt="Live test"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="pom.xml"><img src="https://img.shields.io/badge/version-1.0--SNAPSHOT-orange.svg" alt="Version"></a>
   <a href="pom.xml"><img src="https://img.shields.io/badge/Java-8%2B-red.svg" alt="Java"></a>
