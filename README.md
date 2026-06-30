@@ -1,12 +1,20 @@
-# accounts
+<p align="center">
+  <img src="assets/logo-256.png" width="116" alt="accounts logo">
+</p>
 
-**Move a player's entire history to a new UUID — across every plugin on your network — in one command.**
+<h1 align="center">accounts</h1>
 
-[![Build](https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/build.yml?branch=main)](../../actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0--SNAPSHOT-orange.svg)](pom.xml)
-[![Java](https://img.shields.io/badge/Java-8%2B-red.svg)](pom.xml)
-[![Platforms](https://img.shields.io/badge/platforms-Spigot%20%7C%20Bungee%20%7C%20Velocity-green.svg)](#supported-platforms)
+<p align="center">
+  <b>Move a player's entire history to a new UUID — across every plugin on your network — in one command.</b>
+</p>
+
+<p align="center">
+  <a href="../../actions"><img src="https://img.shields.io/github/actions/workflow/status/albemiglio/accounts/build.yml?branch=main" alt="Build"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="pom.xml"><img src="https://img.shields.io/badge/version-1.0--SNAPSHOT-orange.svg" alt="Version"></a>
+  <a href="pom.xml"><img src="https://img.shields.io/badge/Java-8%2B-red.svg" alt="Java"></a>
+  <a href="#supported-platforms"><img src="https://img.shields.io/badge/platforms-Spigot%20%7C%20Bungee%20%7C%20Velocity-green.svg" alt="Platforms"></a>
+</p>
 
 When a player's UUID changes — cracked-to-premium, an offline-mode network adopting online UUIDs, a
 forced account merge — their data doesn't follow. LuckPerms still keys their rank under the old UUID.
