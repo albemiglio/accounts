@@ -1,0 +1,47 @@
+# SuperiorSkyblock2 (BG-Software-LLC, DB schema v4) on SQLite (its default) or MySQL/MariaDB.
+# Schema confirmed against SQLDatabase.java createTable calls; the replacer list below mirrors the
+# plugin's own PlayersDatabaseBridge.replacePlayer() 1:1 (the 12 columns it updates when it replaces a
+# player itself). UUIDs are uuid.toString() in VARCHAR(36) -> dashed. MySQL/MariaDB honour
+# config.yml database.prefix (default "") — prepend it to every table if set; SQLite is never prefixed.
+# Excluded on purpose: islands.uuid and every "island" column (island ids, not players — the id
+# generator rerolls on collision with player uuids); *_custom_data blobs (third-party bytes).
+# Run with the server stopped: SSB2 caches players/islands in memory and batch-writes over external edits.
+name: superiorskyblock2
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/SuperiorSkyblock2/datastore/database.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: superiorskyblock
+replacers:
+  - table: players
+    column: uuid
+  - table: players_settings
+    column: player
+  - table: players_custom_data
+    column: player
+  - table: players_missions
+    column: player
+  - table: islands
+    column: owner
+  - table: islands_members
+    column: player
+  - table: islands_bans
+    column: player
+  - table: islands_bans
+    column: banned_by
+  - table: islands_player_permissions
+    column: player
+  - table: islands_ratings
+    column: player
+  - table: islands_visitors
+    column: player
+  - table: bank_transactions
+    column: player

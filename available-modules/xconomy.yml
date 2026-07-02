@@ -1,0 +1,34 @@
+# XConomy (YiC200333/XConomy) on SQLite (its default) or MySQL/MariaDB. Schema confirmed against
+# XConomy-Core data/sql/SQL.java: main table xconomy(UID varchar(50) PK) where UID is
+# getUniqueId().toString() -> dashed, always (reads use UUID.fromString, so an undashed row could not
+# even parse). SQLite file from DatabaseConnection.java: plugins/XConomy/playerdata/data.db.
+# MySQL/MariaDB only: a config "table-suffix" renames tables to xconomy_<suffix> etc. — adjust below.
+# Excluded on purpose: xconomynon (non-player accounts, name-keyed). Conditional tables commented —
+# enable only if they exist in your DB (SemiOnline uuid-mode / transaction-record features).
+name: xconomy
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/XConomy/playerdata/data.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: data
+replacers:
+  - table: xconomy
+    column: UID
+# SemiOnline uuid-mode only:
+#  - table: xconomyuuid
+#    column: UUID
+#  - table: xconomyuuid
+#    column: DUUID
+# MySQL + transaction-record only (login state + audit log; uid can also hold the literal "N/A"):
+#  - table: xconomylogin
+#    column: UUID
+#  - table: xconomyrecord
+#    column: uid

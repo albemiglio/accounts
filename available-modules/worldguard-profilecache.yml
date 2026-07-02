@@ -1,0 +1,18 @@
+# WorldGuard's uuid->name profile cache (always on): SQLite file cache/profiles.sqlite created in
+# WorldGuard.setup() via SquirrelID's SQLiteCache — table uuid_cache(uuid CHAR(36) PRIMARY KEY, name).
+# It is a disposable display cache: if the new uuid already has a row the UPDATE collides with the PK,
+# and deleting profiles.sqlite is an equally valid migration (it repopulates on join/lookup).
+# NOTE: WorldGuard's REGION data (worlds/<world>/regions.yml, owners/members unique-ids lists) is NOT
+# covered by any module yet — uuid-inside-yaml is not a supported module type. Region migration must
+# wait for that module; this cache is the only WorldGuard store migratable today (plus the rare
+# deprecated MySQL region store, see worldguard-sql-regions.yml).
+name: worldguard-profilecache
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/WorldGuard/cache/profiles.sqlite
+replacers:
+  - table: uuid_cache
+    column: uuid

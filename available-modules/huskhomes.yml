@@ -1,0 +1,31 @@
+# HuskHomes (WiIIiam278/HuskHomes, 4.x) on SQLite (its default) or MySQL/MariaDB. Schema confirmed
+# against common/src/main/resources/database/{sqlite,mysql,mariadb}_schema.sql + SqLiteDatabase.ensureUser /
+# MySqlDatabase: UUIDs are uuid.toString() -> dashed CHAR(36). Every table name is individually overridable
+# in HuskHomes config.yml (database.table_names) — defaults below, check the customer's config first.
+# Keep huskhomes_users FIRST: on MySQL/MariaDB the child FKs are ON UPDATE CASCADE, so after the parent
+# updates the child replacers just match 0 rows (harmless); on SQLite all four do the work.
+# Excluded on purpose (NOT player ids): huskhomes_homes.uuid / huskhomes_warps.uuid (home/warp ids),
+# huskhomes_position_data.world_uuid. H2/PostgreSQL backends exist in HuskHomes but are not supported here.
+name: huskhomes
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/HuskHomes/HuskHomesData.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: huskhomes
+replacers:
+  - table: huskhomes_users
+    column: uuid
+  - table: huskhomes_user_cooldowns
+    column: player_uuid
+  - table: huskhomes_teleports
+    column: player_uuid
+  - table: huskhomes_homes
+    column: owner_uuid

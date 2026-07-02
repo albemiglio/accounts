@@ -1,0 +1,18 @@
+# ChestShop (ChestShop-authors/ChestShop-3). SQLite only — ConnectionManager.java is hardwired to
+# "jdbc:sqlite:%s", no other engine exists. Accounts entity (Database/Account.java) -> table "accounts"
+# in plugins/ChestShop/users.db; the uuid field has no explicit dataType so ORMLite persists
+# UUID.toString() -> dashed. Shop SIGNS store the owner by shortened NAME (line 0) and resolve it
+# through this table, so updating the uuid column is sufficient and no sign needs touching — as long as
+# the player keeps their name. A player may have several rows (one per historical name): the blanket
+# UPDATE moves all of them, which is correct. Run with the server stopped (ChestShop caches accounts
+# in memory). items.db holds item codes only — no player data.
+name: chestshop
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/ChestShop/users.db
+replacers:
+  - table: accounts
+    column: uuid

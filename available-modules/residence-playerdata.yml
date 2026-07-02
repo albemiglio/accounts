@@ -1,0 +1,15 @@
+# Residence (Zrips/Residence, 6.x) per-player data cache: one <dashed-uuid>.yml per player, confirmed
+# against PlayerManager.java (folderName="PlayerData", new File(folder, uuid.toString()+".yml")). The
+# file content holds name+limits only (ResidencePlayer.serialize), no uuid inside -> a pure rename.
+# MUST run with the server STOPPED: Residence keeps everything in memory and rewrites all Save files on
+# its autosave (default every 10 min) — an external rename while it runs is clobbered under the old uuid.
+# NOT covered (uuid-inside-yaml, no module type yet): the residence data itself — Save/Worlds/
+# res_<world>.yml (Permissions.OwnerUUID values + PlayerFlags.<uuid> map keys), Save/rent.yml (renter
+# UUID), permlists.yml, ShopVotes.yml ("name:uuid%vote!time" strings). Those wait for a yaml-content
+# module; migrating only this file is still safe (Residence re-resolves names from uuid at load).
+name: residence-playerdata
+platform: SPIGOT
+type: file
+directory: plugins/Residence/Save/PlayerData
+extension: yml
+enabled: true

@@ -1,0 +1,42 @@
+# PlotSquared v7 (IntellectualSites/PlotSquared) main database. Schema confirmed against
+# SQLManager.java createTables (MySQL and SQLite branches, 7.5.x): player UUIDs are dashed
+# uuid.toString() in plot.owner, plot_denied/plot_helpers/plot_trusted.user_uuid, plot_rating.player,
+# cluster.owner, cluster_helpers/cluster_invited.user_uuid and player_meta.uuid. Default backend is
+# SQLite plugins/PlotSquared/storage.db; table prefix defaults to "" (storage.yml "prefix") — if set,
+# prepend it to every table below. plot_comments.sender is a player NAME, not a UUID: excluded.
+# Sentinel UUIDs sharing these columns (everyone=00000001-0001-0003-0003-000000000007, server=all-zero)
+# are never matched by the exact-value UPDATE. The name<->uuid cache is a separate module
+# (plotsquared-usercache.yml). Plot backup dirs named by owner uuid are not covered (ephemeral snapshots).
+name: plotsquared
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/PlotSquared/storage.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: plot_db
+replacers:
+  - table: plot
+    column: owner
+  - table: plot_denied
+    column: user_uuid
+  - table: plot_helpers
+    column: user_uuid
+  - table: plot_trusted
+    column: user_uuid
+  - table: plot_rating
+    column: player
+  - table: cluster
+    column: owner
+  - table: cluster_helpers
+    column: user_uuid
+  - table: cluster_invited
+    column: user_uuid
+  - table: player_meta
+    column: uuid

@@ -1,0 +1,20 @@
+# WorldGuard's MySQL region store — ONLY for servers with regions.sql.use: true in WorldGuard's config
+# (off by default, MySQL-only, and logged by WG itself as deprecated for removal; most 7.x servers use
+# the YAML store instead, which no module covers yet). Schema confirmed against the plugin's
+# migrations/region/mysql/V2__Bug_fix_and_UUID.sql: user.uuid CHAR(36) UNIQUE, dashed; region_players
+# links by integer user_id so user.uuid is the only uuid column. Prepend regions.sql.table-prefix if set.
+# If a row for the new uuid already exists the UPDATE collides with the UNIQUE index — merge/delete first.
+name: worldguard-sql-regions
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: worldguard
+replacers:
+  - table: user
+    column: uuid

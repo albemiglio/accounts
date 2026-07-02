@@ -1,0 +1,16 @@
+# PlotSquared's Bukkit name<->uuid cache, a separate SQLite file from the main DB. Schema confirmed
+# against SQLiteUUIDService.java (table usercache, uuid dashed PRIMARY KEY) instantiated with
+# "user_cache.db" in BukkitPlatform.java. It is a pure rebuildable cache: if the new uuid already has a
+# row the UPDATE collides with the PK — deleting user_cache.db before restart is an equally valid
+# migration. Pre-v6 installs may also carry a legacy usercache.db with the same table: copy this module
+# for it or just delete the file.
+name: plotsquared-usercache
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/PlotSquared/user_cache.db
+replacers:
+  - table: usercache
+    column: uuid
