@@ -36,7 +36,16 @@ public class RedisMigrationSubscriber {
         this.pubSub = new JedisPubSub() {
             @Override
             public void onMessage(String channel, String message) {
-                service.handle(Task.fromString(message));
+                Task task;
+                try {
+                    task = Task.fromString(message);
+                } catch (RuntimeException e) {
+                    // A single malformed payload must not look like a dropped connection (which would
+                    // reconnect and lose it silently): drop just this message and keep listening.
+                    LOG.log(Level.WARNING, "Discarding malformed broadcast migration message: " + message, e);
+                    return;
+                }
+                service.handle(task);
             }
         };
     }

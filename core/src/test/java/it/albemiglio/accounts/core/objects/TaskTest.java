@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TaskTest {
 
@@ -45,5 +46,19 @@ class TaskTest {
     @Test
     void equalsIgnoresCurrFailures() {
         assertEquals(task(OLD, NEW, "Notch", 0), task(OLD, NEW, "Notch", 9));
+    }
+
+    @Test
+    void roundTripsUsernameContainingSemicolon() {
+        Task original = task(OLD, NEW, "geyser;Player", 2);
+        Task restored = Task.fromString(original.toString());
+        assertEquals(original, restored);
+        assertEquals("geyser;Player", restored.getUsername());
+        assertEquals(2, restored.getCurrFailures());
+    }
+
+    @Test
+    void fromStringRejectsMalformedPayload() {
+        assertThrows(IllegalArgumentException.class, () -> Task.fromString("not-a-migration-task"));
     }
 }
