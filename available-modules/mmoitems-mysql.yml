@@ -1,0 +1,19 @@
+# MMOItems (phoenix-dvpmt) on its MySQL backend (mysql.enabled: true; MySQL/MariaDB only). Confirmed
+# against SQLDatabaseImpl.setupSQL: table mmoitems_playerdata (overridable via mysql.userdata-table-name)
+# with uuid VARCHAR(36) PK, dashed; the json blob holds only the crafting queue (no player uuid).
+# ⚠ Servers running MMOProfiles key rows by PROFILE uuid — skip this module there.
+# Run with the server stopped. For the default flat-file backend use mmoitems-yaml.yml — never both.
+name: mmoitems-mysql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: minecraft
+replacers:
+  - table: mmoitems_playerdata
+    column: uuid

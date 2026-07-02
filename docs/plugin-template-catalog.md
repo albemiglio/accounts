@@ -4,6 +4,10 @@ These are the ready-made templates shipped in [`available-modules/`](../availabl
 starting point: copy it into `plugins/Accounts/modules/`, point it at *your* database/folder, and
 **verify the assumed UUID encoding against a real row before running on live data**.
 
+Looking for a quick ✅/❌ answer instead ("is my plugin covered?") — see the
+[plugin compatibility matrix](plugin-compatibility.md), which also lists the plugins that are known
+NOT to migrate yet and why.
+
 Every shipped template carries a comment block stating the plugin version and **where its schema was
 confirmed** — read it. That provenance is the whole point: a template you can't trust is worse than none.
 
@@ -31,6 +35,28 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `cmi.yml` | sql | `users` (`player_uuid`) | **TEXT — unverified** | CMI runtime SQL (issue #1306) |
 | `world.yml` | world | a world folder's NBT (pets, heads, boss-bars, ...) | NBT, all 3 forms | — |
 | `vanilla-json.yml` | json | `ops.json`, `whitelist.json`, `banned-players.json`, `usercache.json` | — | — |
+| `huskhomes.yml` | sql | `huskhomes_users/-cooldowns/-teleports/-homes` | dashed | `{sqlite,mysql}_schema.sql`, HuskHomes 4.x |
+| `plotsquared.yml` | sql | `plot`, helpers/trusted/denied, clusters, `player_meta` (9 cols) | dashed | `SQLManager.java`, PlotSquared 7.5 |
+| `plotsquared-usercache.yml` | sql | `usercache` in `user_cache.db` | dashed | `SQLiteUUIDService.java` |
+| `xconomy.yml` | sql | `xconomy` (`UID`) + optional uuid/login/record tables | dashed | `SQL.java`, XConomy master |
+| `superiorskyblock2.yml` | sql | 12 player columns across players/islands/bank tables | dashed | `SQLDatabase.java` + `replacePlayer()` |
+| `chestshop.yml` | sql | `accounts` in `users.db` | dashed | `Account.java`/`DaoCreator.java` |
+| `worldguard-profilecache.yml` | sql | `uuid_cache` in `cache/profiles.sqlite` | dashed | `WorldGuard.java` + SquirrelID |
+| `worldguard-sql-regions.yml` | sql | `user` (rare, deprecated MySQL region store) | dashed | `V2__Bug_fix_and_UUID.sql` |
+| `residence-playerdata.yml` | file | `Save/PlayerData/<uuid>.yml` (rename) | filename | `PlayerManager.java`, Residence 6.x |
+| `litebans.yml` | sql | bans/mutes/warnings/kicks/history (12 uuid cols) | dashed | official `test_setup.sql` (litebans-php) |
+| `axvaults.yml` | sql | `axvaults_data` | dashed | `SQLite.java`/`MySQL.java` |
+| `quests-yaml.yml` | file | `plugins/Quests/data/<uuid>.yml` (rename) | filename | `BukkitQuesterYamlStorage.java` |
+| `quests-mysql.yml` | sql | 5 `quests_player*` tables | dashed | `BukkitQuesterSqlStorage.java` |
+| `auraskills.yml` | sql | `auraskills_users`, `auraskills_logs` | dashed | `TableCreator.java` |
+| `gravesx.yml` | sql | `grave` (`owner_uuid`, `killer_uuid`) | dashed | `DataManager.java` |
+| `skinsrestorer.yml` | sql | `sr_players/-history/-favourites/-cooldowns` | dashed | `MySQLAdapter.java`, SkinsRestorer 15.x |
+| `mmocore-yaml.yml` / `mmocore-mysql.yml` | file/sql | `userdata/<uuid>.yml` / `mmocore_playerdata` | dashed | MythicLib `YAMLFlatDatabase` + `SQLDatabaseImpl` |
+| `mmoitems-yaml.yml` / `mmoitems-mysql.yml` | file/sql | `userdata/<uuid>.yml` / `mmoitems_playerdata` | dashed | MythicLib family storage |
+| `mmoinventory-yaml.yml` | file | `userdata/<uuid>.yml` (rename) | filename | MMOInventory-API jar |
+
+The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
+requirements in their own header comments — read the file before running it.
 
 ## Notes per template
 

@@ -1,0 +1,15 @@
+# MMOCore (phoenix-dvpmt) on its default flat-file backend (mysql.enabled: false). Confirmed against
+# MythicLib's YAMLFlatDatabase + MMOCore YAMLDatabaseImpl: one plugins/MMOCore/userdata/<uuid>.yml per
+# player (dashed filename), and the player's own uuid is NOT written inside the file -> rename is safe.
+# ⚠ Partial by design: the "friends:" list inside every user file holds OTHER players' dashed uuids, and
+# plugins/MMOCore/guilds/<tag>.yml embeds owner/members uuids — both wait for a content-rewrite module
+# (a migrated player stays in the data, but friend/guild lists reference the old uuid until then).
+# ⚠ Servers running MMOProfiles key these files by PROFILE uuid, not player uuid — skip this module there.
+# Run with the server stopped (RAM cache + autosave every 30 min would rewrite old-uuid files).
+# For the MySQL backend use mmocore-mysql.yml instead — never both.
+name: mmocore-yaml
+platform: SPIGOT
+type: file
+directory: plugins/MMOCore/userdata
+extension: yml
+enabled: true

@@ -1,0 +1,27 @@
+# AxVaults (Artillex-Studios/AxVaults) player vaults. Schema confirmed against SQLite.java/MySQL.java
+# CREATE TABLE: axvaults_data(uuid VARCHAR(36) dashed, storage blob). ⚠ The plugin's DEFAULT backend is
+# H2 (config database.type: "h2"), which this engine cannot open — this template applies only when
+# AxVaults runs on sqlite or mysql. axvaults_blocks is location-keyed (no uuid); on MySQL the ephemeral
+# axvaults_messages sync queue also carries a uuid column (extra replacer below, commented). The vault
+# item blobs may embed skull-owner uuids (cosmetic, not rewritten). Run with the server stopped —
+# vaults are cached in RAM and auto-saved every 5 minutes.
+name: axvaults
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/AxVaults/data.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: axvaults
+replacers:
+  - table: axvaults_data
+    column: uuid
+# MySQL only (ephemeral cross-server sync queue):
+#  - table: axvaults_messages
+#    column: uuid

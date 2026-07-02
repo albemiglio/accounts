@@ -1,0 +1,29 @@
+# SkinsRestorer 15.x on its SQL backend (config database.type: MYSQL; the plugin ships the MariaDB
+# driver, so MariaDB works identically). Schema confirmed against MySQLAdapter.init(): four identity
+# tables with uuid VARCHAR(36) dashed, prefix default sr_ (database.tablePrefix). On proxy networks
+# SkinsRestorer runs on the PROXY — point this at the proxy's configured DB (backends share it).
+# ⚠ Do NOT add replacers for skin_identifier columns: they point at sr_player_skins keys, which are
+# MOJANG premium uuids in a cache shared across players — rewriting them corrupts other players' skins.
+# sr_player_skins/sr_cache/sr_url_*/sr_custom_skins are texture/name caches, not identity: excluded.
+# ⚠ The DEFAULT backend (database.type: FILE) stores players/<uuid>.player JSON with the uuid embedded
+# inside — not migratable by rename; waits for a content-rewrite module. Stop proxy+backends first.
+name: skinsrestorer
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: db
+replacers:
+  - table: sr_players
+    column: uuid
+  - table: sr_player_history
+    column: uuid
+  - table: sr_player_favourites
+    column: uuid
+  - table: sr_cooldowns
+    column: uuid

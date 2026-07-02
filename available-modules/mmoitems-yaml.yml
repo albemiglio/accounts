@@ -1,0 +1,13 @@
+# MMOItems (phoenix-dvpmt) on its default flat-file backend (mysql.enabled: false). Confirmed against
+# MythicLib's YAMLFlatDatabase + MMOItems YAMLDatabaseImpl: one plugins/MMOItems/userdata/<uuid>.yml per
+# player (dashed filename); content is only the crafting queue (station/recipe ids) — no uuid inside,
+# rename is safe and complete. NOTE: soulbound items embed the owner's uuid in the ITEM's NBT — that
+# lives in inventories (vanilla playerdata handled by the world module) and container plugins, not here.
+# ⚠ Servers running MMOProfiles key these files by PROFILE uuid — skip this module there.
+# Run with the server stopped. For the MySQL backend use mmoitems-mysql.yml instead — never both.
+name: mmoitems-yaml
+platform: SPIGOT
+type: file
+directory: plugins/MMOItems/userdata
+extension: yml
+enabled: true

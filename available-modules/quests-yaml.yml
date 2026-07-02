@@ -1,0 +1,13 @@
+# Quests (PikaMug/Quests, v5.x) on its default YAML player-data backend (storage-method.player-data:
+# yaml). Confirmed against BukkitQuesterYamlStorage.saveQuester: one plugins/Quests/data/<uuid>.yml per
+# player, and BukkitQuester.getBaseData() writes only quest progress + lastKnownName — the uuid is NOT
+# embedded in the file content, so a pure rename is safe. Legacy <playerName>.yml files may coexist
+# (read-fallback): they hold no uuid and are re-saved under <uuid>.yml by the plugin. Run with the
+# server stopped (questers are cached in memory and saved on quit/disable/periodic task).
+# For the MySQL backend use quests-mysql.yml instead — never both.
+name: quests-yaml
+platform: SPIGOT
+type: file
+directory: plugins/Quests/data
+extension: yml
+enabled: true

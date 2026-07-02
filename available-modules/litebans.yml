@@ -1,0 +1,43 @@
+# LiteBans (closed-source) — schema from the author's OFFICIAL web-interface repo
+# (gitlab.com/ruany/litebans-php, inc/test/php/test_setup.sql, linked from the LiteBans wiki):
+# uuid columns are dashed VARCHAR(36). This template applies ONLY to MySQL/MariaDB installs —
+# LiteBans' DEFAULT backend is H2 (config sql.driver: H2), which this engine cannot open; PostgreSQL
+# is also out of scope. Table names assume the default prefix litebans_ (sql.table_prefix).
+# Console actions store the literal 'CONSOLE' and IP-bans a NULL/'#offline#' uuid — never matched by
+# the exact-value UPDATE, harmless. Stop every server sharing the DB first (LiteBans cross-syncs).
+name: litebans
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: litebans
+replacers:
+  - table: litebans_bans
+    column: uuid
+  - table: litebans_bans
+    column: banned_by_uuid
+  - table: litebans_bans
+    column: removed_by_uuid
+  - table: litebans_mutes
+    column: uuid
+  - table: litebans_mutes
+    column: banned_by_uuid
+  - table: litebans_mutes
+    column: removed_by_uuid
+  - table: litebans_warnings
+    column: uuid
+  - table: litebans_warnings
+    column: banned_by_uuid
+  - table: litebans_warnings
+    column: removed_by_uuid
+  - table: litebans_kicks
+    column: uuid
+  - table: litebans_kicks
+    column: banned_by_uuid
+  - table: litebans_history
+    column: uuid

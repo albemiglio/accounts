@@ -1,0 +1,24 @@
+# AuraSkills (Archy-X/AuraSkills) on its MySQL backend (config sql.enabled: true; only YAML/MYSQL exist,
+# MariaDB works through the same driver). Schema confirmed against TableCreator.java: prefix auraskills_
+# is HARD-CODED; auraskills_users.player_uuid varchar(40) UNIQUE + auraskills_logs.player_uuid, both
+# bound uuid.toString() -> dashed. skill_levels/key_values/modifiers key on int user_id — no uuid there.
+# ⚠ The plugin's DEFAULT backend (sql.enabled: false) is per-player YAML that EMBEDS the uuid inside the
+# file and hard-fails on filename/content mismatch — NOT migratable by rename; that backend waits for a
+# content-rewrite module. If the new uuid already has a users row, dedupe it first (UNIQUE constraint).
+# Run with the server stopped (in-memory users + periodic auto-save).
+name: auraskills
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: auraskills
+replacers:
+  - table: auraskills_users
+    column: player_uuid
+  - table: auraskills_logs
+    column: player_uuid

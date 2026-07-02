@@ -1,0 +1,14 @@
+# MMOInventory (phoenix-dvpmt) on its default flat-file backend (mysql.enabled: false). Confirmed via
+# the public MMOInventory-API jar (YAMLDatabaseImpl extends MythicLib's YAMLFlatDatabase): one
+# plugins/MMOInventory/userdata/<uuid>.yml per player, dashed filename, no structured uuid key inside
+# the content -> rename is safe. Serialized items inside may embed MMOItems soulbound owner uuids
+# (cosmetic caveat, not rewritten). The MySQL backend is NOT templated: its default table name ships
+# only in the premium jar (unverified) — read the live config's mysql.userdata-table-name if you need it.
+# ⚠ Servers running MMOProfiles key these files by PROFILE uuid — skip this module there.
+# Run with the server stopped.
+name: mmoinventory-yaml
+platform: SPIGOT
+type: file
+directory: plugins/MMOInventory/userdata
+extension: yml
+enabled: true

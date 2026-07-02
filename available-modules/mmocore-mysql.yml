@@ -1,0 +1,21 @@
+# MMOCore (phoenix-dvpmt) on its MySQL backend (mysql.enabled: true; MySQL/MariaDB only — the dialect
+# uses ON DUPLICATE KEY, no SQLite exists). Confirmed against SQLDatabaseImpl.setupSQL: table
+# mmocore_playerdata (name overridable via mysql.userdata-table-name) with uuid VARCHAR(36) PK, dashed.
+# ⚠ Partial by design: the `friends` LONGTEXT column holds a JSON array of OTHER players' uuids, and
+# plugins/MMOCore/guilds/<tag>.yml embeds owner/members uuids — both wait for a content-rewrite module.
+# ⚠ Servers running MMOProfiles key rows by PROFILE uuid, not player uuid — skip this module there.
+# Run with the server stopped. For the default flat-file backend use mmocore-yaml.yml — never both.
+name: mmocore-mysql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: minecraft
+replacers:
+  - table: mmocore_playerdata
+    column: uuid

@@ -1,0 +1,28 @@
+# Quests (PikaMug/Quests, v5.x) on its MySQL backend (storage-method.player-data: mysql; the only SQL
+# option — no SQLite/H2 exists, and MariaDB works through the same driver). Schema confirmed against
+# BukkitQuesterSqlStorage.init(): five tables, prefix default quests_ (config table_prefix), each with
+# uuid VARCHAR(36) bound as uniqueId.toString() -> dashed. questid/quest_id columns are quest ids, not
+# players — excluded. Run with the server stopped (in-memory questers are saved on quit/disable).
+# For the default YAML backend use quests-yaml.yml instead — never both.
+name: quests-mysql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: minecraft
+replacers:
+  - table: quests_players
+    column: uuid
+  - table: quests_player_currentquests
+    column: uuid
+  - table: quests_player_completedquests
+    column: uuid
+  - table: quests_player_redoablequests
+    column: uuid
+  - table: quests_player_questdata
+    column: uuid
