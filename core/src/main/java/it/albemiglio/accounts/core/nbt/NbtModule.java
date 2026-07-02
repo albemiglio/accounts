@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.core.nbt;
 
+import it.albemiglio.accounts.core.io.AtomicFiles;
 import it.albemiglio.accounts.core.modules.MigrationException;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Pair;
@@ -86,7 +87,7 @@ public class NbtModule extends Module {
         }
         try {
             if (rewriter.rewrite(tag.getTag()) > 0) {
-                NBTUtil.write(tag, file.toFile());
+                AtomicFiles.write(file, tmp -> NBTUtil.write(tag, tmp.toFile()));
             }
         } catch (IOException e) {
             throw new MigrationException("NBT migration failed writing " + file, e);

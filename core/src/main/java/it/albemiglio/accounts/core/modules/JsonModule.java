@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.core.modules;
 
+import it.albemiglio.accounts.core.io.AtomicFiles;
 import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 
@@ -45,7 +46,8 @@ public class JsonModule extends Module {
             String content = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
             String replaced = content.replace(oldId, newId);
             if (!replaced.equals(content)) {
-                Files.write(file, replaced.getBytes(StandardCharsets.UTF_8));
+                byte[] bytes = replaced.getBytes(StandardCharsets.UTF_8);
+                AtomicFiles.write(file, tmp -> Files.write(tmp, bytes));
             }
         } catch (IOException e) {
             throw new MigrationException("JSON migration failed for " + file, e);
