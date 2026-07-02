@@ -35,6 +35,9 @@ public class YamlModuleFactory {
             case "json":
                 module = new JsonModule(name, platform, Paths.get((String) config.get("directory")));
                 break;
+            case "content":
+                module = buildContentModule(name, platform, config);
+                break;
             default:
                 module = buildSqlModule(name, platform, config);
         }
@@ -49,6 +52,18 @@ public class YamlModuleFactory {
         Path directory = Paths.get((String) config.get("directory"));
         String extension = (String) config.get("extension");
         return new FileModule(name, platform, directory, extension);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Module buildContentModule(String name, Platform platform, Map<String, Object> config) {
+        List<ContentModule.Target> targets = new ArrayList<>();
+        for (Map<String, Object> target : (List<Map<String, Object>>) config.get("targets")) {
+            targets.add(new ContentModule.Target(
+                    Paths.get((String) target.get("directory")),
+                    (String) target.getOrDefault("pattern", "*"),
+                    Boolean.TRUE.equals(target.get("recursive"))));
+        }
+        return new ContentModule(name, platform, targets);
     }
 
     @SuppressWarnings("unchecked")

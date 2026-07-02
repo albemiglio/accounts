@@ -165,6 +165,24 @@ class YamlModuleFactoryTest {
         assertFalse(usercache.contains(OLD.toString()));
     }
 
+    @Test
+    void buildsAContentModuleWhenTypeIsContent(@TempDir Path dir) throws Exception {
+        Files.writeString(dir.resolve("regions.yml"), "OwnerUUID: " + OLD + "\n");
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("name", "worldguard-regions");
+        config.put("platform", "SPIGOT");
+        config.put("type", "content");
+        config.put("enabled", true);
+        config.put("targets", List.of(Map.of("directory", dir.toString(), "pattern", "*.yml")));
+
+        Module module = new YamlModuleFactory().build(config);
+        module.execute(Pair.of(OLD, NEW));
+
+        assertTrue(module.isEnabled());
+        assertEquals("OwnerUUID: " + NEW + "\n", Files.readString(dir.resolve("regions.yml")));
+    }
+
     private static String single(DB db, String sql) throws Exception {
         try (Connection c = db.getConnection();
              Statement st = c.createStatement();
