@@ -1,0 +1,16 @@
+# Maintenance (kennytv/Maintenance) — the maintenance whitelist is one shared WhitelistedPlayers.yml
+# with the dashed uuid as the map KEY (`<uuid>: name`), confirmed against Settings.java (load:
+# UUID.fromString(entry.getKey()); save: whitelist.set(uuid.toString(), name)). The content module
+# re-keys the migrating player's entry. Both data-folder spellings are targeted — Spigot/Bungee use
+# plugins/Maintenance/, Velocity uses plugins/maintenance/ — absent ones are skipped silently.
+# ⚠ Run with that server/proxy STOPPED, or `/maintenance reload` right after: the whole file is
+# rewritten from memory on every add/remove. ⚠ 5.x proxies with Maintenance's Redis support enabled
+# read the whitelist from the Redis hash (maintenance:whitelist), not this file — that setup is NOT
+# covered yet; migrate the hash manually (HDEL old / HSET new) or disable Redis first.
+name: maintenance-whitelist
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Maintenance/WhitelistedPlayers.yml
+  - directory: plugins/maintenance/WhitelistedPlayers.yml

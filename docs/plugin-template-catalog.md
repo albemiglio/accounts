@@ -54,6 +54,10 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `mmocore-yaml.yml` / `mmocore-mysql.yml` | file/sql | `userdata/<uuid>.yml` / `mmocore_playerdata` | dashed | MythicLib `YAMLFlatDatabase` + `SQLDatabaseImpl` |
 | `mmoitems-yaml.yml` / `mmoitems-mysql.yml` | file/sql | `userdata/<uuid>.yml` / `mmoitems_playerdata` | dashed | MythicLib family storage |
 | `mmoinventory-yaml.yml` | file | `userdata/<uuid>.yml` (rename) | filename | MMOInventory-API jar |
+| `worldguard-regions.yml` | content | `worlds/*/regions.yml` owners/members lists | dashed | `YamlRegionFile.java`, WG 7.x |
+| `residence-data.yml` | content | `Save/Worlds/res_*.yml`, rent/permlists/ShopVotes (+Backup) | dashed | Residence 6.x save code |
+| `maintenance-whitelist.yml` | content | `WhitelistedPlayers.yml` (uuid map keys) | dashed | `Settings.java`, Maintenance 5.x |
+| `mmocore-content.yml` | content | `userdata/*.yml` friends + `guilds/*.yml` owner/members | dashed | `YAMLDatabaseImpl`/`YAMLGuildDataManager` |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

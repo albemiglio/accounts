@@ -1,0 +1,15 @@
+# WorldGuard's region files — the primary region store on 7.x. Confirmed against YamlRegionFile.java:
+# owners/members are dashed-uuid string lists at regions.<id>.owners.unique-ids / .members.unique-ids in
+# worlds/<world>/regions.yml (one per world). The content module swaps the migrating player's uuid
+# wherever it appears in those files; legacy name-based `players:` lists carry no uuid and are untouched.
+# ⚠ Run with the server STOPPED: WorldGuard keeps regions in memory and a BackgroundSaver rewrites the
+# whole regions.yml every 30s when dirty — an external edit under a live server WILL be clobbered.
+# Pair with worldguard-profilecache.yml (and worldguard-sql-regions.yml only if regions.sql.use: true).
+name: worldguard-regions
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/WorldGuard/worlds
+    pattern: regions.yml
+    recursive: true

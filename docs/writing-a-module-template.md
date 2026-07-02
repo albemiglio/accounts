@@ -167,6 +167,33 @@ enabled: true
 
 ---
 
+## `type: content` — UUIDs inside text files
+
+For plugins that embed the dashed UUID *inside* a file's content — as a value (`OwnerUUID: <uuid>`),
+as a map **key** (`<uuid>: Notch`), in a list (`unique-ids: ["<uuid>"]`), or buried in a composite
+string (`"Steve:<uuid>%vote!time"`). The module does a whole-token text swap of the old dashed UUID
+(neighbouring hex/dash characters disqualify a match, so fragments of longer ids are never touched),
+so comments, formatting and key order survive byte-for-byte. Non-UTF-8 (binary) files and absent
+directories are skipped; writes are atomic.
+
+```yaml
+name: worldguard-regions
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/WorldGuard/worlds   # a directory scanned by file-NAME glob...
+    pattern: regions.yml                   # (glob matches the file name only, not the path)
+    recursive: true
+  - directory: plugins/Residence/Save/rent.yml   # ...or a single file (pattern/recursive ignored)
+```
+
+Only the lowercase dashed `UUID.toString()` form is matched — plugins storing undashed or binary
+UUIDs in text need a different approach. Most plugins that qualify here cache these files in memory
+and rewrite them on autosave: say so in the template header and require the server to be stopped.
+
+---
+
 ## Custom module types via SPI
 
 If a plugin stores UUIDs in a format none of the five built-ins cover (an exotic binary file, a

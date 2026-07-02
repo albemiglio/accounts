@@ -1,0 +1,22 @@
+# Residence (Zrips/Residence, 6.x) main save data — YAML-only persistence, uuids embedded in three
+# shapes (confirmed against ResidencePermissions.save / FlagPermissions.save / RentedLand.save /
+# ShopSignUtil.saveShopVotes): Permissions.OwnerUUID values (+ recursive Subzones), PlayerFlags.<uuid>
+# map KEYS (mixed with plain names), rent.yml renter uuids, permlists.yml uuid keys, and ShopVotes.yml
+# composite "name:<uuid>%vote!time" strings. The content module's whole-token swap covers all of them,
+# comments included. Save/Backup is targeted too so a later restore can't resurrect the old uuid.
+# Residence's server-land uuid (all zeros) and temp name-hash uuids never equal a real player's — safe.
+# ⚠ Run with the server STOPPED (autosave rewrites every save file from memory, default every 10 min).
+# Pair with residence-playerdata.yml (renames the per-player cache file).
+name: residence-data
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Residence/Save/Worlds
+    pattern: "res_*.yml"
+  - directory: plugins/Residence/Save/Backup/Worlds
+    pattern: "res_*.yml"
+    recursive: true
+  - directory: plugins/Residence/Save/rent.yml
+  - directory: plugins/Residence/Save/permlists.yml
+  - directory: plugins/Residence/ShopVotes.yml

@@ -1,0 +1,17 @@
+# MMOCore (phoenix-dvpmt) — completes mmocore-yaml.yml: the parts of the flat-file backend where uuids
+# live INSIDE file content (confirmed against YAMLDatabaseImpl.saveInSection and YAMLGuildDataManager):
+# every userdata/<uuid>.yml carries a `friends:` list of OTHER players' dashed uuids, and each
+# guilds/<tag>.yml embeds `owner:` + `members:` uuids. The content module swaps the migrating player's
+# uuid inside both, so friendships and guild membership follow the migration.
+# Only for the flat-file backend (mysql.enabled: false) — on MySQL the friends list lives in a LONGTEXT
+# column, not covered by this module. ⚠ Servers running MMOProfiles key data by PROFILE uuid: skip.
+# ⚠ Run with the server stopped (RAM cache + autosave). Use together with mmocore-yaml.yml.
+name: mmocore-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/MMOCore/userdata
+    pattern: "*.yml"
+  - directory: plugins/MMOCore/guilds
+    pattern: "*.yml"
