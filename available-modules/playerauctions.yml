@@ -1,0 +1,34 @@
+# PlayerAuctions (olziedev, closed-source) — schema verified read-only on a live install (jar is
+# closed, but the SQLite db reveals the shape). Default backend is SQLite (mysql.enabled: false):
+# plugins/PlayerAuctions/data/database.db, prefix playerauctions_. players.uuid is VARCHAR PK, dashed
+# via UUID.toString(); auctions/recents hold seller+buyer uuids (expired/collectable auctions live in
+# the auctions table with expired=1, same columns). For the MySQL backend swap the database block and
+# keep the same table names. data/backups/*.db are daily snapshots — do NOT migrate them.
+# The bidder/target formats are inferred (those tables were empty on the inspected install) — dashed is
+# near-certain (same UUID.toString() path), but verify one row if you run it on a populated DB.
+# Run with the server stopped (auctions cached in RAM; shared-DB networks: stop every server first).
+name: playerauctions
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/PlayerAuctions/data/database.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: playerauctions
+replacers:
+  - table: playerauctions_players
+    column: uuid
+  - table: playerauctions_auctions
+    column: uuid
+  - table: playerauctions_auctions
+    column: bidder
+  - table: playerauctions_recents
+    column: uuid
+  - table: playerauctions_recents
+    column: target

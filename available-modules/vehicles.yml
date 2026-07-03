@@ -1,0 +1,18 @@
+# Vehicles (by iNoNamer / others — the "Vehicles" premium plugin) stores each vehicle model in its own
+# SQLite file: plugins/Vehicles/databases/<Model>/database.db, table vehicle with owner (VARCHAR, dashed
+# via UUID.toString()). One database per model, so COPY this module once per model folder on your
+# server (unique name each) and fix the path — the model directory names are case-sensitive and
+# server-specific. vehicle_trunk.contents is a serialized inventory blob (player-head NBT inside may
+# embed uuids — cosmetic, out of scope, same class as world chests). Run with the server stopped.
+# TIP: with the table-pattern feature you still need one module per db file (per-file, not per-table),
+# so the copy-per-model approach is the way here.
+name: vehicles-MODEL
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/Vehicles/databases/MODEL/database.db
+replacers:
+  - table: vehicle
+    column: owner
