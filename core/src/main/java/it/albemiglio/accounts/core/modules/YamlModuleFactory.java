@@ -51,8 +51,9 @@ public class YamlModuleFactory {
 
     private Module buildFileModule(String name, Platform platform, Map<String, Object> config) {
         Path directory = Paths.get((String) config.get("directory"));
-        String extension = (String) config.get("extension");
-        return new FileModule(name, platform, directory, extension);
+        // Absent or empty extension = the bare uuid: extensionless files or whole per-player directories.
+        String extension = (String) config.getOrDefault("extension", "");
+        return new FileModule(name, platform, directory, extension == null ? "" : extension);
     }
 
     @SuppressWarnings("unchecked")

@@ -11,8 +11,10 @@ import java.util.UUID;
 /**
  * A module for plugins that store a player's data in a file named by their UUID (e.g. EssentialsX's
  * {@code userdata/<uuid>.yml}). Migration is a rename old-uuid -> new-uuid; the contents are left
- * untouched because the file name is the key. Each instance renames its own local file, which is
- * exactly what the broadcast model wants — the backend that owns the file migrates it.
+ * untouched because the file name is the key. An EMPTY extension matches the bare uuid — that covers
+ * both extensionless files (GriefDefender's playerdata) and whole per-player DIRECTORIES (FAWE's
+ * {@code history/<world>/<uuid>/}), since a move renames either. Each instance renames its own local
+ * file, which is exactly what the broadcast model wants — the backend that owns the file migrates it.
  */
 public class FileModule extends Module {
 
@@ -27,8 +29,9 @@ public class FileModule extends Module {
 
     @Override
     public void execute(Pair<UUID, UUID> migration) {
-        Path oldFile = directory.resolve(migration.getLeft() + "." + extension);
-        Path newFile = directory.resolve(migration.getRight() + "." + extension);
+        String suffix = extension.isEmpty() ? "" : "." + extension;
+        Path oldFile = directory.resolve(migration.getLeft() + suffix);
+        Path newFile = directory.resolve(migration.getRight() + suffix);
         if (!Files.exists(oldFile)) {
             return;
         }

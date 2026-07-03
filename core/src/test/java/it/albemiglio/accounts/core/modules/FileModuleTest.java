@@ -39,4 +39,27 @@ class FileModuleTest {
 
         assertFalse(Files.exists(dir.resolve(NEW + ".yml")));
     }
+
+    @Test
+    void anEmptyExtensionRenamesAnExtensionlessFile(@TempDir Path dir) throws IOException {
+        Files.writeString(dir.resolve(OLD.toString()), "accrued-claim-blocks: 100");
+        FileModule module = new FileModule("griefdefender", Platform.SPIGOT, dir, "");
+
+        module.execute(Pair.of(OLD, NEW));
+
+        assertFalse(Files.exists(dir.resolve(OLD.toString())));
+        assertEquals("accrued-claim-blocks: 100", Files.readString(dir.resolve(NEW.toString())));
+    }
+
+    @Test
+    void anEmptyExtensionRenamesAWholePerPlayerDirectory(@TempDir Path dir) throws IOException {
+        Files.createDirectory(dir.resolve(OLD.toString()));
+        Files.writeString(dir.resolve(OLD.toString()).resolve("1.bd"), "edit");
+        FileModule module = new FileModule("fawe-history", Platform.SPIGOT, dir, "");
+
+        module.execute(Pair.of(OLD, NEW));
+
+        assertFalse(Files.exists(dir.resolve(OLD.toString())));
+        assertEquals("edit", Files.readString(dir.resolve(NEW.toString()).resolve("1.bd")));
+    }
 }
