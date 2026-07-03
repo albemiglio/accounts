@@ -1,0 +1,13 @@
+# Vulcan (anticheat, closed source). Violation levels are in-memory (nothing to migrate); Vulcan has no
+# native database. The only on-disk player data is two flat-text audit logs under plugins/Vulcan/logs/:
+# violations.txt is name-keyed (no uuid), punishments.txt embeds a "UUID: <dashed>" line per punishment
+# block. Vulcan never reads these back by uuid (lookups are by username), so this is an OPTIONAL
+# audit-trail rewrite, NOT gameplay-critical — enable it only if you want historical punishment records
+# to carry the migrated uuid. Whole-token dashed swap; run with the server stopped (the log is
+# append-only from memory). (Cross-server MySQL only via the deprecated external VulcanDatabase add-on.)
+name: vulcan-punishments
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Vulcan/logs/punishments.txt

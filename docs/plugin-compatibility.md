@@ -84,6 +84,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [ItemsAdder](https://itemsadder.devs.beer/) | ⚠️ | player stats .nbt files (docs + live-install verified: uuid only in the filename) | emote-unlock persistence undocumented (typically permission-side) |
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
+| [Vulcan](https://www.spigotmc.org/resources/vulcan-anti-cheat-1-7-1-21-4.83626/) | ⚠️ | optional: `logs/punishments.txt` UUID lines (content) | violation levels are in-memory; `violations.txt` is name-keyed; the AC never reads the logs back by uuid — **not migration-critical**, the template is audit-trail only |
 
 ## Not supported yet
 

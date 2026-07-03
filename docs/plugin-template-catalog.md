@@ -95,6 +95,7 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `ticketmanager.yml` | sql | H2 `TICKETMANAGER_V10_TICKETS/_ACTIONS.CREATOR` (`USER.`-prefixed) | dashed + prefix | `CachedH2.kt`, H2 2.3.232 |
 | `gsit.yml` | sql | `gsit_sit/player/crawl_toggle` (`uuid`) in `data.db` | dashed | `ToggleService.java` |
 | `combatlogx.yml` | file | `playerdata/<uuid>.data.yml` (rename) | filename | `PlayerDataManager` (BlueSlimeCore) |
+| `vulcan-punishments.yml` | content | `logs/punishments.txt` `UUID:` lines (optional audit trail) | dashed | log-format parser + docs |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.
