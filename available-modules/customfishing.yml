@@ -1,0 +1,31 @@
+# CustomFishing (Xiao-MoMi/Custom-Fishing, 2.3.x) on its DEFAULT H2 backend (database.yml
+# data-storage-method: H2; the plugin runtime-fetches h2 2.4.240 — pinned below, the engine sniffs the
+# store header before touching the file). One table holds everything: {prefix}_data (prefix default
+# "customfishing") with uuid char(36) PK, dashed via uuid.toString(); the data blob is JSON WITHOUT the
+# uuid (PlayerData.uuid is transient) — no blob gap. SQLite/MySQL/MariaDB alternatives commented (same
+# table/column); MongoDB is NOT supported (native BSON uuid). Redis is a hand-off cache, nothing
+# durable. Run with the server stopped (onlineUserMap cache + periodic save timer).
+# For the YAML/JSON flat-file backends use customfishing-yaml.yml / customfishing-json.yml instead.
+name: customfishing
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: h2
+  database: plugins/CustomFishing/h2
+  h2-version: "2.4.240"
+  username: sa
+  password: ""
+# database:
+#   type: sqlite
+#   database: plugins/CustomFishing/sqlite.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: minecraft
+replacers:
+  - table: customfishing_data
+    column: uuid

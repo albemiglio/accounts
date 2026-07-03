@@ -30,6 +30,12 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [Residence](https://github.com/Zrips/Residence) | ✅ | PlayerData files + all Save data (owners, trust keys, rent, permlists, shop votes, backups) | run with the server stopped |
 | [AxVaults](https://github.com/Artillex-Studios/AxVaults) | ✅ | **default H2** (version-pinned 2.1.214) + SQLite/MySQL | run with the server stopped |
 | [GravesX](https://github.com/legoman99573/GravesX) | ✅ | **default H2** (version-pinned 2.4.240) + MySQL/MariaDB + legacy SQLite | run with the server stopped |
+| [DeluxeTags](https://github.com/HelpChat/DeluxeTags) | ✅ | player_tags.yml (uuid keys) | — |
+| [BigDoors](https://github.com/PimvanderLoos/BigDoors) | ✅ | SQLite (single uuid column, cascading ids) | — |
+| [TradeSystem](https://github.com/CodingAir/TradeSystem) | ✅ | trade-log SQLite/MySQL (uuid table; log itself is name-keyed) | — |
+| [BetterEnderChest](https://github.com/rutgerkok/BetterEnderChest) | ✅ | .dat rename **and** MySQL (per world group) | name-mode installs (useUUIDs: false) |
+| [CustomFishing](https://github.com/Xiao-MoMi/Custom-Fishing) | ✅ | **default H2** (pinned 2.4.240) + SQLite/MySQL + YAML/JSON renames | MongoDB backend |
+| [Shopkeepers](https://github.com/Shopkeepers/Shopkeepers) | ✅ | save.yml owners/members + CSV trade logs (SQLite log documented) | — |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -46,6 +52,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [SkinsRestorer](https://github.com/SkinsRestorer/SkinsRestorer) | ⚠️ | MySQL/MariaDB (4 identity tables; skin cache correctly untouched) | default FILE backend embeds the uuid inside JSON |
 | [MMOCore](https://gitlab.com/phoenix-dvpmt/mmocore) | ⚠️ | YAML backend fully (userdata + friends + guilds); MySQL identity column | on MySQL the friends list sits in a LONGTEXT column |
 | [MMOInventory](https://www.spigotmc.org/resources/mmoinventory.101946/) | ⚠️ | YAML backend | MySQL table name only ships in the premium jar |
+| [MCPets](https://github.com/Nocsy-Workshop/mcpets) | ⚠️ | ownership/inventories/active pet (files **and** MySQL) | pet levels/XP live in Base64(JSON) blobs embedding the owner uuid |
 
 ## Not supported yet
 
@@ -57,6 +64,8 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented — inspect your own DB (or wait for the scanner) |
 | [PlayerAuctions](https://www.spigotmc.org/resources/playerauctions.20055/) | ❌ | closed source, only the table prefix is documented — inspect your own DB (or wait for the scanner) |
 | [MMOProfiles](https://phoenixdevt.fr/) | ❌ | closed source; also re-keys the whole MMO family by profile uuid — do not run the MMO templates with it installed |
+| [AuxProtect](https://github.com/Heliosares/AuxProtect) | ❌ | stores `$`-prefixed uuids plus a derived Java-hashCode column that must be co-updated — needs two engine features; a naive update breaks the plugin |
+| [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ❌ | one table per board (dynamic names) — needs engine-side table enumeration; default H2 2.1.214. Rows are only partially rebuildable: do not just delete |
 
 ## Recurring blockers (what unlocks the ❌ rows)
 

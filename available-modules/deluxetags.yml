@@ -1,0 +1,12 @@
+# DeluxeTags (HelpChat/DeluxeTags). The ONLY persistence is one shared YAML —
+# plugins/DeluxeTags/userdata/player_tags.yml — a flat map with the dashed lowercase uuid as the KEY
+# and the selected tag id as the value (DeluxeTags.java: config.set(uuid, tagIdentifier) on the root;
+# no SQL backend exists at all). The content module re-keys the migrating player's entry; the two
+# header comment lines survive the whole-token swap. Run with the server stopped: the file lives in
+# memory and every next tag change rewrites it wholesale, clobbering external edits.
+name: deluxetags
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/DeluxeTags/userdata/player_tags.yml

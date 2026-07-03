@@ -1,0 +1,24 @@
+# TradeSystem (CodingAir/TradeSystem) — only the optional trade-log feature persists anything.
+# Schema confirmed against CreatePlayerNameTableMigration/SqlLiteTradeLogRepository: trade_players
+# (uuid VARCHAR(36) UNIQUE, dashed via uuid.toString()) is the only uuid column; the tradelog table is
+# keyed by player NAME (varchar 16), untouched by a uuid migration. Backends: SQLite (below) or MySQL
+# (commented) — same schema. If trade logging was never enabled the SQLite file simply doesn't exist
+# and this module is a no-op. If the new uuid already has a row (player joined before migrating), the
+# UNIQUE constraint fails the module — dedupe that row first. Run with the server stopped.
+name: tradesystem
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/TradeSystem/tradelog.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: minecraft
+replacers:
+  - table: trade_players
+    column: uuid

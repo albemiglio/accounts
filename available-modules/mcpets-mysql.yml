@@ -1,0 +1,23 @@
+# MCPets (Nocsy-Workshop/mcpets) on its MySQL backend (jdbc:mysql, MariaDB-compatible; no SQLite/H2).
+# Confirmed against Databases.java: <prefix>mcpets_player_data (uuid TEXT dashed) and
+# <prefix>mcpets_active_pet (uuid VARCHAR(36) PK dashed, the cross-server handoff row); prefix default
+# empty (config MySQL.Prefix). ⚠ Partial by design: the data LONGTEXT column holds Base64(JSON) blobs
+# embedding the owner uuid ("petOwner") — pet levels/XP/health stay bound to the old uuid until a
+# blob-aware rewriter exists; ownership/names/inventories migrate fine. Run with the server stopped
+# (RAM caches; global save TRUNCATE-rewrites). For flat-file use mcpets-playerdata.yml — never both.
+name: mcpets-mysql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: minecraft
+replacers:
+  - table: mcpets_player_data
+    column: uuid
+  - table: mcpets_active_pet
+    column: uuid

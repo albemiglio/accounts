@@ -58,6 +58,13 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `residence-data.yml` | content | `Save/Worlds/res_*.yml`, rent/permlists/ShopVotes (+Backup) | dashed | Residence 6.x save code |
 | `maintenance-whitelist.yml` | content | `WhitelistedPlayers.yml` (uuid map keys) | dashed | `Settings.java`, Maintenance 5.x |
 | `mmocore-content.yml` | content | `userdata/*.yml` friends + `guilds/*.yml` owner/members | dashed | `YAMLDatabaseImpl`/`YAMLGuildDataManager` |
+| `deluxetags.yml` | content | `userdata/player_tags.yml` (uuid map keys) | dashed | `DeluxeTags.java` |
+| `bigdoors.yml` | sql | `players` (`playerUUID`) in `doorDB.db` | dashed | `SQLiteJDBCDriverConnection.java` v9 |
+| `tradesystem.yml` | sql | `trade_players` (trade-log feature) | dashed | `SqlLiteTradeLogRepository.java` |
+| `betterenderchest.yml` / `-mysql.yml` | file/sql | `chestData/<uuid>.dat` / `bec_chestdata_<group>` | dashed | `BetterEnderFileHandler`/`SQLHandler` |
+| `customfishing.yml` / `-yaml` / `-json` | sql/file | `customfishing_data` (**H2 2.4.240 default**) / `data/<uuid>.*` | dashed | `AbstractSQLDatabase` + providers |
+| `mcpets-playerdata.yml` / `mcpets-mysql.yml` | file/sql | `PlayerData/<uuid>.yml` / `mcpets_player_data`+`_active_pet` | dashed | `Databases.java` (⚠ stats blob gap) |
+| `shopkeepers.yml` | content | `data/save.yml*` owners/members + CSV trade logs | dashed | `SKShopkeeperStorage`/`SQLiteTradeLogger` |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

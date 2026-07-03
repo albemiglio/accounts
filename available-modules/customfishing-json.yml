@@ -1,0 +1,10 @@
+# CustomFishing (Xiao-MoMi/Custom-Fishing) on data-storage-method: JSON. Confirmed against
+# JsonProvider.getPlayerDataFile: one plugins/CustomFishing/data/<uuid>.json per player (dashed
+# lowercase filename); the Gson body omits the uuid (transient field) -> pure rename. Run with the
+# server stopped. For the YAML variant use customfishing-yaml.yml, for H2/SQL customfishing.yml.
+name: customfishing-json
+platform: SPIGOT
+type: file
+directory: plugins/CustomFishing/data
+extension: json
+enabled: true

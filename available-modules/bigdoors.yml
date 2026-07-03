@@ -1,0 +1,17 @@
+# BigDoors (PimvanderLoos/BigDoors). SQLite only — no other backend exists. Schema confirmed against
+# SQLiteJDBCDriverConnection.java (v9): ownership goes doors -> sqlUnion(playerID int) -> players, and
+# players.playerUUID (TEXT UNIQUE, dashed lowercase via uuid.toString()) is the single uuid column, with
+# sqlUnion ON UPDATE CASCADE on the integer key — one replacer migrates everything. playerName sits next
+# to it but self-heals on the player's next activity. DB file name is config key dbFile (default
+# doorDB.db). Run with the server stopped (the plugin holds the SQLite handle open). Ancient pre-v9 DBs
+# are auto-upgraded by BigDoors on boot — boot the plugin once first if migrating a very old install.
+name: bigdoors
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/BigDoors/doorDB.db
+replacers:
+  - table: players
+    column: playerUUID

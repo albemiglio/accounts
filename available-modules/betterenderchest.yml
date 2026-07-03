@@ -1,0 +1,15 @@
+# BetterEnderChest (rutgerkok/BetterEnderChest) on its default flat-file backend. Confirmed against
+# BetterEnderFileHandler + UUIDChestOwner: one plugins/BetterEnderChest/chestData/<uuid>.dat per player
+# (dashed lowercase filename, gzip NBT), and the owner's uuid is NOT inside the NBT (only a write-only
+# OwnerName display tag) -> rename is safe and complete. The "default" world group saves directly in
+# chestData/; every extra group defined in config.yml gets its own lowercased subfolder — copy this
+# module per group with directory: plugins/BetterEnderChest/chestData/<groupname>. The special
+# --publicchest.dat / --defaultchest.dat files are never matched by a uuid rename. Servers with
+# useUUIDs: false store by player NAME — module not applicable there. Run with the server stopped
+# (chests cached in RAM, autosave every 5 seconds). For MySQL use betterenderchest-mysql.yml.
+name: betterenderchest
+platform: SPIGOT
+type: file
+directory: plugins/BetterEnderChest/chestData
+extension: dat
+enabled: true

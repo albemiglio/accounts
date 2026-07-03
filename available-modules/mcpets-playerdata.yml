@@ -1,0 +1,14 @@
+# MCPets (Nocsy-Workshop/mcpets) on its default/fallback flat-file backend. Confirmed against
+# PlayerDataNoDatabase.java: one plugins/MCPets/PlayerData/<uuid>.yml per player, dashed lowercase
+# filename; the uuid is never plain text inside the file -> rename migrates names/inventories/active pet.
+# ⚠ Partial by design: the PetStats entries are Base64(JSON) blobs that EMBED the owner uuid
+# ("petOwner") — no module type can rewrite Base64 content yet, so pet levels/XP/health stay bound to
+# the old uuid and are dropped on the plugin's next full save for the migrated player. Ship-blocking
+# for stats only; ownership and inventories migrate fine. Run with the server stopped (heavy RAM
+# caches; the global save TRUNCATE-rewrites from memory). For MySQL use mcpets-mysql.yml.
+name: mcpets-playerdata
+platform: SPIGOT
+type: file
+directory: plugins/MCPets/PlayerData
+extension: yml
+enabled: true

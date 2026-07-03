@@ -1,0 +1,11 @@
+# CustomFishing (Xiao-MoMi/Custom-Fishing) on data-storage-method: YAML. Confirmed against
+# YAMLProvider.getPlayerDataFile: one plugins/CustomFishing/data/<uuid>.yml per player (dashed
+# lowercase filename), and the uuid is NOT inside the content (PlayerData.uuid is transient; body is
+# name/bag/earnings/stats only) -> pure rename. Run with the server stopped (cache + save timer).
+# For the JSON variant use customfishing-json.yml, for H2/SQL use customfishing.yml — one only.
+name: customfishing-yaml
+platform: SPIGOT
+type: file
+directory: plugins/CustomFishing/data
+extension: yml
+enabled: true

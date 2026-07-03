@@ -1,0 +1,23 @@
+# BetterEnderChest (rutgerkok/BetterEnderChest) on its MySQL backend (MySQL/MariaDB only). Confirmed
+# against SQLHandler.java: one table per world group, bec_chestdata_<groupname> (lowercase), keyed by
+# chest_owner char(36) UNIQUE = dashed lowercase uuid; chest_data (SNBT text) does NOT contain the
+# owner's uuid, so updating chest_owner is complete. Add one replacer per group defined in config.yml;
+# the standard group's table is bec_chestdata_default. Servers with useUUIDs: false store player NAMES
+# in chest_owner — not applicable there. Run with the server stopped (RAM cache + 5s autosave).
+# For the default flat-file backend use betterenderchest.yml instead — never both.
+name: betterenderchest-mysql
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: minecraft
+replacers:
+  - table: bec_chestdata_default
+    column: chest_owner
+#  - table: bec_chestdata_<groupname>
+#    column: chest_owner

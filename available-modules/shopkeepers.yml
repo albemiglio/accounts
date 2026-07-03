@@ -1,0 +1,19 @@
+# Shopkeepers (Shopkeepers/Shopkeepers). All shop data lives in one YAML — plugins/Shopkeepers/data/
+# save.yml — where the migrating player's uuid appears as the '<id>.owner uuid' value and inside the
+# '<id>.members' list (SKShopkeeperStorage / AbstractPlayerShopkeeper, dashed lowercase). The pattern
+# also catches save.yml.tmp, which the plugin falls back to if save.yml is missing. Shopkeeper/Citizens
+# ids in the same file are their own uuids — the whole-token swap never touches them. Owner/member
+# names go stale but self-heal on the player's next join. The optional trade log (disabled by default)
+# is covered too: CSV logs via the second target; the SQLITE variant needs a separate sql module —
+# add one with database plugins/Shopkeepers/trade-logs/trades.db and replacers on trade.player_uuid +
+# trade.shop_owner_uuid (only if that file exists: opening it otherwise would create an empty db).
+# Run with the server stopped: save-instantly rewrites save.yml asynchronously on every change.
+name: shopkeepers
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Shopkeepers/data
+    pattern: "save.yml*"
+  - directory: plugins/Shopkeepers/trade-logs
+    pattern: "trades-*.csv"
