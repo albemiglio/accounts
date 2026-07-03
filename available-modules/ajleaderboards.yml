@@ -1,0 +1,25 @@
+# ajLeaderboards (ajgeiss0702/ajLeaderboards) — MySQL backend variant. IMPORTANT: this does NOT target the
+# plugin's DEFAULT backend (H2, cache.mv.db, bundled h2 2.1.214 relocated). On H2/SQLite the code HARD-CODES
+# tablePrefix="" (Cache.java) and ignores the config table_prefix, so board tables take the bare, arbitrary
+# placeholder name (e.g. "playerpoints", "statistic_deaths") with NO common prefix — no LIKE pattern can
+# safely match them without also hitting unrelated tables, and H2 holds an exclusive lock while the server
+# runs anyway. On MySQL the config table_prefix DOES apply and defaults to "ajlb_" (cache_storage.yml), so
+# every board table is ajlb_<name> plus the fixed ajlb_extras. Both hold the player uuid in column `id`
+# (VARCHAR(36) in CREATE_TABLE, bound uniqueId().toString() -> dashed). One table per board is created at
+# runtime, hence table-pattern. ⚠ On board tables `id` is PRIMARY KEY: if the NEW uuid already has a row,
+# the UPDATE hits a PK collision and throws (ajlb_extras has no PK on id, so it is safe). The engine only
+# UPDATEs (never deletes) so delta/lasttotal/timestamp history is preserved. Run with the server stopped.
+name: ajleaderboards
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: ajleaderboards
+replacers:
+  - table-pattern: "ajlb_%"
+    column: id

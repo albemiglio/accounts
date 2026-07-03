@@ -1,0 +1,26 @@
+# HuskSync (WiIIiam278/HuskSync) on its default backend, MySQL (config db.type default = MYSQL). Schema
+# confirmed against mysql_schema.sql: husksync_users.uuid char(36) PK and husksync_user_data.player_uuid
+# char(36), both bound setString(uuid.toString()) in MySqlDatabase.java -> dashed. Table names default to
+# husksync_users / husksync_user_data (Database.TableName) but are config-driven; adjust if renamed.
+# disable-foreign-key-checks is REQUIRED: user_data has FOREIGN KEY (player_uuid) REFERENCES users(uuid)
+# ON DELETE CASCADE with NO ON UPDATE CASCADE, so re-keying users.uuid would otherwise be rejected.
+# ⚠ Residual gap: each husksync_user_data.data row is a longblob snapshot that also embeds the player uuid
+# inside the serialized DataSnapshot — identity re-key works, but stale uuids inside old snapshots remain.
+# Run with the server stopped (users are cached in memory and synced on quit).
+name: husksync
+platform: SPIGOT
+type: sql
+enabled: true
+disable-foreign-key-checks: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: husksync
+replacers:
+  - table: husksync_users
+    column: uuid
+  - table: husksync_user_data
+    column: player_uuid

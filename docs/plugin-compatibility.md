@@ -55,6 +55,9 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [DeathMessages-Modern](https://www.spigotmc.org/resources/deathmessages.86894/) | ✅ | UserData.yml uuid keys (live-verified) | — |
 | [CommandPanels](https://github.com/rockyhawk64/CommandPanels) | ✅ | data.yml player-input uuid keys (live-verified) | — |
 | [MobWave](https://www.spigotmc.org/) | ✅ | data.yml uuid keys (live-verified) | — |
+| [PlayerAuctions](https://www.spigotmc.org/resources/playerauctions.20055/) | ✅ | SQLite **or** MySQL (players + auctions + recents; live-install verified) | closed source: schema from a live install; bidder/target format inferred (verify one row); auction-item blobs untouched |
+| [HuskSync](https://github.com/WiIIiam278/HuskSync) | ✅ | MySQL/MariaDB (disable-foreign-key-checks); husksync_users + husksync_user_data, dashed char(36) | v3 dropped SQLite; Postgres/Mongo need their own modules; uuids frozen in old snapshot blobs |
+| [AuxProtect](https://github.com/Heliosares/AuxProtect) | ✅ | SQLite (default) + MySQL/MariaDB; `$`-prefixed uuid with the co-updated hashCode lookup column | event tables key by an int uid (untouched, correct) |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -76,17 +79,14 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [BattlePass](https://github.com/GC-spigot/battle-pass) | ⚠️ | JSON storage (rename+content pair; the default through 4.x) | 5.0 SQL: FKs without cascade + undocumented SQLite filename; legacy MySQL keeps the uuid inside a blob |
 | [ItemsAdder](https://itemsadder.devs.beer/) | ⚠️ | player stats .nbt files (docs + live-install verified: uuid only in the filename) | emote-unlock persistence undocumented (typically permission-side) |
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
+| [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
 
 ## Not supported yet
 
 | Plugin | Status | Blocker |
 |--------|:------:|---------|
-| [HuskSync](https://github.com/WiIIiam278/HuskSync) | ❌ | its FK has no ON UPDATE CASCADE, so the two UPDATEs fail in either order; needs engine support for disabling FK checks during the module |
-| [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented — inspect your own DB (or wait for the scanner) |
-| [PlayerAuctions](https://www.spigotmc.org/resources/playerauctions.20055/) | ❌ | closed source, only the table prefix is documented — inspect your own DB (or wait for the scanner) |
-| [MMOProfiles](https://phoenixdevt.fr/) | ❌ | closed source; also re-keys the whole MMO family by profile uuid — do not run the MMO templates with it installed |
-| [AuxProtect](https://github.com/Heliosares/AuxProtect) | ❌ | stores `$`-prefixed uuids plus a derived Java-hashCode column that must be co-updated — needs two engine features; a naive update breaks the plugin |
-| [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ❌ | one table per board (dynamic names) — needs engine-side table enumeration; default H2 2.1.214. Rows are only partially rebuildable: do not just delete |
+| [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented (sqlite-v2 default / mysql-v2, prefix `lands_`). Run the [scanner](scanning-a-plugin.md) on your own DB to generate a draft module |
+| [MMOProfiles](https://phoenixdevt.fr/) | ❌ | closed source + maven now auth-gated, so the userdata filename/backend can't be verified (flat-YAML `plugins/MMOProfiles/userdata/<realUUID>.yml` derived from the open MythicLib layer — verify on your install). Also: with it installed the MMO family keys data by **profile** uuid, which *survives* a real-uuid migration — run the MMO family modules **only** for NONE-mode/default-profile players, never blanket |
 
 ## No player data (verified — nothing to migrate)
 
@@ -118,8 +118,10 @@ them; only nickname changes would):** AuthMe (external SQL, username column, no 
    uuid swap inside text files, comments preserved), used by the WorldGuard/Residence/Maintenance/
    MMOCore templates. Still out of its reach: uuids inside SQL blob/JSON *columns* (KingdomsX members,
    MMOCore friends on MySQL) and binary formats.
-3. **Closed source without schema docs** (Lands, PlayerAuctions, MMOProfiles) — verifying against a live
-   install works today; an automatic scanner is planned.
+3. **Closed source without schema docs** (Lands, MMOProfiles) — the built-in scanner handles these now:
+   `/accounts scan <probe-uuid>` points at a player known to have data and drafts a disabled module for
+   every place their uuid turns up (file/dir name, text content, or any SQLite column). See
+   [Scanning a plugin](scanning-a-plugin.md). PlayerAuctions and others once here now ship real templates.
 
 Run every migration with the affected servers **stopped** unless a template's header says otherwise:
 most plugins cache player data in memory and rewrite their files/rows on autosave, clobbering external

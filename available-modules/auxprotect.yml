@@ -1,0 +1,23 @@
+# AuxProtect (Heliosares/AuxProtect) on its default backend, SQLite at plugins/AuxProtect/database/
+# auxprotect.db (AuxProtectSpigot.java: new File(getDataFolder(),"database/auxprotect.db")). The uid<->uuid
+# mapping is the ONLY place player identity lives: every event table stores an INT uid, resolved through
+# auxprotect_uids. Confirmed against SQLUserManager.java: the stored value is ("$"+uuid).toLowerCase()
+# (dashed, 37 chars — UUID.toString() is already lowercase) and the sibling hash column is that string's
+# Java String.hashCode() (INT), used as the lookup key (WHERE hash=?), so it MUST be co-updated — the
+# prefix + derived below reproduce both exactly. Table name auxprotect_uids assumes the default empty
+# table-prefix (MySQL.table-prefix: '' in config; SQLite ignores the prefix entirely). Run with the
+# server stopped (uid/uuid caches + write queue).
+name: auxprotect
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/AuxProtect/database/auxprotect.db
+replacers:
+  - table: auxprotect_uids
+    column: uuid
+    prefix: "$"
+    derived:
+      - column: hash
+        fn: java-string-hashcode
