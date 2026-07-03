@@ -78,6 +78,11 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `fawe-clipboard.yml` / `fawe-sessions.yml` | file | `clipboard/<uuid>.bd` / `sessions/<uuid>.json` | filename | `DiskOptimizedClipboard`/`JsonFileSessionStore` |
 | `fawe-history-db.yml` / `fawe-history-dirs.yml` | sql/file | `history/<world>/summary.db` (`_edits.player` BLOB16) / `history/<world>/<uuid>/` dirs | **binary** / dirname | `RollbackDatabase`/`DiskStorageHistory` |
 | `griefdefender-playerdata.yml` / `-claims.yml` | file+content | extensionless `GlobalPlayerData/<uuid>` + claim HOCON rewrite | dashed | public pre-premium source + docs |
+| `betterrtp.yml` | sql | `Players` in `data/database.db` (+ per-world tables, manual) | dashed | `DatabasePlayers.java` |
+| `advancedkits.yml` / `advancedkits-reloaded.yml` | file | `playerdata/<uuid>.yml` / `userfiles/<uuid>.yml` | filename | official API repo / `User.java` |
+| `advancedcrates.yml` | content | `virtualKeys.yml` (uuid map keys) | dashed | decompiled 3.3.12 + live dump |
+| `mythicdungeons-*` (3 files) | file+content | global + per-dungeon playerdata + embedded RewardsInfo uuid | dashed | decompiled official jars 1.1.1/2.0.1 |
+| `clothesplus-dirs.yml` | file | per-uuid directories (empty extension) | dirname | live install |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

@@ -1,0 +1,12 @@
+# MythicDungeons (MythicCraft/PlayAvalon, premium+free) — part 1 of 3. Verified by decompiling the
+# official mvn.lumine.io jars (1.1.1 and 2.0.1 identical): renames plugins/MythicDungeons/
+# globalplayerdata/<uuid>.yml (exit location; on 2.x also FinishedDungeons, savepoints, variables,
+# stored rewards — the owner uuid is NOT embedded, rename suffices for this folder). Flat YAML only,
+# no SQL exists. Run with the server stopped AND before the player ever joins under the new uuid
+# (join auto-creates an empty file that would collide). Use with parts 2 and 3.
+name: mythicdungeons-globalplayerdata
+platform: SPIGOT
+type: file
+directory: plugins/MythicDungeons/globalplayerdata
+extension: yml
+enabled: true

@@ -1,0 +1,12 @@
+# MythicDungeons — part 2 of 3: per-dungeon player files, plugins/MythicDungeons/maps/<DUNGEON>/
+# players/<uuid>.yml (AbstractDungeon.savePlayerData, verified on the decompiled 1.1.1+2.0.1 jars).
+# The filename is the key (UUID.fromString on the name); body holds Finished, AccessCooldown and
+# RewardsInfo. ⚠ COPY this file once per dungeon folder (fix the path, unique name each) — file
+# modules take one directory. Use with part 3 (mythicdungeons-content.yml), which rewrites the uuid
+# embedded inside RewardsInfo — without it loot cooldowns silently detach. Server stopped.
+name: mythicdungeons-players-DUNGEONNAME
+platform: SPIGOT
+type: file
+directory: plugins/MythicDungeons/maps/DUNGEONNAME/players
+extension: yml
+enabled: true

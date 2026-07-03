@@ -1,0 +1,16 @@
+# MythicDungeons — part 3 of 3: uuids INSIDE file bodies. Every maps/<dungeon>/players/<uuid>.yml
+# embeds the owner's dashed uuid in RewardsInfo (PlayerLootData.serialize writes "UUID", verified on
+# the decompiled 1.1.1+2.0.1 jars) and loadCooldowns() re-keys loot data by that EMBEDDED uuid — this
+# rewrite is required, not cosmetic. Scans maps/ recursively for *.yml (dungeon worlds' binary files
+# aren't matched; non-UTF-8 is skipped anyway); globalplayerdata included for scripted variables that
+# may hold uuids. Use with parts 1 and 2. Run with the server stopped.
+name: mythicdungeons-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/MythicDungeons/maps
+    pattern: "*.yml"
+    recursive: true
+  - directory: plugins/MythicDungeons/globalplayerdata
+    pattern: "*.yml"

@@ -1,0 +1,14 @@
+# AdvancedCrates (PM2 / advancedplugins.net, closed-source — verified against the decompiled 3.3.12
+# jar and a live server dump). Virtual crate keys persist ONLY in plugins/AdvancedCrates/
+# virtualKeys.yml, as virtualKeys.keys.<dashed-uuid>.<CrateName>: <count> — the uuid is a dashed map
+# KEY, exactly what the content whole-token swap covers. No SQL/Mongo backend exists in the plugin.
+# Physical keys are plain NBT items with no owner uuid (they ride along in vanilla playerdata).
+# With VirtualKeys_Enabled: false the file is empty and this module is a harmless no-op.
+# Run with the server stopped (keys cached in RAM and rewritten from memory on save/disable);
+# flatfile is per-backend: run on every server that has the file.
+name: advancedcrates
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/AdvancedCrates/virtualKeys.yml

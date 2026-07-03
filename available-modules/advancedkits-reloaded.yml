@@ -1,0 +1,11 @@
+# AdvancedKitsReloaded by TryHardDood (open-source: benjaminforras/AdvancedKitsReloaded — abandoned
+# since 2017, relevant on legacy 1.8-1.11 servers only). Confirmed against kits/User.java
+# getSaveFile(): one plugins/AdvancedKitsReloaded/userfiles/<dashed-uuid>.yml per player, content
+# keyed by kit name (UnlockedKits/LastUseTime/TimesUsed/FirstUse) — no uuid inside, rename is the
+# whole migration. Run with the server stopped.
+name: advancedkits-reloaded
+platform: SPIGOT
+type: file
+directory: plugins/AdvancedKitsReloaded/userfiles
+extension: yml
+enabled: true

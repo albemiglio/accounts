@@ -1,0 +1,13 @@
+# ClothesPlus (closed-source premium) — per-player DIRECTORIES named by the dashed uuid, observed on
+# a live install: player_config/<uuid>/, player_skins/<uuid>/ and data/players/<uuid>/. The empty
+# extension makes the file module rename the bare-uuid entry, and a move renames a directory — copy
+# this module for each of the three folders (unique name each; the other two paths below). Contents
+# are asset/config files keyed by name — no uuid inside observed. Run with the server stopped.
+#   directory: plugins/ClothesPlus/player_skins
+#   directory: plugins/ClothesPlus/data/players
+name: clothesplus-config
+platform: SPIGOT
+type: file
+directory: plugins/ClothesPlus/player_config
+extension: ""
+enabled: true

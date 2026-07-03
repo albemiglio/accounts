@@ -1,0 +1,13 @@
+# AdvancedKits by Extremall (closed-source; SpigotMC 90054 = BuiltByBit 18285). Evidence from the
+# author's OFFICIAL API repo (extremall-dev/AdvancedKitsAPI, config.yml): default storage is YAML
+# (storage.database: YAML, folder playerdata) -> one plugins/AdvancedKits/playerdata/<uuid>.yml per
+# player holding kit levels/usages/cooldowns keyed by KIT NAME — no uuid inside, rename is complete.
+# Filename dashed per UUID.toString() convention (closed jar: spot-check one file first). Applies ONLY
+# to the YAML backend — the SQL/Mongo backends are undocumented and marked "under development, use
+# YAML in production" by the author himself. Run with the server stopped.
+name: advancedkits
+platform: SPIGOT
+type: file
+directory: plugins/AdvancedKits/playerdata
+extension: yml
+enabled: true

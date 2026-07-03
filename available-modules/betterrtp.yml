@@ -1,0 +1,22 @@
+# BetterRTP (SuperRonanCraft/BetterRTP, 3.6.x) cooldown persistence. Schema confirmed against
+# SQLite.java/DatabasePlayers.java: SQLite only, plugins/BetterRTP/data/database.db, table Players
+# (uuid PK dashed via uuid.toString(), plus count/last_rtp_date). With Settings.Cooldown PerWorld the
+# plugin ALSO keeps one table PER WORLD (table name = the world's name) with the same uuid column —
+# those tables may not exist on every install, and an UPDATE on a missing table fails the module, so
+# add them yourself below only for worlds whose tables exist. uuid is PRIMARY KEY: if the new uuid
+# already has a row, dedupe first. Run with the server stopped.
+name: betterrtp
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/BetterRTP/data/database.db
+replacers:
+  - table: Players
+    column: uuid
+# PerWorld cooldowns — uncomment per existing world table (name = world name):
+#  - table: world
+#    column: uuid
+#  - table: world_nether
+#    column: uuid

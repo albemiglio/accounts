@@ -42,6 +42,11 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [BodyHealth](https://modrinth.com/plugin/bodyhealth) | ✅ | SQLite (live-install verified) | — |
 | [RealisticSeasons](https://www.spigotmc.org/resources/realisticseasons.93275/) | ✅ | data.yml uuid entries (live-install verified) | closed source: shape from a live install |
 | [TAB](https://github.com/NEZNAMY/TAB) | ✅ | users.yml / playerdata.yml uuid keys | — |
+| [BetterRTP](https://github.com/SuperRonanCraft/BetterRTP) | ✅ | SQLite cooldowns (Players) | per-world tables are named after worlds — add manually |
+| [AdvancedKits](https://www.spigotmc.org/resources/advancedkits.90054/) | ✅ | default YAML playerdata (rename; + the legacy Reloaded fork) | undocumented SQL backends (author says use YAML) |
+| [AdvancedCrates](https://advancedplugins.net/item/AdvancedCrates.9) | ✅ | virtualKeys.yml (uuid map keys; decompile+live verified) | — |
+| [MythicDungeons](https://git.mythiccraft.io/mythiccraft/MythicDungeons) | ✅ | global + per-dungeon playerdata (3-module set, decompile-verified) | copy the per-dungeon module per dungeon |
+| [ClothesPlus](https://www.spigotmc.org/resources/clothes.44992/) | ✅ | per-uuid directories (live-install observed) | closed source: shapes from a live install |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -78,7 +83,9 @@ means the schema was read from the plugin's own code or official schema docs, ne
 ## No player data (verified — nothing to migrate)
 
 [CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) (world/chunk-keyed only; farming XP lives in
-skill plugins) — verified against source, not assumed.
+skill plugins) · [Simple Voice Chat](https://github.com/henkelmax/simple-voice-chat) (groups and
+states are in-memory; per-player volumes live on each player's own client) — verified against source,
+not assumed.
 
 ## Recurring blockers (what unlocks the ❌ rows)
 
