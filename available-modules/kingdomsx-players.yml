@@ -1,0 +1,15 @@
+# KingdomsX (CryptoMorin/KingdomsX) on its JSON flat-file mode (database.method: JSON) — part 1 of 2:
+# renames data/Players/<uuid>.json (dashed filename via FastUUID; the player's own uuid is NOT in the
+# body, the id comes from the filename). Enable TOGETHER with kingdomsx-content.yml, which fixes the
+# member/owner uuids embedded in the Kingdoms/Lands/Mails files. For database.method: YAML change
+# extension to yml (same layout). ⚠ The SQL modes (incl. the DEFAULT H2) are NOT covered: there the
+# member lists live inside JSON *columns* the engine can't rewrite yet — switch the plugin to JSON
+# file mode first (/k admin has migration tooling) or wait for blob support.
+# Run with the server stopped: KingdomsX pins all kingdoms in RAM for the whole uptime and its
+# smart-save is blind to external edits.
+name: kingdomsx-players
+platform: SPIGOT
+type: file
+directory: plugins/Kingdoms/data/Players
+extension: json
+enabled: true

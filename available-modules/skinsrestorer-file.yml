@@ -1,0 +1,13 @@
+# SkinsRestorer 15.x on its DEFAULT file backend (database.type: FILE) — part 1 of 2: renames
+# plugins/SkinsRestorer/players/<uuid>.player (the per-player skin choice, JSON). The body embeds a
+# "uniqueId" field, so enable this TOGETHER with skinsrestorer-file-content.yml — they compose in
+# either order. On proxy networks the storage lives on the PROXY's plugins/SkinsRestorer/. Cooldown
+# files (<uuid>_<group>.cooldown) have composite names no module can rename — transient, they expire;
+# the skins/ folder is a texture cache keyed by Mojang uuids/urls: correctly untouched.
+# Run with proxy and backends stopped. For the SQL backend use skinsrestorer.yml instead.
+name: skinsrestorer-file
+platform: SPIGOT
+type: file
+directory: plugins/SkinsRestorer/players
+extension: player
+enabled: true

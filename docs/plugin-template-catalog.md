@@ -65,6 +65,9 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `customfishing.yml` / `-yaml` / `-json` | sql/file | `customfishing_data` (**H2 2.4.240 default**) / `data/<uuid>.*` | dashed | `AbstractSQLDatabase` + providers |
 | `mcpets-playerdata.yml` / `mcpets-mysql.yml` | file/sql | `PlayerData/<uuid>.yml` / `mcpets_player_data`+`_active_pet` | dashed | `Databases.java` (⚠ stats blob gap) |
 | `shopkeepers.yml` | content | `data/save.yml*` owners/members + CSV trade logs | dashed | `SKShopkeeperStorage`/`SQLiteTradeLogger` |
+| `auraskills-userdata.yml` + `-content.yml` | file+content | `userdata/<uuid>.yml` rename + embedded `uuid:` rewrite (pair) | dashed | `FileStorageProvider.java` |
+| `skinsrestorer-file.yml` + `-content.yml` | file+content | `players/<uuid>.player` rename + embedded `uniqueId` rewrite (pair) | dashed | `PlayerFile`/`FileAdapter` |
+| `kingdomsx-players.yml` + `kingdomsx-content.yml` | file+content | `data/Players/<uuid>.json` rename + members/king/claims rewrite (pair) | dashed | decompiled DataHandlers, 1.17.x |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

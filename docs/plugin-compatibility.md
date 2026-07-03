@@ -48,17 +48,17 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [CMI](https://www.zrips.net/cmi/) | ⚠️ | SQL template (closed source) | uuid encoding unverified — check one row first |
 | [Maintenance](https://github.com/kennytv/Maintenance) | ⚠️ | WhitelistedPlayers.yml (uuid keys, all platform paths) | proxies with Maintenance's Redis sync read the whitelist from Redis instead |
 | [LiteBans](https://www.spigotmc.org/resources/litebans.3715/) | ⚠️ | MySQL/MariaDB (12 columns, official schema); H2 template ready | its exact bundled H2 version is unverifiable (closed jar) — the engine's header sniff protects you; PostgreSQL |
-| [AuraSkills](https://github.com/Archy-X/AuraSkills) | ⚠️ | MySQL | default YAML backend embeds the uuid inside each file |
-| [SkinsRestorer](https://github.com/SkinsRestorer/SkinsRestorer) | ⚠️ | MySQL/MariaDB (4 identity tables; skin cache correctly untouched) | default FILE backend embeds the uuid inside JSON |
+| [AuraSkills](https://github.com/Archy-X/AuraSkills) | ✅ | MySQL **and** the default YAML backend (rename + embedded-uuid rewrite pair) | run with the server stopped |
+| [SkinsRestorer](https://github.com/SkinsRestorer/SkinsRestorer) | ✅ | MySQL/MariaDB **and** the default FILE backend (pair); skin cache correctly untouched | cooldown filenames stay old (they expire) |
 | [MMOCore](https://gitlab.com/phoenix-dvpmt/mmocore) | ⚠️ | YAML backend fully (userdata + friends + guilds); MySQL identity column | on MySQL the friends list sits in a LONGTEXT column |
 | [MMOInventory](https://www.spigotmc.org/resources/mmoinventory.101946/) | ⚠️ | YAML backend | MySQL table name only ships in the premium jar |
 | [MCPets](https://github.com/Nocsy-Workshop/mcpets) | ⚠️ | ownership/inventories/active pet (files **and** MySQL) | pet levels/XP live in Base64(JSON) blobs embedding the owner uuid |
+| [KingdomsX](https://github.com/CryptoMorin/KingdomsX) | ⚠️ | JSON/YAML flat-file modes (player rename + embedded members/king/claims rewrite pair) | SQL modes incl. the **default H2**: member lists sit in JSON columns — switch to file mode first |
 
 ## Not supported yet
 
 | Plugin | Status | Blocker |
 |--------|:------:|---------|
-| [KingdomsX](https://github.com/CryptoMorin/KingdomsX) | ❌ | member lists live INSIDE JSON blobs even on SQL — rewriting only the uuid columns would desync kingdoms; needs the content-rewrite module. Default backend is H2 on top. |
 | [HuskSync](https://github.com/WiIIiam278/HuskSync) | ❌ | its FK has no ON UPDATE CASCADE, so the two UPDATEs fail in either order; needs engine support for disabling FK checks during the module |
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ❌ | playerdata files have no extension; claim files embed owner/trust uuids inside HOCON; SQL schema not public |
 | [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented — inspect your own DB (or wait for the scanner) |

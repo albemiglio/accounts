@@ -1,0 +1,33 @@
+# KingdomsX (CryptoMorin/KingdomsX) JSON/YAML flat-file mode — part 2 of 2: rewrites the player uuids
+# embedded INSIDE the shared data files (verified in the decompiled DataHandlers): kingdom "king" +
+# "members" arrays + rank/log entries in data/Kingdoms/<kingdom-uuid>.json, land "claimedBy" +
+# protection-sign "owner"/players maps in data/Lands/<chunk>.json, mail "sender" in data/Mails/*.json,
+# and player-file "invites.<kingdom>.sender". Kingdom/land/mail ids are their own uuids — the
+# whole-token swap of the migrating player's uuid never touches them. Both .json and .yml targets are
+# listed (database.method JSON or YAML); absent dirs are skipped. Pair with kingdomsx-players.yml.
+# Run with the server stopped (all kingdoms pinned in RAM, smart-save blind to external edits).
+name: kingdomsx-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Kingdoms/data/Kingdoms
+    pattern: "*.json"
+  - directory: plugins/Kingdoms/data/Kingdoms
+    pattern: "*.yml"
+  - directory: plugins/Kingdoms/data/Lands
+    pattern: "*.json"
+  - directory: plugins/Kingdoms/data/Lands
+    pattern: "*.yml"
+  - directory: plugins/Kingdoms/data/Mails
+    pattern: "*.json"
+  - directory: plugins/Kingdoms/data/Mails
+    pattern: "*.yml"
+  - directory: plugins/Kingdoms/data/Players
+    pattern: "*.json"
+  - directory: plugins/Kingdoms/data/Players
+    pattern: "*.yml"
+  - directory: plugins/Kingdoms/data/Nations
+    pattern: "*.json"
+  - directory: plugins/Kingdoms/data/Nations
+    pattern: "*.yml"

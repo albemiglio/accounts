@@ -1,0 +1,12 @@
+# AuraSkills (Archy-X/AuraSkills) on its DEFAULT flat-file backend (sql.enabled: false) — part 1 of 2:
+# renames plugins/AuraSkills/userdata/<uuid>.yml. The file body embeds a top-level `uuid:` key and the
+# plugin HARD-FAILS on filename/content mismatch, so this module only works together with
+# auraskills-userdata-content.yml (rewrites the embedded uuid) — enable BOTH, they compose in either
+# order within the same migration. Run with the server stopped (RAM cache + periodic auto-save).
+# For the MySQL backend use auraskills.yml instead.
+name: auraskills-userdata
+platform: SPIGOT
+type: file
+directory: plugins/AuraSkills/userdata
+extension: yml
+enabled: true

@@ -1,0 +1,11 @@
+# AuraSkills (Archy-X/AuraSkills) default flat-file backend — part 2 of 2: rewrites the `uuid:` value
+# embedded inside each userdata file (FileStorageProvider writes root.node("uuid") and both load paths
+# throw on filename/content mismatch). Pair with auraskills-userdata.yml (the rename); the glob matches
+# any filename so the pair composes in either order. Run with the server stopped.
+name: auraskills-userdata-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/AuraSkills/userdata
+    pattern: "*.yml"

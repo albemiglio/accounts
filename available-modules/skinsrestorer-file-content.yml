@@ -1,0 +1,13 @@
+# SkinsRestorer 15.x default file backend — part 2 of 2: rewrites the "uniqueId" embedded inside each
+# players/*.player JSON (PlayerFile.uniqueId serialized by Gson). Pair with skinsrestorer-file.yml.
+# The second target fixes the uuid inside any *.cooldown files too (their composite filenames stay
+# old-uuid and simply expire — cosmetic). Run with proxy and backends stopped.
+name: skinsrestorer-file-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/SkinsRestorer/players
+    pattern: "*.player"
+  - directory: plugins/SkinsRestorer/cooldowns
+    pattern: "*.cooldown"
