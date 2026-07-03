@@ -36,6 +36,12 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [BetterEnderChest](https://github.com/rutgerkok/BetterEnderChest) | ✅ | .dat rename **and** MySQL (per world group) | name-mode installs (useUUIDs: false) |
 | [CustomFishing](https://github.com/Xiao-MoMi/Custom-Fishing) | ✅ | **default H2** (pinned 2.4.240) + SQLite/MySQL + YAML/JSON renames | MongoDB backend |
 | [Shopkeepers](https://github.com/Shopkeepers/Shopkeepers) | ✅ | save.yml owners/members + CSV trade logs (SQLite log documented) | — |
+| [Typewriter](https://github.com/gabber235/Typewriter) | ✅ | facts.json (the sole player store) | — |
+| [VoteParty](https://github.com/darbyjack/VoteParty) | ✅ | players/*.json (rename+content pair) + party voter cache | — |
+| [FastAsyncWorldEdit](https://github.com/IntellectualSites/FastAsyncWorldEdit) | ✅ | clipboards, sessions, rollback DB (binary uuid) + per-uuid history dirs | copy history modules per world |
+| [BodyHealth](https://modrinth.com/plugin/bodyhealth) | ✅ | SQLite (live-install verified) | — |
+| [RealisticSeasons](https://www.spigotmc.org/resources/realisticseasons.93275/) | ✅ | data.yml uuid entries (live-install verified) | closed source: shape from a live install |
+| [TAB](https://github.com/NEZNAMY/TAB) | ✅ | users.yml / playerdata.yml uuid keys | — |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -54,18 +60,25 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [MMOInventory](https://www.spigotmc.org/resources/mmoinventory.101946/) | ⚠️ | YAML backend | MySQL table name only ships in the premium jar |
 | [MCPets](https://github.com/Nocsy-Workshop/mcpets) | ⚠️ | ownership/inventories/active pet (files **and** MySQL) | pet levels/XP live in Base64(JSON) blobs embedding the owner uuid |
 | [KingdomsX](https://github.com/CryptoMorin/KingdomsX) | ⚠️ | JSON/YAML flat-file modes (player rename + embedded members/king/claims rewrite pair) | SQL modes incl. the **default H2**: member lists sit in JSON columns — switch to file mode first |
+| [BattlePass](https://github.com/GC-spigot/battle-pass) | ⚠️ | JSON storage (rename+content pair; the default through 4.x) | 5.0 SQL: FKs without cascade + undocumented SQLite filename; legacy MySQL keeps the uuid inside a blob |
+| [ItemsAdder](https://itemsadder.devs.beer/) | ⚠️ | player stats .nbt files (docs + live-install verified: uuid only in the filename) | emote-unlock persistence undocumented (typically permission-side) |
+| [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 
 ## Not supported yet
 
 | Plugin | Status | Blocker |
 |--------|:------:|---------|
 | [HuskSync](https://github.com/WiIIiam278/HuskSync) | ❌ | its FK has no ON UPDATE CASCADE, so the two UPDATEs fail in either order; needs engine support for disabling FK checks during the module |
-| [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ❌ | playerdata files have no extension; claim files embed owner/trust uuids inside HOCON; SQL schema not public |
 | [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented — inspect your own DB (or wait for the scanner) |
 | [PlayerAuctions](https://www.spigotmc.org/resources/playerauctions.20055/) | ❌ | closed source, only the table prefix is documented — inspect your own DB (or wait for the scanner) |
 | [MMOProfiles](https://phoenixdevt.fr/) | ❌ | closed source; also re-keys the whole MMO family by profile uuid — do not run the MMO templates with it installed |
 | [AuxProtect](https://github.com/Heliosares/AuxProtect) | ❌ | stores `$`-prefixed uuids plus a derived Java-hashCode column that must be co-updated — needs two engine features; a naive update breaks the plugin |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ❌ | one table per board (dynamic names) — needs engine-side table enumeration; default H2 2.1.214. Rows are only partially rebuildable: do not just delete |
+
+## No player data (verified — nothing to migrate)
+
+[CustomCrops](https://github.com/Xiao-MoMi/Custom-Crops) (world/chunk-keyed only; farming XP lives in
+skill plugins) — verified against source, not assumed.
 
 ## Recurring blockers (what unlocks the ❌ rows)
 

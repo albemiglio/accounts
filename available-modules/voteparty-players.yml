@@ -1,0 +1,13 @@
+# VoteParty 5.x (darbyjack/VoteParty, the canonical "VoteParty" by clip/Glare) — flat-file only, no SQL
+# backend exists. Part 1 of 2: renames plugins/VoteParty/players/<uuid>.json (dashed lowercase, written
+# from User.uuid.toString()); each file also holds the offline vote queue (claimable) and history.
+# The body EMBEDS "uuid" and UsersHandler keys its cache off the BODY value, saving back to
+# ${data.uuid}.json — a rename alone would detach the player and resurrect the old file. Enable BOTH
+# this and voteparty-content.yml. Run with the server stopped (all users cached in RAM + periodic
+# async saveAll + optional save-on-vote).
+name: voteparty-players
+platform: SPIGOT
+type: file
+directory: plugins/VoteParty/players
+extension: json
+enabled: true

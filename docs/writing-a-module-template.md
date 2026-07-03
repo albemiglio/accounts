@@ -199,6 +199,29 @@ and rewrite them on autosave: say so in the template header and require the serv
 
 ---
 
+## Shipping a module inside your plugin
+
+If you maintain the plugin itself, you don't have to ask server owners to install a template: bundle
+it in your jar, plugin.yml-style. Add `src/main/resources/accounts-module.yml` (or several files
+under `accounts-modules/*.yml` — handy for the rename+content pairs) with exactly the same schema as
+the templates above. No code, no dependency on accounts: the engine scans the plugins folder on
+startup and picks it up automatically.
+
+```yaml
+# accounts-module.yml, at your jar's root
+name: myplugin-userdata
+platform: SPIGOT
+type: file
+directory: plugins/MyPlugin/userdata
+extension: yml
+enabled: true
+```
+
+A server-local file with the same `name` in the modules folder overrides the bundled one, so
+operators can still tweak or disable what you ship.
+
+---
+
 ## Custom module types via SPI
 
 If a plugin stores UUIDs in a format none of the five built-ins cover (an exotic binary file, a

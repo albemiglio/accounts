@@ -1,0 +1,14 @@
+# BodyHealth — per-body-part health persistence. Schema confirmed against a live install's SQLite
+# database (plugins/BodyHealth/data/bodyHealth.sqlite): table body_health with a uuid TEXT column
+# holding the dashed lowercase player uuid. Run with the server stopped (health state is cached and
+# written back on quit/shutdown).
+name: bodyhealth
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/BodyHealth/data/bodyHealth.sqlite
+replacers:
+  - table: body_health
+    column: uuid

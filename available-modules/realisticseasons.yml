@@ -1,0 +1,11 @@
+# RealisticSeasons (closed-source premium) — per-player toggles and the known-players list live as
+# dashed uuid entries inside one shared plugins/RealisticSeasons/data.yml (shape confirmed on a live
+# install: uuid lists under keys like knownplayers plus per-player toggle sections). The content
+# module's whole-token swap covers values, list items and map keys alike. Run with the server stopped
+# (the file is rewritten from memory on save). Season/date state is world-keyed — no other player data.
+name: realisticseasons
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/RealisticSeasons/data.yml

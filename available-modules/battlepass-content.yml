@@ -1,0 +1,11 @@
+# BattlePass (AdvancedPlugins) JSON storage — part 2 of 2: rewrites the dashed "uuid" embedded inside
+# each users/*.json (the plugin deserializes identity from the content, not the filename). Pair with
+# battlepass-users.yml; the glob composes in either order. misc-storage/ holds quest ids only.
+# Run with all servers sharing the data stopped.
+name: battlepass-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/BattlePass/users
+    pattern: "*.json"

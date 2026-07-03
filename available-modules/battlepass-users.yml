@@ -1,0 +1,13 @@
+# BattlePass (AdvancedPlugins, SpigotMC 63076 — github.com/GC-spigot/battle-pass) on its JSON storage
+# (the default through 4.x, still valid in 5.x) — part 1 of 2: renames plugins/BattlePass/users/
+# <uuid>.json (dashed lowercase). The body embeds "uuid" and the plugin reads identity from the
+# CONTENT, so enable BOTH this and battlepass-content.yml. The 5.0+ SQL backends are NOT templated:
+# on MySQL-Improved the users_progress/pending_tier FKs have no ON UPDATE CASCADE (both update orders
+# fail with FK checks on), and the SQLite file name is undocumented — see the compatibility matrix.
+# Run with ALL servers sharing the data stopped (in-memory cache + 180s auto-save + bungee sharing).
+name: battlepass-users
+platform: SPIGOT
+type: file
+directory: plugins/BattlePass/users
+extension: json
+enabled: true

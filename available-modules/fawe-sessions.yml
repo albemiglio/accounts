@@ -1,0 +1,10 @@
+# FastAsyncWorldEdit / WorldEdit player sessions (selection, wand bindings). Confirmed against
+# JsonFileSessionStore + SessionManager: sessions/<uuid>.json under the plugin data folder, and the
+# JSON body holds selector/tool state only — the uuid is just the filename, rename is complete.
+# Run with the server stopped (sessions flush on quit and on a periodic timer).
+name: fawe-sessions
+platform: SPIGOT
+type: file
+directory: plugins/FastAsyncWorldEdit/sessions
+extension: json
+enabled: true

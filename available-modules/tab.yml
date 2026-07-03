@@ -1,0 +1,12 @@
+# TAB (NEZNAMY/TAB) — per-player customizations (custom names/toggles) persist as dashed uuid keys in
+# plugins/TAB/users.yml and playerdata.yml (shape confirmed on a live install; on many servers these
+# are empty or hold only sample entries — then this module is a harmless no-op). The content module
+# re-keys the migrating player's entries. Run with the server (or proxy, if TAB runs there — same
+# paths under the proxy's plugins/TAB/) stopped: TAB rewrites these files from memory on save.
+name: tab
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/TAB/users.yml
+  - directory: plugins/TAB/playerdata.yml

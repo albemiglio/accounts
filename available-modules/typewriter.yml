@@ -1,0 +1,15 @@
+# Typewriter (gabber235/Typewriter) — the facts engine is the sole player-data store (FileFactStorage,
+# the only FactStorage binding; no SQL/Mongo exists). Player facts live INSIDE one shared JSON —
+# plugins/Typewriter/facts.json — keyed per audience, where player audiences are dashed lowercase
+# uuid.toString() object keys; non-player group keys never contain a uuid, so the whole-token swap is
+# safe. Legacy players/<uuid>.json files are auto-migrated and archived by Typewriter itself on boot —
+# current installs have none (if migrating a never-updated install, add a file module on
+# plugins/Typewriter/players, extension json: the uuid is only in the filename).
+# Run with the server stopped: the fact set is cached in RAM and facts.json is rewritten wholesale
+# every 180 seconds and on shutdown.
+name: typewriter
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Typewriter/facts.json

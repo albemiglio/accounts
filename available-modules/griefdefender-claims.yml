@@ -1,0 +1,16 @@
+# GriefDefender (bloodmc, closed-source) — claim data on the default file storage. Confirmed against
+# the author's public pre-premium source (ClaimDataConfig): claims are per-claim HOCON text files
+# (named by the CLAIM's own uuid, extensionless) under worlds/<dim>/<world>/ClaimData/<type>/, with the
+# player uuids INSIDE — owner-uuid plus the accessors/builders/containers/managers trust lists, all
+# dashed. The content module's whole-token swap covers them; claim uuids in filenames are never
+# touched (only the migrating player's token matches). claimnames.yml (uuid-keyed) is included too.
+# Pair with griefdefender-playerdata.yml. Run with the server stopped.
+name: griefdefender-claims
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/GriefDefender/worlds
+    pattern: "*"
+    recursive: true
+  - directory: plugins/GriefDefender/claimnames.yml

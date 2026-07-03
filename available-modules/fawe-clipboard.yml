@@ -1,0 +1,11 @@
+# FastAsyncWorldEdit (IntellectualSites/FastAsyncWorldEdit) disk clipboards, on by default
+# (clipboard.use-disk: true). Confirmed against DiskOptimizedClipboard: clipboard/<uuid>.bd, and the
+# binary header holds only version/dimensions/offsets — no uuid inside, so a rename is complete.
+# Low stakes: FAWE deletes these after 1 day by default. Run with the server stopped (memory-mapped
+# file handles while players are online). See also fawe-sessions.yml and fawe-history-*.yml.
+name: fawe-clipboard
+platform: SPIGOT
+type: file
+directory: plugins/FastAsyncWorldEdit/clipboard
+extension: bd
+enabled: true

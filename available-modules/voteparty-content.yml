@@ -1,0 +1,12 @@
+# VoteParty 5.x (darbyjack/VoteParty) — part 2 of 2: rewrites the dashed "uuid" value Gson embeds in
+# each players/*.json, plus the pending-party voter list voted-for-party-cache.json (a plain JSON array
+# of dashed uuid strings). parties.json (epoch longs) and votes.yml (an int counter) carry no uuids.
+# Pair with voteparty-players.yml — the globs compose in either order. Run with the server stopped.
+name: voteparty-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/VoteParty/players
+    pattern: "*.json"
+  - directory: plugins/VoteParty/voted-for-party-cache.json

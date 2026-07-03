@@ -1,0 +1,13 @@
+# FastAsyncWorldEdit on-disk history, on by default (history.use-disk: true). Confirmed against
+# DiskStorageHistory: one DIRECTORY per player per world — history/<world>/<uuid>/ — whose contents
+# (<index>.bd/.nbtf/...) are index-keyed with no uuid inside, so renaming the directory itself is the
+# whole migration (empty extension = the bare uuid, and a move renames a directory). COPY once per
+# world folder (unique name each) and fix the path. Use TOGETHER with fawe-history-db.yml for the same
+# world. If per-player schematics are enabled (paths.per-player-schematics), copy this once more with
+# directory: plugins/FastAsyncWorldEdit/schematics. Run with the server stopped.
+name: fawe-history-dirs-world
+platform: SPIGOT
+type: file
+directory: plugins/FastAsyncWorldEdit/history/world
+extension: ""
+enabled: true

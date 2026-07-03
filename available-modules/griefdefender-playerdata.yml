@@ -1,0 +1,15 @@
+# GriefDefender (bloodmc, closed-source) — global playerdata on the default file storage
+# (storage-method: hocon, playerdata context-storage-type: global). Confirmed against the author's
+# public pre-premium source (BaseStorage/FileStorage/PlayerDataMigrator) + official docs: one
+# EXTENSIONLESS file per player named by the dashed uuid under GlobalPlayerData/, holding claim-block
+# counts only (no uuid inside) — the empty extension matches the bare-uuid filename, rename is
+# complete. If context-storage-type is world, copy this per world dir:
+# plugins/GriefDefender/worlds/<dim>/<world>/PlayerData. Claim files are covered by
+# griefdefender-claims.yml. SQL storage-method is undocumented (closed jar) — out of scope.
+# Run with the server stopped: GD loads everything in memory and saves async over external edits.
+name: griefdefender-playerdata
+platform: SPIGOT
+type: file
+directory: plugins/GriefDefender/GlobalPlayerData
+extension: ""
+enabled: true

@@ -1,0 +1,18 @@
+# FastAsyncWorldEdit rollback summary DB, on by default (history.use-database: true). One SQLite per
+# world: history/<world>/summary.db. Schema confirmed against RollbackDatabase.java: table _edits,
+# column player BLOB(16) = uuid msb+lsb big-endian — the engine's binary codec exactly. COPY this
+# module once per world folder (unique name each) and fix the path. Use TOGETHER with
+# fawe-history-dirs.yml (same world): the rows point at history/<world>/<uuid>/<id>.bd, so DB and
+# directories must move together or //history rollback misses. PK is (player, id): if the new uuid
+# already has edits in that world, dedupe first. Run with the server stopped (async history writer).
+name: fawe-history-db-world
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/FastAsyncWorldEdit/history/world/summary.db
+replacers:
+  - table: _edits
+    column: player
+    format: binary

@@ -68,6 +68,16 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `auraskills-userdata.yml` + `-content.yml` | file+content | `userdata/<uuid>.yml` rename + embedded `uuid:` rewrite (pair) | dashed | `FileStorageProvider.java` |
 | `skinsrestorer-file.yml` + `-content.yml` | file+content | `players/<uuid>.player` rename + embedded `uniqueId` rewrite (pair) | dashed | `PlayerFile`/`FileAdapter` |
 | `kingdomsx-players.yml` + `kingdomsx-content.yml` | file+content | `data/Players/<uuid>.json` rename + members/king/claims rewrite (pair) | dashed | decompiled DataHandlers, 1.17.x |
+| `typewriter.yml` | content | `facts.json` (uuid audience keys) | dashed | `FileFactStorage.kt` |
+| `voteparty-players.yml` + `-content.yml` | file+content | `players/<uuid>.json` + embedded uuid + party cache (pair) | dashed | `DatabaseVotePlayerGson.kt` |
+| `battlepass-users.yml` + `-content.yml` | file+content | `users/<uuid>.json` + embedded uuid (pair) | dashed | GC-spigot sources + official tracker |
+| `itemsadder-stats.yml` | file | `storage/players/stats/<uuid>.nbt` (rename) | filename | official docs + live install |
+| `bodyhealth.yml` | sql | `body_health` (`uuid`) in `bodyHealth.sqlite` | dashed | live-install schema |
+| `realisticseasons.yml` | content | `data.yml` uuid entries | dashed | live install (closed source) |
+| `tab.yml` | content | `users.yml` / `playerdata.yml` uuid keys | dashed | live install |
+| `fawe-clipboard.yml` / `fawe-sessions.yml` | file | `clipboard/<uuid>.bd` / `sessions/<uuid>.json` | filename | `DiskOptimizedClipboard`/`JsonFileSessionStore` |
+| `fawe-history-db.yml` / `fawe-history-dirs.yml` | sql/file | `history/<world>/summary.db` (`_edits.player` BLOB16) / `history/<world>/<uuid>/` dirs | **binary** / dirname | `RollbackDatabase`/`DiskStorageHistory` |
+| `griefdefender-playerdata.yml` / `-claims.yml` | file+content | extensionless `GlobalPlayerData/<uuid>` + claim HOCON rewrite | dashed | public pre-premium source + docs |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.
