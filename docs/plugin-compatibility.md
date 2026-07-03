@@ -85,6 +85,8 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
 | [Vulcan](https://www.spigotmc.org/resources/vulcan-anti-cheat-1-7-1-21-4.83626/) | ⚠️ | optional: `logs/punishments.txt` UUID lines (content) | violation levels are in-memory; `violations.txt` is name-keyed; the AC never reads the logs back by uuid — **not migration-critical**, the template is audit-trail only |
+| [ItemJoin](https://www.spigotmc.org/resources/itemjoin.12661/) | ⚠️ | SQLite/MySQL `ij_*` tables (`Player_UUID`, 9 player tables, dashed) | usually empty in prod; the default SQLite filename lives in the shaded ChaosCore lib — verify it (or use MySQL) before enabling. `table-pattern: "ij_%"` auto-skips the non-player `ij_map_ids` |
+| [pvparena](https://github.com/slipcor/pvparena) | ⚠️ | stats by uuid: slipcor mainline `players.yml` (`<arena>.<uuid>`, dashed) **or** a DB fork's `pvparena_statistics.player_uuid` | empty in prod; confirm which build (file vs SQL) and the format from one row before migrating |
 
 ## Not supported yet
 
@@ -111,12 +113,20 @@ Nexo (item/glyph configs), nuvotifier/Votifier (no offline queue), tebex (no on-
 ajQueue(+Plus), unifiedmetrics, autoannouncements, WLib, wolfyutils, SmartInvs, BlueSlimeCore,
 LoneLibs, MechanicsCore, NashornJs, mcMMO-style libs, LimitCrafting (config + permissions only),
 LockTheft (lock state in block/item NBT, keyed by a random lock id), BoostedAudio (ephemeral in-memory
-sessions). **[MoneyFromMobs](https://github.com/chocolf/MoneyFromMobs)**: money is Vault passthrough and
-the mute toggle is transient; the only persisted uuid is a hopper-owner tag in **world PDC** → already
-covered by the world/NBT module, no separate module needed (same for any Bukkit-PDC plugin). **Name-keyed
-(a uuid migration doesn't touch them; only nickname changes would):** AuthMe (external SQL, username
-column, no uuid), AdvancedReplay (recordings named by username), RPCorpse, SignShop, AxTrade logs,
-CustomScreenMenu.
+sessions). **Shared libraries / utilities (no standalone player store):** CMILib, CMIEInjector, PowerLib
+(powerlib-velocity/bukkit, Novaverse's shared lib), VPacketEvents, MythicLib (the MMO family's storage
+layer — the family data itself is templated via MMOItems/MMOCore/MMOInventory), proxyrestart,
+OfflineMaintenance, SimpleAutoRestart, MinecraftITALIA-Votifier-addon (no offline queue), GPS,
+BigDoorsOpener, LM_Items (stateless item-provider bridge), MMOItemsFix (runtime listener-override hotfix,
+no storage), Kingdoms-Addon-Outposts (own `outposts.yml` is name-keyed; its only player-uuid — a join-log
+entry — rides in KingdomsX core's kingdom `logs` column, covered by the KingdomsX migration).
+**[MoneyFromMobs](https://github.com/chocolf/MoneyFromMobs)**: money is Vault passthrough
+and the mute toggle is transient; the only persisted uuid is a hopper-owner tag in **world PDC** → already
+covered by the world/NBT module, no separate module needed (same for any Bukkit-PDC plugin).
+**Name-keyed (a uuid migration doesn't touch them; only nickname changes would):** AuthMe (external SQL,
+username column, no uuid), AuthMeVelocity (proxy auth bridge, delegates to AuthMe), ThirstBar (players.db
+keyed by name), AdvancedReplay (recordings named by username), RPCorpse, SignShop, AxTrade logs,
+CustomScreenMenu. (Nyx itself is the migration engine, not a data plugin that gets migrated.)
 
 ## Recurring blockers (what unlocks the ❌ rows)
 
