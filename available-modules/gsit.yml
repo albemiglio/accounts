@@ -1,0 +1,20 @@
+# GSit (Gecolay/GSit). Sit/lay/crawl seats are in-memory; the persistent per-player state is the
+# opt-out toggle store (ToggleService): default SQLite plugins/GSit/data/data.db (MySQL optional via
+# data/data.yml -> Database.type), tables gsit_sit_toggle / gsit_player_toggle / gsit_crawl_toggle,
+# each a single column `uuid TEXT` = dashed UUID.toString() (a row present = toggled away from default).
+# Empty unless players ran /sit toggle, /sit playertoggle or /crawl toggle. Run with the server stopped
+# (SQLite tolerates it); for the MySQL backend swap the database block, same table/column names.
+name: gsit
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/GSit/data/data.db
+replacers:
+  - table: gsit_sit_toggle
+    column: uuid
+  - table: gsit_player_toggle
+    column: uuid
+  - table: gsit_crawl_toggle
+    column: uuid

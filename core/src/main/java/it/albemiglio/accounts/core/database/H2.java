@@ -280,6 +280,8 @@ public class H2 extends DB {
                 return "d623cdc0f61d218cf549a8d09f1c391ff91096116b22e2475475fce4fbe72bd0";
             case "2.2.224": // MobPuppets
                 return "b9d8f19358ada82a4f6eb5b174c6cfe320a375b5a9cb5a4fe456d623e6e55497";
+            case "2.3.232": // TicketManager (TMSE)
+                return "8dae62d22db8982c3dcb3826edb9c727c5d302063a67eef7d63d82de401f07d3";
             case "2.4.240": // GravesX
                 return "29b70e427cc1c40cdc376283adbb0cc62853073797bb5fe5761f81fe73d57ce0";
             default:

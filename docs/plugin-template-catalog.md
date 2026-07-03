@@ -87,6 +87,14 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `featherboard.yml` / `weaponmechanics.yml` / `shopguiplus.yml` | sql | SQLite player tables | dashed | live-install schemas |
 | `tabtps.yml` | file | `userdata/<uuid>.json` (rename) | filename | live install |
 | `deathmessages.yml` / `commandpanels.yml` / `mobwave.yml` | content | shared yml uuid keys | dashed | live installs |
+| `playerauctions.yml` | sql | `playerauctions_players/-auctions/-recents` (SQLite/MySQL) | dashed | live install (closed source) |
+| `vehicles.yml` | sql | per-model `databases/<Model>/database.db` `vehicle.owner` (copy per model) | dashed | live install (closed source) |
+| `husksync.yml` | sql | `husksync_users` + `husksync_user_data` (MySQL, FK-off) | dashed | `mysql_schema.sql`, HuskSync 3.x |
+| `auxprotect.yml` | sql | `auxprotect_uids` (`$`+uuid + derived hashCode) | dashed + prefix | `SQLUserManager.java` |
+| `ajleaderboards.yml` | sql | MySQL board tables `ajlb_%` + `ajlb_extras` (`id`) | dashed | `Cache.java` (H2 default not covered) |
+| `ticketmanager.yml` | sql | H2 `TICKETMANAGER_V10_TICKETS/_ACTIONS.CREATOR` (`USER.`-prefixed) | dashed + prefix | `CachedH2.kt`, H2 2.3.232 |
+| `gsit.yml` | sql | `gsit_sit/player/crawl_toggle` (`uuid`) in `data.db` | dashed | `ToggleService.java` |
+| `combatlogx.yml` | file | `playerdata/<uuid>.data.yml` (rename) | filename | `PlayerDataManager` (BlueSlimeCore) |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

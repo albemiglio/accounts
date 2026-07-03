@@ -1,0 +1,32 @@
+# TicketManager (HoshiKurama/TicketManager, "TMCore"/TMSE). Schema confirmed against CachedH2.kt +
+# "Ticket Extension Functions.kt" on master (596a6fd): the ONLY built-in backend is CachedH2
+# (DefaultDatabaseExtension.load -> CachedH2), so a stock install always writes the H2 file
+# plugins/TicketManager/TicketManager-H2-V10.db.mv.db (data folder = tmDirectory; path below WITHOUT
+# the .mv.db suffix, H2 appends it). H2 version = 2.3.232 (com.h2database:h2:2.3.232 in
+# Standalone/Paper|Spigot|commonSE build.gradle.kts) -> MVStore format 3; the engine fetches that exact
+# driver (2.3.232 is sha256-pinned in the engine), sniffs the store header and refuses a mismatched
+# file. NB the Fabric build bundles 2.2.224 instead — if you run Fabric, set h2-version: "2.2.224"
+# (both are MVStore format 3). Tables are created UNQUOTED so H2 stores them upper-case (TICKETMANAGER_V10_TICKETS /
+# _ACTIONS); the player uuid is stored as the string "USER." + dashed uuid (Creator.asString():
+# "$CREATOR_USER.$uuid") in BOTH creator columns -> prefix "USER." + dashed. Console/invalid/dummy
+# creators are the sentinels CONSOLE / INVALID_UUID / DUMMY and correctly do NOT match the prefix.
+# ASSIGNED_TO is DELIBERATELY NOT migrated: Assignment.asString() stores PLAYER.<username> / CONSOLE /
+# NOBODY / GROUP.<name> / PHRASE.<text> — a username, never a uuid. Run with the server STOPPED (H2
+# wants exclusive access; TicketManager keeps tickets cached in RAM).
+name: ticketmanager
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: h2
+  database: plugins/TicketManager/TicketManager-H2-V10.db
+  h2-version: "2.3.232"
+  username: sa
+  password: ""
+replacers:
+  - table: TICKETMANAGER_V10_TICKETS
+    column: CREATOR
+    prefix: "USER."
+  - table: TICKETMANAGER_V10_ACTIONS
+    column: CREATOR
+    prefix: "USER."

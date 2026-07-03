@@ -1,0 +1,12 @@
+# CombatLogX (SirBlobman/CombatLogX). Live combat tags are in-memory (lost on restart — nothing to
+# migrate); the only persistent per-player state is flat YAML via BlueSlimeCore's PlayerDataManager at
+# plugins/CombatLogX/playerdata/<uuid>.data.yml (filename = dashed UUID.toString()), holding
+# punishment-count / forgive-toggle / kill-on-join / notification toggles. The uuid is only the
+# filename, not inside the body, so a rename is enough. Often sparse (written only when those features
+# are used). Run with the server stopped.
+name: combatlogx
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/CombatLogX/playerdata
+extension: data.yml

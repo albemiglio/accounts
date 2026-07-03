@@ -58,6 +58,10 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [PlayerAuctions](https://www.spigotmc.org/resources/playerauctions.20055/) | ✅ | SQLite **or** MySQL (players + auctions + recents; live-install verified) | closed source: schema from a live install; bidder/target format inferred (verify one row); auction-item blobs untouched |
 | [HuskSync](https://github.com/WiIIiam278/HuskSync) | ✅ | MySQL/MariaDB (disable-foreign-key-checks); husksync_users + husksync_user_data, dashed char(36) | v3 dropped SQLite; Postgres/Mongo need their own modules; uuids frozen in old snapshot blobs |
 | [AuxProtect](https://github.com/Heliosares/AuxProtect) | ✅ | SQLite (default) + MySQL/MariaDB; `$`-prefixed uuid with the co-updated hashCode lookup column | event tables key by an int uid (untouched, correct) |
+| [TicketManager](https://github.com/HoshiKurama/TicketManager) | ✅ | **default H2** (pinned 2.3.232); TICKETMANAGER_V10_TICKETS/_ACTIONS.CREATOR, `USER.`-prefixed dashed | ASSIGNED_TO/console are usernames/sentinels (correctly excluded); Fabric bundles 2.2.224 |
+| [GSit](https://github.com/Gecolay/GSit) | ✅ | SQLite (default) / MySQL toggle store: gsit_sit/player/crawl_toggle.uuid | empty unless players used /sit toggle etc. |
+| [CombatLogX](https://github.com/SirBlobman/CombatLogX) | ✅ | playerdata/`<uuid>`.data.yml rename (punish-count / toggles) | live combat tags are in-memory (nothing to migrate) |
+| [Vehicles](https://www.spigotmc.org/resources/vehicles.90130/) | ✅ | per-model SQLite `databases/<Model>/database.db`, vehicle.owner dashed | one db file per model → copy the module per model; trunk blob out of scope |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -76,7 +80,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [MMOInventory](https://www.spigotmc.org/resources/mmoinventory.101946/) | ⚠️ | YAML backend | MySQL table name only ships in the premium jar |
 | [MCPets](https://github.com/Nocsy-Workshop/mcpets) | ⚠️ | ownership/inventories/active pet (files **and** MySQL) | pet levels/XP live in Base64(JSON) blobs embedding the owner uuid |
 | [KingdomsX](https://github.com/CryptoMorin/KingdomsX) | ⚠️ | JSON/YAML flat-file modes (player rename + embedded members/king/claims rewrite pair) | SQL modes incl. the **default H2**: member lists sit in JSON columns — switch to file mode first |
-| [BattlePass](https://github.com/GC-spigot/battle-pass) | ⚠️ | JSON storage (rename+content pair; the default through 4.x) | 5.0 SQL: FKs without cascade + undocumented SQLite filename; legacy MySQL keeps the uuid inside a blob |
+| [BattlePass](https://github.com/GC-spigot/battle-pass) | ⚠️ | JSON storage (rename+content pair; the default through 4.x) | SQL backend (via simple-spigot) is one key-value table `battlePass-` (id VARCHAR(36) + json MEDIUMBLOB, dashed, no FK) — the uuid also sits inside the blob so a column re-key leaves it stale; the v5 "Improved" schema is in no public source |
 | [ItemsAdder](https://itemsadder.devs.beer/) | ⚠️ | player stats .nbt files (docs + live-install verified: uuid only in the filename) | emote-unlock persistence undocumented (typically permission-side) |
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
@@ -104,9 +108,14 @@ Vivecraft, BlockRegen, Craftorithm, CustomCrafting, Codex, ChatFilter, AntiNethe
 custom-ore-generator, MobFarmManager, PetNameFix, SellGUI, TwitchLiveAnnouncer, LibsDisguises,
 Nexo (item/glyph configs), nuvotifier/Votifier (no offline queue), tebex (no on-disk queue),
 ajQueue(+Plus), unifiedmetrics, autoannouncements, WLib, wolfyutils, SmartInvs, BlueSlimeCore,
-LoneLibs, MechanicsCore, NashornJs, mcMMO-style libs. **Name-keyed (a uuid migration doesn't touch
-them; only nickname changes would):** AuthMe (external SQL, username column, no uuid), AdvancedReplay
-(recordings named by username), RPCorpse, SignShop, AxTrade logs, CustomScreenMenu.
+LoneLibs, MechanicsCore, NashornJs, mcMMO-style libs, LimitCrafting (config + permissions only),
+LockTheft (lock state in block/item NBT, keyed by a random lock id), BoostedAudio (ephemeral in-memory
+sessions). **[MoneyFromMobs](https://github.com/chocolf/MoneyFromMobs)**: money is Vault passthrough and
+the mute toggle is transient; the only persisted uuid is a hopper-owner tag in **world PDC** → already
+covered by the world/NBT module, no separate module needed (same for any Bukkit-PDC plugin). **Name-keyed
+(a uuid migration doesn't touch them; only nickname changes would):** AuthMe (external SQL, username
+column, no uuid), AdvancedReplay (recordings named by username), RPCorpse, SignShop, AxTrade logs,
+CustomScreenMenu.
 
 ## Recurring blockers (what unlocks the ❌ rows)
 
