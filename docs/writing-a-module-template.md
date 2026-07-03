@@ -222,6 +222,29 @@ operators can still tweak or disable what you ship.
 
 ---
 
+## Scanning an unknown plugin
+
+For a closed-source plugin with no template, you don't have to reverse-engineer its storage. The
+engine's scanner takes a **probe UUID** — a real player known to have data in that plugin — and hunts
+for it across each `plugins/<Plugin>/` folder: uuid-named files and directories, the dashed uuid
+inside text files (same whole-token rule as `type: content`), every column of every `.db`/`.sqlite`
+file in all three `format` encodings, and raw bytes in binary files. SQLite files are probed on a
+**temporary copy**; the scanner never opens or writes live plugin data.
+
+Each hit becomes a draft template (`<plugin>.auto.yml`) that parses like any hand-written one, with
+deliberate limits:
+
+- **Every draft is `enabled: false`.** A scan is a lead, not a verified template — review before
+  enabling.
+- **Content drafts list the exact files that matched** the probe. Other players' data may live in
+  differently-named files, so widen `targets` to a directory + glob if that's the plugin's pattern.
+- **SQL drafts' `format` still needs a human eye**: the probe found *a* matching column, but confirm
+  the table really keys player data by it (the `SELECT ... LIMIT 1` check above).
+- Binary files that contain the uuid but match no known layout are reported (`UNKNOWN_BINARY`) with
+  **no draft** — that's jar-module territory (below).
+
+---
+
 ## Custom module types via SPI
 
 If a plugin stores UUIDs in a format none of the five built-ins cover (an exotic binary file, a
