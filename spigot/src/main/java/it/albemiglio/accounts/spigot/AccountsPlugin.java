@@ -3,6 +3,9 @@ package it.albemiglio.accounts.spigot;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.nbt.NbtModule;
 import it.albemiglio.accounts.core.objects.Task;
+import it.albemiglio.accounts.core.scan.DraftWriter;
+import it.albemiglio.accounts.core.scan.ScanFinding;
+import it.albemiglio.accounts.core.scan.Scanner;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.InstanceId;
 import it.albemiglio.accounts.core.services.MigrationArgs;
@@ -17,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Spigot entry point: a backend runs this so its own local databases are migrated when a UUID
@@ -81,6 +85,9 @@ public final class AccountsPlugin extends JavaPlugin {
             sender.sendMessage("Accounts is not running.");
             return true;
         }
+        if (args.length > 0 && args[0].equalsIgnoreCase("scan")) {
+            return scan(sender, args);
+        }
         try {
             Task task = MigrationArgs.parse(args);
             engine.migrate(task);
@@ -89,6 +96,49 @@ public final class AccountsPlugin extends JavaPlugin {
         } catch (IllegalArgumentException e) {
             sender.sendMessage("Usage: /accounts migrate <fromUuid> <toUuid> [username]");
         }
+        return true;
+    }
+
+    /**
+     * {@code /accounts scan <probe-uuid>} — points the scanner at a player known to have data on this
+     * server and drafts a disabled module for every place their uuid turns up, so a plugin with no
+     * template and no source still gets a starting point. Read-only on plugin data; runs off the main
+     * thread because it walks every plugin folder and copies each SQLite file.
+     */
+    private boolean scan(CommandSender sender, String[] args) {
+        if (args.length != 2) {
+            sender.sendMessage("Usage: /accounts scan <probe-uuid>  (a player known to have data here)");
+            return true;
+        }
+        final UUID probe;
+        try {
+            probe = UUID.fromString(args[1]);
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage("Not a valid uuid: " + args[1]);
+            return true;
+        }
+        Path pluginsDir = getDataFolder().toPath().toAbsolutePath().getParent();
+        Path outDir = getDataFolder().toPath().resolve("scan-drafts");
+        sender.sendMessage("Scanning plugin data for " + probe + " — this can take a moment…");
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            List<String> lines = new ArrayList<>();
+            try {
+                List<ScanFinding> findings = new Scanner().scan(pluginsDir, probe);
+                if (findings.isEmpty()) {
+                    lines.add("No trace of " + probe + " found — is that player's data on this server?");
+                } else {
+                    new DraftWriter().write(findings, outDir);
+                    lines.add("Found " + findings.size() + " place(s); drafts (all disabled) written to "
+                            + outDir + " — review before enabling.");
+                    for (ScanFinding finding : findings) {
+                        lines.add(" - " + finding.getPluginName() + ": " + finding.getNote());
+                    }
+                }
+            } catch (IOException e) {
+                lines.add("Scan failed: " + e.getMessage());
+            }
+            getServer().getScheduler().runTask(this, () -> lines.forEach(sender::sendMessage));
+        });
         return true;
     }
 }

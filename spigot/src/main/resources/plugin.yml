@@ -6,7 +6,9 @@ author: albemiglio
 commands:
   accounts:
     description: Account migration admin command
-    usage: /accounts migrate <fromUuid> <toUuid> [username]
+    usage: |-
+      /accounts migrate <fromUuid> <toUuid> [username]
+      /accounts scan <probe-uuid>
     permission: accounts.migrate
 permissions:
   accounts.migrate:
