@@ -95,9 +95,14 @@ SELECT uuid FROM <table> LIMIT 1;
 
 - **SQLite** migrates fine while the server is running.
 - **MySQL / MariaDB** — point `database` at the same DB the plugin uses.
-- **H2 is not supported.** The owning plugin holds an exclusive lock on the `.mv.db` file, so it can't be
-  migrated live. Configure that plugin to use SQLite or MySQL instead. The engine throws a clear error if
-  you try (`type: h2`).
+- **H2** — supported, with one extra required key: `h2-version`, pinned to **the exact version the
+  owning plugin bundles** (e.g. GravesX → `"2.4.240"`, AxVaults → `"2.1.214"`). H2 file formats are
+  mutually incompatible across versions (1.4 / 2.0–2.1 / 2.2+ each speak a different store format), so
+  the engine downloads exactly that driver from Maven Central (cached in `plugins/Accounts/h2-drivers`,
+  sha256-verified for known versions), sniffs the store header first and **refuses a mismatched file**
+  instead of corrupting it. Connections use `IFEXISTS=TRUE` (a typoed path errors instead of creating an
+  empty store). The `database` path is given WITHOUT the `.mv.db` suffix. H2 is single-process: run the
+  migration with every server that loads the plugin **stopped**.
 
 ---
 

@@ -1,22 +1,29 @@
 # GravesX (legoman99573/GravesX, fork of Ranull's Graves). Schema confirmed against DataManager.java:
 # table <prefix>grave (prefix default empty) with owner_uuid/killer_uuid VARCHAR bound u.toString() ->
-# dashed. ⚠ The plugin's DEFAULT backend is H2 (settings.storage.type: H2 -> data/graves.data.mv.db),
-# which this engine cannot open — this template targets MySQL/MariaDB installs; the legacy pre-H2
-# SQLite file (data/data.db) also works if still in use. grave.uuid is the grave's own id and the
-# entity/block/hologram tables hold grave/world-entity uuids — excluded (grave entities in the world are
-# the world module's territory). killer_uuid may hold a mob uuid: the exact-value UPDATE can't
-# false-positive. Inventory blobs may embed skull uuids (cosmetic, not rewritten). Server stopped.
+# dashed. The plugin's DEFAULT backend is H2 2.4.240 (runtime-fetched via Libby, Graves.java) — pinned
+# below; the engine fetches that exact driver, sniffs the store header and refuses a mismatched file.
+# MySQL/MariaDB and the legacy pre-H2 SQLite file are the commented alternatives. grave.uuid is the
+# grave's own id and the entity/block/hologram tables hold grave/world-entity uuids — excluded (grave
+# entities in the world are the world module's territory). killer_uuid may hold a mob uuid: the
+# exact-value UPDATE can't false-positive. Inventory blobs may embed skull uuids (cosmetic).
+# Run with the server stopped — graves are cached in RAM and written back asynchronously.
 name: gravesx
 platform: SPIGOT
 type: sql
 enabled: true
 database:
-  type: mysql
-  host: localhost
-  port: 3306
-  username: minecraft
-  password: secret
-  database: graves
+  type: h2
+  database: plugins/GravesX/data/graves.data
+  h2-version: "2.4.240"
+  username: sa
+  password: ""
+# database:
+#   type: mysql            # or mariadb (settings.storage.mysql.* in GravesX config.yml)
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: graves
 # Legacy pre-H2 installs:
 # database:
 #   type: sqlite

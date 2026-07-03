@@ -16,6 +16,16 @@ database:
   username: minecraft
   password: secret
   database: litebans
+# LiteBans' DEFAULT backend is its bundled H2. Best official evidence says it stayed on the 1.4 line
+# for file compatibility (changelog: 2.4.2 downgraded to 1.4.197, never bumped since) but the jar is
+# closed — VERIFY before use; the engine's header sniff refuses the file if the pin is wrong anyway.
+# Credentials live in plugins/LiteBans/h2.yml.
+# database:
+#   type: h2
+#   database: plugins/LiteBans/litebans
+#   h2-version: "1.4.197"
+#   username: sa
+#   password: ""
 replacers:
   - table: litebans_bans
     column: uuid

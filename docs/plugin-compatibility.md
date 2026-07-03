@@ -28,6 +28,8 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [MMOItems](https://gitlab.com/phoenix-dvpmt/mmoitems) | ✅ | YAML **and** MySQL backends | soulbound uuid inside item NBT (cosmetic) |
 | [WorldGuard](https://enginehub.org/worldguard) | ✅ | YAML region files (owners/members) + profile cache + (rare) SQL region store | run with the server stopped |
 | [Residence](https://github.com/Zrips/Residence) | ✅ | PlayerData files + all Save data (owners, trust keys, rent, permlists, shop votes, backups) | run with the server stopped |
+| [AxVaults](https://github.com/Artillex-Studios/AxVaults) | ✅ | **default H2** (version-pinned 2.1.214) + SQLite/MySQL | run with the server stopped |
+| [GravesX](https://github.com/legoman99573/GravesX) | ✅ | **default H2** (version-pinned 2.4.240) + MySQL/MariaDB + legacy SQLite | run with the server stopped |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -39,9 +41,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [QuickShop-Hikari](https://github.com/QuickShop-Community/QuickShop-Hikari) | ⚠️ | MySQL | default H2 backend |
 | [CMI](https://www.zrips.net/cmi/) | ⚠️ | SQL template (closed source) | uuid encoding unverified — check one row first |
 | [Maintenance](https://github.com/kennytv/Maintenance) | ⚠️ | WhitelistedPlayers.yml (uuid keys, all platform paths) | proxies with Maintenance's Redis sync read the whitelist from Redis instead |
-| [LiteBans](https://www.spigotmc.org/resources/litebans.3715/) | ⚠️ | MySQL/MariaDB (12 columns, official schema) | **default H2 backend**; PostgreSQL |
-| [AxVaults](https://github.com/Artillex-Studios/AxVaults) | ⚠️ | SQLite/MySQL | **default H2 backend** |
-| [GravesX](https://github.com/legoman99573/GravesX) | ⚠️ | MySQL/MariaDB + legacy SQLite | **default H2 backend** |
+| [LiteBans](https://www.spigotmc.org/resources/litebans.3715/) | ⚠️ | MySQL/MariaDB (12 columns, official schema); H2 template ready | its exact bundled H2 version is unverifiable (closed jar) — the engine's header sniff protects you; PostgreSQL |
 | [AuraSkills](https://github.com/Archy-X/AuraSkills) | ⚠️ | MySQL | default YAML backend embeds the uuid inside each file |
 | [SkinsRestorer](https://github.com/SkinsRestorer/SkinsRestorer) | ⚠️ | MySQL/MariaDB (4 identity tables; skin cache correctly untouched) | default FILE backend embeds the uuid inside JSON |
 | [MMOCore](https://gitlab.com/phoenix-dvpmt/mmocore) | ⚠️ | YAML backend fully (userdata + friends + guilds); MySQL identity column | on MySQL the friends list sits in a LONGTEXT column |
@@ -60,9 +60,10 @@ means the schema was read from the plugin's own code or official schema docs, ne
 
 ## Recurring blockers (what unlocks the ❌ rows)
 
-1. **H2 default backends** (LiteBans, AxVaults, GravesX, KingdomsX, QuickShop-Hikari…) — H2 holds an
-   exclusive file lock; the engine deliberately refuses it. Operators can switch the plugin to
-   SQLite/MySQL first (most of these plugins ship converters).
+1. **H2 default backends** — now supported: each module pins the exact H2 version its plugin bundles
+   (`h2-version`), the engine fetches that driver (H2 file formats are incompatible across versions)
+   and sniffs the store header before touching the file. Requires the server stopped. Remaining edge:
+   closed-source plugins whose bundled version can't be read (LiteBans — sniff still protects you).
 2. **UUIDs inside structured content** — now covered by the `content` module type (whole-token dashed
    uuid swap inside text files, comments preserved), used by the WorldGuard/Residence/Maintenance/
    MMOCore templates. Still out of its reach: uuids inside SQL blob/JSON *columns* (KingdomsX members,
