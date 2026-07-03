@@ -62,6 +62,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [GSit](https://github.com/Gecolay/GSit) | ✅ | SQLite (default) / MySQL toggle store: gsit_sit/player/crawl_toggle.uuid | empty unless players used /sit toggle etc. |
 | [CombatLogX](https://github.com/SirBlobman/CombatLogX) | ✅ | playerdata/`<uuid>`.data.yml rename (punish-count / toggles) | live combat tags are in-memory (nothing to migrate) |
 | [Vehicles](https://www.spigotmc.org/resources/vehicles.90130/) | ✅ | per-model SQLite `databases/<Model>/database.db`, vehicle.owner dashed | one db file per model → copy the module per model; trunk blob out of scope |
+| VendingMachines | ✅ | `UserSavedPrices.yml` dashed-uuid keys (content) | placed-machine `OwnerName` is username-based (not a uuid — correctly untouched); schema from the decompiled jar |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -113,7 +114,8 @@ Nexo (item/glyph configs), nuvotifier/Votifier (no offline queue), tebex (no on-
 ajQueue(+Plus), unifiedmetrics, autoannouncements, WLib, wolfyutils, SmartInvs, BlueSlimeCore,
 LoneLibs, MechanicsCore, NashornJs, mcMMO-style libs, LimitCrafting (config + permissions only),
 LockTheft (lock state in block/item NBT, keyed by a random lock id), BoostedAudio (ephemeral in-memory
-sessions). **Shared libraries / utilities (no standalone player store):** CMILib, CMIEInjector, PowerLib
+sessions), ProfileButtons (config-driven GUI; only a transient in-memory cooldown map, bundled HikariCP
+is dead/unreferenced). **Shared libraries / utilities (no standalone player store):** CMILib, CMIEInjector, PowerLib
 (powerlib-velocity/bukkit, Novaverse's shared lib), VPacketEvents, MythicLib (the MMO family's storage
 layer — the family data itself is templated via MMOItems/MMOCore/MMOInventory), proxyrestart,
 OfflineMaintenance, SimpleAutoRestart, MinecraftITALIA-Votifier-addon (no offline queue), GPS,
@@ -122,7 +124,9 @@ no storage), Kingdoms-Addon-Outposts (own `outposts.yml` is name-keyed; its only
 entry — rides in KingdomsX core's kingdom `logs` column, covered by the KingdomsX migration).
 **[MoneyFromMobs](https://github.com/chocolf/MoneyFromMobs)**: money is Vault passthrough
 and the mute toggle is transient; the only persisted uuid is a hopper-owner tag in **world PDC** → already
-covered by the world/NBT module, no separate module needed (same for any Bukkit-PDC plugin).
+covered by the world/NBT module, no separate module needed (same for any Bukkit-PDC plugin). **Rpsize**
+likewise stores only the player scale in the PDC (`rpsize:player_scale`, a DOUBLE in world playerdata) →
+world-covered, no plugin store.
 **Name-keyed (a uuid migration doesn't touch them; only nickname changes would):** AuthMe (external SQL,
 username column, no uuid), AuthMeVelocity (proxy auth bridge, delegates to AuthMe), ThirstBar (players.db
 keyed by name), AdvancedReplay (recordings named by username), RPCorpse, SignShop, AxTrade logs,

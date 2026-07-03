@@ -1,0 +1,13 @@
+# VendingMachines (juligame, closed source — schema read from the decompiled production jar). Per-player
+# saved prices live in plugins/VendingMachines/UserSavedPrices.yml as top-level dashed-uuid keys
+# (<uuid>.<slot>: <price>), written by UserSavedPrices.Save() with player.getUniqueId().toString() (no
+# dash-stripping -> dashed). Whole-token dashed swap. There is NO database backend (pure YAML).
+# NB placed-machine ownership (PlacedVendingMachines/<id>.yml `OwnerName`) is USERNAME-based, not a uuid,
+# so a uuid migration does not touch it (a rename migration would). Run with the server stopped
+# (UserSavedPrices.yml is written on disable).
+name: vendingmachines
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/VendingMachines/UserSavedPrices.yml
