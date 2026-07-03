@@ -3,14 +3,19 @@ package it.albemiglio.accounts.core.modules;
 import it.albemiglio.accounts.core.database.DB;
 import it.albemiglio.accounts.core.modules.replacers.Replacer;
 import it.albemiglio.accounts.core.objects.Pair;
+import it.albemiglio.accounts.core.objects.enums.DBType;
 import it.albemiglio.accounts.core.objects.enums.Platform;
 import lombok.Getter;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
+import java.util.logging.Logger;
 
 public abstract class Module {
+
+    private static final Logger LOG = Logger.getLogger(Module.class.getName());
 
     @Getter
     private final String name;
@@ -18,6 +23,7 @@ public abstract class Module {
     private boolean running;
     @Getter
     private boolean enabled;
+    private boolean foreignKeyChecksDisabled;
     private Optional<String> pluginName;
 
     private final DB database;
@@ -41,6 +47,18 @@ public abstract class Module {
         this.replacers.add(replacer);
     }
 
+    /**
+     * Plugins like HuskSync and BattlePass declare foreign keys between their uuid columns without
+     * ON UPDATE CASCADE, so whichever table a replacer updates first violates the constraint. When set,
+     * enforcement is suspended around this module's transaction (MySQL/MariaDB
+     * {@code FOREIGN_KEY_CHECKS}, H2 {@code SET REFERENTIAL_INTEGRITY}) and restored afterwards even on
+     * rollback; engines with nothing to suspend (SQLite doesn't enforce foreign keys by default) log
+     * and ignore the flag.
+     */
+    protected void disableForeignKeyChecks() {
+        this.foreignKeyChecksDisabled = true;
+    }
+
     public void enable() {
         this.enabled = true;
     }
@@ -55,6 +73,15 @@ public abstract class Module {
         try (Connection connection = database.getConnection()) {
             boolean autoCommit = connection.getAutoCommit();
             connection.setAutoCommit(false);
+            String suspend = foreignKeyChecksDisabled
+                    ? foreignKeyChecksSql(database.getType(), false) : null;
+            if (foreignKeyChecksDisabled && suspend == null) {
+                LOG.info("module " + name + ": disable-foreign-key-checks ignored on "
+                        + database.getType() + " — nothing to suspend");
+            }
+            if (suspend != null) {
+                executeStatement(connection, suspend);
+            }
             try {
                 for (Replacer replacer : replacers) {
                     replacer.replace(connection, migration.getLeft(), migration.getRight());
@@ -64,10 +91,40 @@ public abstract class Module {
                 connection.rollback();
                 throw new MigrationException("Migration failed for module " + name, e);
             } finally {
+                if (suspend != null) {
+                    // Restore even on rollback: MySQL scopes the flag to the session and this
+                    // connection goes back to the pool; H2 scopes it to the whole database.
+                    try {
+                        executeStatement(connection, foreignKeyChecksSql(database.getType(), true));
+                    } catch (SQLException e) {
+                        LOG.warning("module " + name + " could not restore foreign key checks: " + e);
+                    }
+                }
                 connection.setAutoCommit(autoCommit);
             }
         } catch (SQLException e) {
             throw new MigrationException("Migration failed for module " + name, e);
+        }
+    }
+
+    /**
+     * The engine's toggle statement, or null where there is no enforcement to toggle. H2's
+     * {@code SET REFERENTIAL_INTEGRITY} needs admin rights and commits the open transaction, which is
+     * why it only ever runs before the first replacer and after commit/rollback.
+     */
+    private static String foreignKeyChecksSql(DBType type, boolean enabled) {
+        if (type == DBType.MYSQL || type == DBType.MARIADB) {
+            return "SET FOREIGN_KEY_CHECKS=" + (enabled ? 1 : 0);
+        }
+        if (type == DBType.H2) {
+            return "SET REFERENTIAL_INTEGRITY " + (enabled ? "TRUE" : "FALSE");
+        }
+        return null;
+    }
+
+    private static void executeStatement(Connection connection, String sql) throws SQLException {
+        try (Statement st = connection.createStatement()) {
+            st.execute(sql);
         }
     }
 

@@ -75,12 +75,30 @@ public class YamlModuleFactory {
         List<Map<String, Object>> replacerConfigs = (List<Map<String, Object>>) config.get("replacers");
         if (replacerConfigs != null) {
             for (Map<String, Object> replacer : replacerConfigs) {
-                UuidCodec codec = UuidCodec.of((String) replacer.get("format"));
-                replacers.add(new ColumnReplacer(
-                        (String) replacer.get("table"), (String) replacer.get("column"), codec));
+                replacers.add(buildReplacer(replacer));
             }
         }
-        return new YamlModule(name, platform, database, replacers);
+        return new YamlModule(name, platform, database, replacers,
+                Boolean.TRUE.equals(config.get("disable-foreign-key-checks")));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Replacer buildReplacer(Map<String, Object> config) {
+        List<ColumnReplacer.Derived> derived = new ArrayList<>();
+        List<Map<String, Object>> derivedConfigs = (List<Map<String, Object>>) config.get("derived");
+        if (derivedConfigs != null) {
+            for (Map<String, Object> extra : derivedConfigs) {
+                derived.add(new ColumnReplacer.Derived(
+                        (String) extra.get("column"), (String) extra.get("fn")));
+            }
+        }
+        return new ColumnReplacer(
+                (String) config.get("table"),
+                (String) config.get("table-pattern"),
+                (String) config.get("column"),
+                UuidCodec.of((String) config.get("format")),
+                (String) config.get("prefix"),
+                derived);
     }
 
     private DB buildDatabase(Map<String, Object> config) {

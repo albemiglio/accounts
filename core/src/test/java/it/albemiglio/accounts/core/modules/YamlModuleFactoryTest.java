@@ -67,6 +67,105 @@ class YamlModuleFactoryTest {
     }
 
     @Test
+    void buildsPrefixedAndDerivedReplacersFromYaml(@TempDir Path dir) throws Exception {
+        String dbFile = dir.resolve("auxprotect.db").toString();
+        String oldStored = "$" + OLD;
+        DB seed = new SQLite(null, 0, null, null, dbFile);
+        try (Connection c = seed.getConnection(); Statement st = c.createStatement()) {
+            st.execute("CREATE TABLE auxprotect_uids (uuid TEXT, hash INTEGER)");
+            st.execute("INSERT INTO auxprotect_uids VALUES ('" + oldStored + "', " + oldStored.hashCode() + ")");
+        }
+        seed.close();
+
+        Map<String, Object> config = sqliteConfig("auxprotect", dbFile);
+        config.put("replacers", List.of(Map.of(
+                "table", "auxprotect_uids",
+                "column", "uuid",
+                "prefix", "$",
+                "derived", List.of(Map.of("column", "hash", "fn", "java-string-hashcode")))));
+
+        new YamlModuleFactory().build(config).execute(Pair.of(OLD, NEW));
+
+        String newStored = "$" + NEW;
+        DB check = new SQLite(null, 0, null, null, dbFile);
+        assertEquals(newStored, single(check, "SELECT uuid FROM auxprotect_uids"));
+        assertEquals(String.valueOf(newStored.hashCode()), single(check, "SELECT hash FROM auxprotect_uids"));
+        check.close();
+    }
+
+    @Test
+    void buildsATablePatternReplacerFromYaml(@TempDir Path dir) throws Exception {
+        String dbFile = dir.resolve("ajlb.db").toString();
+        DB seed = new SQLite(null, 0, null, null, dbFile);
+        try (Connection c = seed.getConnection(); Statement st = c.createStatement()) {
+            st.execute("CREATE TABLE ajlb_kills (uuid TEXT)");
+            st.execute("CREATE TABLE ajlb_deaths (uuid TEXT)");
+            st.execute("CREATE TABLE unrelated (uuid TEXT)");
+            st.execute("INSERT INTO ajlb_kills VALUES ('" + OLD + "')");
+            st.execute("INSERT INTO ajlb_deaths VALUES ('" + OLD + "')");
+            st.execute("INSERT INTO unrelated VALUES ('" + OLD + "')");
+        }
+        seed.close();
+
+        Map<String, Object> config = sqliteConfig("ajleaderboards", dbFile);
+        config.put("replacers", List.of(Map.of("table-pattern", "ajlb_%", "column", "uuid")));
+
+        new YamlModuleFactory().build(config).execute(Pair.of(OLD, NEW));
+
+        DB check = new SQLite(null, 0, null, null, dbFile);
+        assertEquals(NEW.toString(), single(check, "SELECT uuid FROM ajlb_kills"));
+        assertEquals(NEW.toString(), single(check, "SELECT uuid FROM ajlb_deaths"));
+        assertEquals(OLD.toString(), single(check, "SELECT uuid FROM unrelated"));
+        check.close();
+    }
+
+    @Test
+    void replacerWithBothTableAndTablePatternIsRejected() {
+        Map<String, Object> config = sqliteConfig("x", ":memory:");
+        config.put("replacers", List.of(Map.of("table", "a", "table-pattern", "a_%", "column", "uuid")));
+
+        assertThrows(IllegalArgumentException.class, () -> new YamlModuleFactory().build(config));
+    }
+
+    @Test
+    void replacerWithNeitherTableNorTablePatternIsRejected() {
+        Map<String, Object> config = sqliteConfig("x", ":memory:");
+        config.put("replacers", List.of(Map.of("column", "uuid")));
+
+        assertThrows(IllegalArgumentException.class, () -> new YamlModuleFactory().build(config));
+    }
+
+    @Test
+    void replacerWithAnUnknownDerivedFnIsRejected() {
+        Map<String, Object> config = sqliteConfig("x", ":memory:");
+        config.put("replacers", List.of(Map.of("table", "a", "column", "uuid",
+                "derived", List.of(Map.of("column", "hash", "fn", "md5")))));
+
+        assertThrows(IllegalArgumentException.class, () -> new YamlModuleFactory().build(config));
+    }
+
+    @Test
+    void replacerWithPrefixAndBinaryFormatIsRejected() {
+        Map<String, Object> config = sqliteConfig("x", ":memory:");
+        config.put("replacers", List.of(Map.of("table", "a", "column", "uuid",
+                "format", "binary", "prefix", "$")));
+
+        assertThrows(IllegalArgumentException.class, () -> new YamlModuleFactory().build(config));
+    }
+
+    private static Map<String, Object> sqliteConfig(String name, String dbFile) {
+        Map<String, Object> dbConfig = new LinkedHashMap<>();
+        dbConfig.put("type", "SQLITE");
+        dbConfig.put("database", dbFile);
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("name", name);
+        config.put("platform", "SPIGOT");
+        config.put("database", dbConfig);
+        return config;
+    }
+
+    @Test
     void enablesModuleWhenConfigRequestsIt() {
         Map<String, Object> dbConfig = new LinkedHashMap<>();
         dbConfig.put("type", "SQLITE");

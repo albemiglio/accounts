@@ -91,6 +91,51 @@ SELECT uuid FROM <table> LIMIT 1;
 - 32 hex chars, no hyphens → `undashed`.
 - unreadable / shows as bytes, column declared `BINARY(16)` → `binary`.
 
+### `disable-foreign-key-checks` — FKs without `ON UPDATE CASCADE`
+
+Some plugins (HuskSync, BattlePass) declare foreign keys between their uuid columns **without
+`ON UPDATE CASCADE`** — whichever table is updated first violates the constraint, in either order.
+This top-level key suspends enforcement for the module's transaction (`FOREIGN_KEY_CHECKS` on
+MySQL/MariaDB, `SET REFERENTIAL_INTEGRITY` on H2) and restores it afterwards, even on rollback.
+On SQLite it's ignored with a log line — SQLite doesn't enforce foreign keys by default.
+
+```yaml
+type: sql
+disable-foreign-key-checks: true   # default false
+```
+
+### Prefixed and derived columns
+
+AuxProtect stores `'$' + dashed-uuid` and looks rows up **by a companion hash column** — rewriting the
+uuid without the hash bricks the plugin. `prefix` makes matching and rewriting use `prefix + encoded
+uuid`; each `derived` column is written **in the same UPDATE**, computed from the full new stored
+string. The only `fn` today is `java-string-hashcode` (`INT = String.hashCode()`). Both keys work on
+string encodings only — combining them with `format: binary` is rejected when the template loads.
+
+```yaml
+replacers:
+  - table: auxprotect_uids
+    column: uuid
+    prefix: "$"                    # stored value = prefix + encoded uuid (dashed default)
+    derived:
+      - column: hash
+        fn: java-string-hashcode   # INT = String.hashCode() of the FULL stored string (prefix+uuid)
+```
+
+### `table-pattern` — runtime table discovery
+
+Plugins like ajLeaderboards, BetterRTP and BetterEnderChest create **one table per
+board/world/group**, so the table names aren't known when the template is written. Give
+`table-pattern` (SQL `LIKE` syntax) **instead of** `table:` — exactly one of the two — and the engine
+enumerates the matching tables at migration time, running the same UPDATE on each. A matched table
+without the column is skipped with a log line (heterogeneous tables may share a prefix).
+
+```yaml
+replacers:
+  - table-pattern: "ajlb_%"
+    column: uuid
+```
+
 ### Database notes
 
 - **SQLite** migrates fine while the server is running.

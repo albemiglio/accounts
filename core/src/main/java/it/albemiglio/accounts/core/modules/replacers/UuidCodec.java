@@ -16,28 +16,38 @@ public enum UuidCodec {
     /** The default: a 36-char dashed string, e.g. {@code 069a79f4-44e9-4726-a5be-fca90e38aaf5}. */
     DASHED {
         @Override
-        public void bind(PreparedStatement ps, int index, UUID id) throws SQLException {
-            ps.setString(index, id.toString());
+        public String encode(UUID id) {
+            return id.toString();
         }
     },
 
     /** 32 hex chars with the hyphens removed, e.g. {@code 069a79f444e94726a5befca90e38aaf5}. */
     UNDASHED {
         @Override
-        public void bind(PreparedStatement ps, int index, UUID id) throws SQLException {
-            ps.setString(index, id.toString().replace("-", ""));
+        public String encode(UUID id) {
+            return id.toString().replace("-", "");
         }
     },
 
     /** 16 raw bytes, most-significant long first, bound as a {@code byte[]} so nothing is concatenated. */
     BINARY {
         @Override
+        public String encode(UUID id) {
+            throw new UnsupportedOperationException("binary uuids have no stored string form");
+        }
+
+        @Override
         public void bind(PreparedStatement ps, int index, UUID id) throws SQLException {
             ps.setBytes(index, toBytes(id));
         }
     };
 
-    public abstract void bind(PreparedStatement ps, int index, UUID id) throws SQLException;
+    /** The stored string form of the uuid; BINARY has none and refuses. */
+    public abstract String encode(UUID id);
+
+    public void bind(PreparedStatement ps, int index, UUID id) throws SQLException {
+        ps.setString(index, encode(id));
+    }
 
     public static UuidCodec of(String name) {
         return name == null ? DASHED : valueOf(name.trim().toUpperCase());
