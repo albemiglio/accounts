@@ -47,6 +47,14 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [AdvancedCrates](https://advancedplugins.net/item/AdvancedCrates.9) | ✅ | virtualKeys.yml (uuid map keys; decompile+live verified) | — |
 | [MythicDungeons](https://git.mythiccraft.io/mythiccraft/MythicDungeons) | ✅ | global + per-dungeon playerdata (3-module set, decompile-verified) | copy the per-dungeon module per dungeon |
 | [ClothesPlus](https://www.spigotmc.org/resources/clothes.44992/) | ✅ | per-uuid directories (live-install observed) | closed source: shapes from a live install |
+| [MythicMobs](https://mythiccraft.io/) | ✅ | data/players/*.json (rename+embedded-uniqueId pair, live-verified) | — |
+| [FeatherBoard](https://www.spigotmc.org/resources/featherboard.2691/) | ✅ | SQLite players table (live-verified) | — |
+| [WeaponMechanics](https://github.com/WeaponMechanics/MechanicsMain) | ✅ | SQLite player/weapon stats (live-verified) | — |
+| [ShopGUIPlus](https://www.spigotmc.org/resources/shopgui.6515/) | ✅ | SQLite players (price modifiers; live-verified) | — |
+| [TabTPS](https://github.com/jpenilla/TabTPS) | ✅ | userdata/*.json rename (live-verified) | — |
+| [DeathMessages-Modern](https://www.spigotmc.org/resources/deathmessages.86894/) | ✅ | UserData.yml uuid keys (live-verified) | — |
+| [CommandPanels](https://github.com/rockyhawk64/CommandPanels) | ✅ | data.yml player-input uuid keys (live-verified) | — |
+| [MobWave](https://www.spigotmc.org/) | ✅ | data.yml uuid keys (live-verified) | — |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -86,6 +94,19 @@ means the schema was read from the plugin's own code or official schema docs, ne
 skill plugins) · [Simple Voice Chat](https://github.com/henkelmax/simple-voice-chat) (groups and
 states are in-memory; per-player volumes live on each player's own client) — verified against source,
 not assumed.
+
+Additionally verified on a real production network (data folders inspected, nothing player-keyed
+found): ProtocolLib, packetevents, PlaceholderAPI, item-nbt-api, Vault/VaultUnlocked, spark, mclogs,
+ViaVersion, FreedomChat, FancyHolograms, ModelEngine/ModelAnimator, LevelledMobs, Citizens (NPC data
+only), Chunky/ChunkyBorder, VoidGen, Multiverse-Core, WorldEditSUI, minimotd, ServerUtils, PlugManX,
+JumpPads, LPC, ChangeSlots, EntityDetection, Corpse, Elevator, HeadDatabase, tooltips, Masks,
+Vivecraft, BlockRegen, Craftorithm, CustomCrafting, Codex, ChatFilter, AntiNetherRoof,
+custom-ore-generator, MobFarmManager, PetNameFix, SellGUI, TwitchLiveAnnouncer, LibsDisguises,
+Nexo (item/glyph configs), nuvotifier/Votifier (no offline queue), tebex (no on-disk queue),
+ajQueue(+Plus), unifiedmetrics, autoannouncements, WLib, wolfyutils, SmartInvs, BlueSlimeCore,
+LoneLibs, MechanicsCore, NashornJs, mcMMO-style libs. **Name-keyed (a uuid migration doesn't touch
+them; only nickname changes would):** AuthMe (external SQL, username column, no uuid), AdvancedReplay
+(recordings named by username), RPCorpse, SignShop, AxTrade logs, CustomScreenMenu.
 
 ## Recurring blockers (what unlocks the ❌ rows)
 

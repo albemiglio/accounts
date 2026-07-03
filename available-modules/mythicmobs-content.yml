@@ -1,0 +1,11 @@
+# MythicMobs per-player data — part 2 of 2: rewrites the dashed uniqueId embedded inside each
+# data/players/*.json (live-install confirmed shape). Pair with mythicmobs-players.yml; the glob
+# composes in either order. The stale `name` field self-heals on the player's next join.
+# Run with the server stopped.
+name: mythicmobs-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/MythicMobs/data/players
+    pattern: "*.json"

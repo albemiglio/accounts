@@ -1,0 +1,16 @@
+# WeaponMechanics (CJCrafter) — player statistics in SQLite (live-install confirmed:
+# plugins/WeaponMechanics/weaponmechanics.db, tables player_stats with UUID PK and weapon_stats with
+# UUID + WEAPON_TITLE). UUID is the PK in player_stats: if the new uuid already has a row, dedupe
+# first. Run with the server stopped (stats are cached and flushed periodically).
+name: weaponmechanics
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/WeaponMechanics/weaponmechanics.db
+replacers:
+  - table: player_stats
+    column: UUID
+  - table: weapon_stats
+    column: UUID

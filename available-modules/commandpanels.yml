@@ -1,0 +1,9 @@
+# CommandPanels — per-player panel input data keyed by the dashed uuid inside plugins/CommandPanels/
+# data.yml (live-install confirmed: player-input-data.<uuid>.<panel> sections; often empty -> no-op).
+# The content module re-keys the entries. Run with the server stopped.
+name: commandpanels
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/CommandPanels/data.yml

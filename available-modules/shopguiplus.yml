@@ -1,0 +1,13 @@
+# ShopGUIPlus (brcdev, premium) — per-player state (price modifiers) in SQLite (live-install
+# confirmed: plugins/ShopGUIPlus/database.db, table players with uuid + name + priceModifiers).
+# The stale name self-heals on join. Run with the server stopped.
+name: shopguiplus
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/ShopGUIPlus/database.db
+replacers:
+  - table: players
+    column: uuid

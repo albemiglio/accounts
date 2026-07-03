@@ -1,0 +1,14 @@
+# FeatherBoard (Maximvdw, premium) — per-player toggle state in SQLite (live-install confirmed:
+# plugins/FeatherBoard/FeatherBoard.db, table players with uuid + toggled). Some installs never create
+# the db (config-only) — then the file is absent and this module must simply not be enabled there.
+# Run with the server stopped.
+name: featherboard
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/FeatherBoard/FeatherBoard.db
+replacers:
+  - table: players
+    column: uuid

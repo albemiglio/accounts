@@ -83,6 +83,10 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 | `advancedcrates.yml` | content | `virtualKeys.yml` (uuid map keys) | dashed | decompiled 3.3.12 + live dump |
 | `mythicdungeons-*` (3 files) | file+content | global + per-dungeon playerdata + embedded RewardsInfo uuid | dashed | decompiled official jars 1.1.1/2.0.1 |
 | `clothesplus-dirs.yml` | file | per-uuid directories (empty extension) | dirname | live install |
+| `mythicmobs-players.yml` + `-content.yml` | file+content | `data/players/<uuid>.json` + embedded uniqueId (pair) | dashed | live install |
+| `featherboard.yml` / `weaponmechanics.yml` / `shopguiplus.yml` | sql | SQLite player tables | dashed | live-install schemas |
+| `tabtps.yml` | file | `userdata/<uuid>.json` (rename) | filename | live install |
+| `deathmessages.yml` / `commandpanels.yml` / `mobwave.yml` | content | shared yml uuid keys | dashed | live installs |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

@@ -1,0 +1,10 @@
+# DeathMessages-Modern — per-player toggles keyed by the dashed uuid inside one shared
+# plugins/DeathMessages/UserData.yml (live-install confirmed: uuid map keys + a username field).
+# The content module re-keys the entries; the stale username self-heals. Absent/empty file = no-op.
+# Run with the server stopped.
+name: deathmessages
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/DeathMessages/UserData.yml

@@ -1,0 +1,9 @@
+# TabTPS (jpenilla) — per-player display preferences: one plugins/TabTPS/userdata/<uuid>.json per
+# player, dashed filename with no uuid inside the body (live-install confirmed) -> pure rename.
+# Low stakes (display prefs only). Run with the server stopped.
+name: tabtps
+platform: SPIGOT
+type: file
+directory: plugins/TabTPS/userdata
+extension: json
+enabled: true

@@ -1,0 +1,11 @@
+# MythicMobs (MythicCraft, premium) per-player data — part 1 of 2: renames plugins/MythicMobs/data/
+# players/<uuid>.json (shape confirmed on a live install with hundreds of files: dashed filenames,
+# body carries uniqueId/name/pity/variables). The body EMBEDS uniqueId, so enable BOTH this and
+# mythicmobs-content.yml — rename alone would desync the file from its content. Run with the server
+# stopped (player data is cached and written back from memory).
+name: mythicmobs-players
+platform: SPIGOT
+type: file
+directory: plugins/MythicMobs/data/players
+extension: json
+enabled: true

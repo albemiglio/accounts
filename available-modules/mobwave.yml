@@ -1,0 +1,9 @@
+# MobWave — per-player wave cooldowns keyed by the dashed uuid inside plugins/MobWave/data.yml
+# (live-install confirmed: <uuid>.last-wave-time / daily-count sections). The content module re-keys
+# the entries; absent/empty file = no-op. Run with the server stopped.
+name: mobwave
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/MobWave/data.yml
