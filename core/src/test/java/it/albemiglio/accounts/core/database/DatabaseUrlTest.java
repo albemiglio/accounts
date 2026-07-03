@@ -24,6 +24,14 @@ class DatabaseUrlTest {
                 new MariaDB("db.local", 3307, "root", "secret", "accounts").jdbcUrl());
     }
 
+    // IFEXISTS so a typoed path errors out instead of silently creating an empty store; no MODE or
+    // AUTO_SERVER tweaks — the engine wants the plain, exclusive, already-existing file.
+    @Test
+    void h2UrlIsFileBasedAndRefusesToCreate() {
+        assertEquals("jdbc:h2:file:/srv/mc/plugins/AxVaults/data;IFEXISTS=TRUE",
+                new H2(null, 0, "sa", "", "/srv/mc/plugins/AxVaults/data", "2.1.214").jdbcUrl());
+    }
+
     // The driver class must be named explicitly: a plugin's bundled driver is invisible to
     // DriverManager's classpath-scoped auto-registration, so HikariCP has to Class.forName it.
     @Test
@@ -42,5 +50,11 @@ class DatabaseUrlTest {
     void mariadbNamesTheMariadbDriver() {
         assertEquals("org.mariadb.jdbc.Driver",
                 new MariaDB("h", 3306, "u", "p", "d").driverClassName());
+    }
+
+    @Test
+    void h2NamesTheH2Driver() {
+        assertEquals("org.h2.Driver",
+                new H2(null, 0, "sa", "", "d", "2.1.214").driverClassName());
     }
 }

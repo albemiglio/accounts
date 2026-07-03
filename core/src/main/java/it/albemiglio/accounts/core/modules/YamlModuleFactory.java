@@ -1,6 +1,7 @@
 package it.albemiglio.accounts.core.modules;
 
 import it.albemiglio.accounts.core.database.DB;
+import it.albemiglio.accounts.core.database.H2;
 import it.albemiglio.accounts.core.database.MariaDB;
 import it.albemiglio.accounts.core.database.MySQL;
 import it.albemiglio.accounts.core.database.SQLite;
@@ -97,9 +98,19 @@ public class YamlModuleFactory {
             case MARIADB:
                 return new MariaDB(host, port, username, password, database);
             case H2:
-                throw new IllegalArgumentException(
-                        "H2 cannot be migrated live: the plugin owning the .mv.db file holds an exclusive "
-                        + "lock. Configure that plugin to use SQLite or MySQL instead (both migrate fine).");
+                // H2 file formats are incompatible across versions, so the pin is not optional: the
+                // engine fetches exactly that driver and refuses files written by any other family.
+                String h2Version = (String) config.get("h2-version");
+                if (h2Version == null || h2Version.trim().isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "h2 needs 'h2-version': the exact H2 version the owning plugin bundles "
+                            + "(e.g. \"2.1.214\") — file formats are incompatible across versions, so "
+                            + "the engine must fetch that exact driver.");
+                }
+                return new H2(host, port,
+                        username == null ? "sa" : username,
+                        password == null ? "" : password,
+                        database, h2Version);
             default:
                 throw new IllegalArgumentException("Unsupported database type: " + type);
         }

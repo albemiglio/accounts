@@ -83,6 +83,43 @@ class YamlModuleFactoryTest {
         assertTrue(module.isEnabled());
     }
 
+    // Templates are built (and validated in CI) on machines that never see the target server, so an
+    // h2 module must construct without touching the store file, the driver cache or the network.
+    @Test
+    void buildsAnH2ModuleWithoutTouchingDiskOrNetwork() {
+        Map<String, Object> dbConfig = new LinkedHashMap<>();
+        dbConfig.put("type", "h2");
+        dbConfig.put("database", "plugins/AxVaults/data");
+        dbConfig.put("h2-version", "2.1.214");
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("name", "axvaults");
+        config.put("platform", "SPIGOT");
+        config.put("database", dbConfig);
+        config.put("replacers", List.of(Map.of("table", "\"axvaults_data\"", "column", "\"uuid\"")));
+
+        Module module = new YamlModuleFactory().build(config);
+        module.enable();
+
+        assertTrue(module.isEnabled());
+    }
+
+    @Test
+    void h2WithoutAVersionPinIsRejectedWithAClearMessage() {
+        Map<String, Object> dbConfig = new LinkedHashMap<>();
+        dbConfig.put("type", "h2");
+        dbConfig.put("database", "plugins/AxVaults/data");
+
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("name", "axvaults");
+        config.put("platform", "SPIGOT");
+        config.put("database", dbConfig);
+
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> new YamlModuleFactory().build(config));
+        assertTrue(e.getMessage().contains("h2-version"), e.getMessage());
+    }
+
     @Test
     void rejectsUnsupportedDatabaseType() {
         Map<String, Object> dbConfig = new LinkedHashMap<>();

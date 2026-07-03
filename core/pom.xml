@@ -84,6 +84,16 @@
             <version>3.4.1</version>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <!-- Test-only, deliberately NOT a runtime dependency: H2 file formats are incompatible
+                 across versions, so the engine fetches the exact version each module pins instead of
+                 bundling one. Tests use this jar both to create real stores and as an offline
+                 stand-in for the downloaded driver. -->
+            <version>2.4.240</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
