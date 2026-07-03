@@ -43,6 +43,7 @@ public final class AccountsPlugin extends JavaPlugin {
         ModuleService moduleService = new ModuleService(count -> { });
         moduleService.loadModules(modulesDir);
         moduleService.loadJarModules(dataDir.resolve("jar-modules"));
+        moduleService.loadPluginJarModules(dataDir.toAbsolutePath().getParent());
 
         // When the world is being migrated on disk (NbtModule), also migrate whatever is loaded in
         // memory through the Bukkit API, so the server's next save doesn't overwrite the rewrite.

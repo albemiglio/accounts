@@ -2,6 +2,7 @@ package it.albemiglio.accounts.core.services;
 
 import it.albemiglio.accounts.core.modules.JarModuleLoader;
 import it.albemiglio.accounts.core.modules.Module;
+import it.albemiglio.accounts.core.modules.PluginJarModuleLoader;
 import it.albemiglio.accounts.core.modules.YamlModuleLoader;
 
 import java.nio.file.Path;
@@ -27,6 +28,19 @@ public class ModuleService {
     public void loadModules(Path directory) {
         for (Module module : loader.load(directory)) {
             modules.put(module.getName(), module);
+        }
+        reporter.updateActiveModules(activeModuleCount());
+    }
+
+    /**
+     * Loads modules that other plugins bundle inside their own jars ({@code accounts-module.yml} /
+     * {@code accounts-modules/*.yml}) by scanning the server's {@code pluginsDir}. A bundled module
+     * never replaces one already registered, so a server-local file loaded via
+     * {@link #loadModules(Path)} wins over a plugin's bundled default whatever the call order.
+     */
+    public void loadPluginJarModules(Path pluginsDir) {
+        for (Module module : new PluginJarModuleLoader().load(pluginsDir)) {
+            modules.putIfAbsent(module.getName(), module);
         }
         reporter.updateActiveModules(activeModuleCount());
     }

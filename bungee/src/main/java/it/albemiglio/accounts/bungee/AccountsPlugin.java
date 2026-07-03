@@ -35,6 +35,7 @@ public final class AccountsPlugin extends Plugin implements MigrationService {
             ModuleService moduleService = new ModuleService(count -> { });
             moduleService.loadModules(modulesDir);
             moduleService.loadJarModules(dataDir.resolve("jar-modules"));
+            moduleService.loadPluginJarModules(dataDir.toAbsolutePath().getParent());
 
             this.engine = AccountsEngine.start(
                     config.getString("redis.host", "localhost"),
