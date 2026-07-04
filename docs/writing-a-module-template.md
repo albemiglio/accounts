@@ -244,26 +244,43 @@ and rewrite them on autosave: say so in the template header and require the serv
 
 ---
 
-## Shipping a module inside your plugin
+## Two ways to deliver a module — and which survives a jar update
 
-If you maintain the plugin itself, you don't have to ask server owners to install a template: bundle
-it in your jar, plugin.yml-style. Add `src/main/resources/accounts-module.yml` (or several files
-under `accounts-modules/*.yml` — handy for the rename+content pairs) with exactly the same schema as
-the templates above. No code, no dependency on accounts: the engine scans the plugins folder on
-startup and picks it up automatically.
+The engine loads modules from two places: **external** templates in `plugins/Accounts/modules/*.yml`,
+and modules **bundled inside a plugin jar** at `accounts-module.yml` / `accounts-modules/*.yml`. Pick
+by who controls the jar:
 
-```yaml
-# accounts-module.yml, at your jar's root
-name: myplugin-userdata
-platform: SPIGOT
-type: file
-directory: plugins/MyPlugin/userdata
-extension: yml
-enabled: true
-```
+> **⚠️ Never hand-edit a downloaded jar to inject a module.** Server owners update plugins constantly by
+> re-downloading the jar from its official page (SpigotMC, Modrinth, Hangar, …); that **replaces** the
+> file and silently drops anything you zipped in. A jar-edit that isn't part of a build pipeline is lost
+> at the next update.
 
-A server-local file with the same `name` in the modules folder overrides the bundled one, so
-operators can still tweak or disable what you ship.
+- **Third-party / frequently-updated plugins (you don't build them): use an external template.** Drop
+  the `.yml` in `plugins/Accounts/modules/` — it lives in Accounts' own folder, so it survives every
+  update of the target plugin's jar. This is the default for everything you didn't compile yourself.
+
+  ```bash
+  cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
+  ```
+
+- **A plugin you build yourself: bundle it in the jar — but only through your build.** Add
+  `src/main/resources/accounts-module.yml` (or several `src/main/resources/accounts-modules/*.yml` —
+  handy for rename+content pairs) with the same schema as the templates above, so **every rebuild**
+  includes it (pipelined, never a manual jar edit). No code, no dependency on accounts: the engine
+  scans the plugins folder on startup and picks it up.
+
+  ```yaml
+  # src/main/resources/accounts-module.yml → lands at the jar root
+  name: myplugin-userdata
+  platform: SPIGOT
+  type: file
+  directory: plugins/MyPlugin/userdata
+  extension: yml
+  enabled: true
+  ```
+
+A server-local file with the same `name` in `plugins/Accounts/modules/` overrides a bundled one, so
+operators can always tweak or disable what a jar ships — and it's the update-safe place to keep it.
 
 ---
 

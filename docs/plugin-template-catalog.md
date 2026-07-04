@@ -18,6 +18,10 @@ cp available-modules/luckperms.yml  plugins/Accounts/modules/luckperms.yml
 # edit the database path / connection, confirm the encoding, then restart and migrate
 ```
 
+`plugins/Accounts/modules/` is Accounts' own folder, so a module here **survives every update of the
+target plugin's jar**. Never inject a module into a downloaded jar — re-downloading it on the next
+update drops the edit. See [Two ways to deliver a module](writing-a-module-template.md#two-ways-to-deliver-a-module--and-which-survives-a-jar-update).
+
 ## The catalog
 
 | Template | Type | What it touches | UUID encoding | Schema confirmed against |
