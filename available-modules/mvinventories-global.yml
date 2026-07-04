@@ -1,0 +1,11 @@
+# Multiverse-Inventories — ⚠ MOSTLY NAME-KEYED. The actual per-world / per-group inventories live in
+# worlds/<world>/<name>.json and groups/<group>/<name>.json keyed by USERNAME, not uuid (ProfileFilesLocator
+# .java:113) — a uuid migration does NOT move them (only a name change would). ONLY the global metadata is
+# uuid-keyed: players/<uuid>.json (FlatFileProfileDataSource.java:346, dashed). This module renames those;
+# the uuid->name index playernames.json is handled by mvinventories-names.yml. Run with the server stopped.
+name: mvinventories-global
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/Multiverse-Inventories/players
+extension: json

@@ -1,0 +1,10 @@
+# GriefPrevention — FLATFILE backend, player claim-block data: plugins/GriefPreventionData/PlayerData/<uuid>
+# — an EXTENSIONLESS file named by the dashed uuid (FlatFileDataStore.java:610), contents are integers only
+# (no uuid inside). Empty extension renames the bare-uuid file. Pair with griefprevention-flatfile-claims.yml.
+# (The MySQL backend is covered by griefprevention.yml instead.) Run with the server stopped.
+name: griefprevention-flatfile-playerdata
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/GriefPreventionData/PlayerData
+extension: ""

@@ -1,27 +1,54 @@
-# CMI (Zrips) on an SQL backend. CMI is closed source, so this is based on CMI's own runtime SQL as seen
-# in a server error log (Zrips/CMI issue #1306): it creates `users` (id ..., `player_uuid` text, ...), i.e.
-# the user table is "users" and the UUID column is "player_uuid" (TEXT). The table and column are observed
-# from CMI itself; the UUID *encoding* is not - "text" could be a dashed or an undashed string and could not
-# be confirmed from the closed source.
+# CMI (Zrips, closed-source premium) — UUID re-key template for the "accounts" engine.
+# VERIFIED by decompiling CMI-9.8.8.3.jar (CFR 0.152) + reading the live production MySQL.
+#   Table   = "users"  (CMIDBTables/DBDAO$DBTables: UserTable("users", ...)).
+#   Column  = "player_uuid", declared SQL type `text`
+#             (DBDAO$UserTablesFields.java:9  player_uuid("text", TablesFieldsType.text);
+#              CMIUserTablesFields.java:9      player_uuid(text) -> CMITablesFieldsType.text = "text";
+#              CREATE TABLE emits: `player_uuid` text).
+#   FORMAT  = DASHED 36-char string, bound as UUID.toString():
+#             PlayerManager.savePlayerToDB() case player_uuid -> object = getUniqueId().toString()
+#               -> proccessForSaveField case text -> preparedStatement.setString(n, object)  (PlayerManager.java:1137,1380)
+#             DBDAO_NEW.updateUUID:167 / loadUser:693  setString(1, uUID.toString())
+#             Read-back: UUID.fromString(rs.getString("player_uuid"))  (DBDAO.java:1153, DBDAO_NEW.java:884)
+#               — fromString REQUIRES hyphens, so undashed/binary are impossible.
+#             No setBytes anywhere on player_uuid; column is TEXT, never BINARY(16).
+#   Live proof (roleplay_cmi.CMI_users): SHOW COLUMNS -> type "text"; sample player_uuid
+#     "aa695728-b06d-336b-a708-6b2ff2857a4d", LENGTH()=36 (dashed).
 #
-# UNVERIFIED - confirm schema before use. Check one row of your CMI `users` table: if player_uuid is a
-# 36-char dashed UUID, the default below is correct; if it is 32 hex chars with no hyphens, add
-# "format: undashed" to the replacer. Do not run blind, or balances/homes silently won't migrate.
+# TABLE PREFIX depends on backend (CMIDBTables.getQR / DBDAO$DBTables.getQR):
+#   - MySQL/MariaDB: prefix from mysql.tablePrefix (default "CMI_") -> table is CMI_users.
+#   - SQLite: NO prefix applied -> table is bare "users".
+# SQLite default file = plugins/CMI/cmi.sqlite.db  (DBSQLite_NEW.java:32 "jdbc:sqlite:.../cmi.sqlite.db").
+# Backend is chosen by storage.method in plugins/CMI/Settings/DataBaseInfo.yml (default "sqlite").
+# RUN WITH THE SERVER STOPPED — CMI caches users in memory and flushes on save/logout.
+#
+# Pick ONE database block below and match the "table" prefix to it (see the two replacer variants).
+
 name: cmi
 platform: SPIGOT
 type: sql
 enabled: true
+
 database:
+  # --- DEFAULT: SQLite (table is bare "users", no prefix) ---
   type: sqlite
-  database: plugins/CMI/Database.db
-# database:
-#   type: mysql
-#   host: localhost
-#   port: 3306
-#   username: minecraft
-#   password: secret
-#   database: cmi
+  database: plugins/CMI/cmi.sqlite.db
+
+  # --- MySQL/MariaDB (uncomment; then use the CMI_users replacer below) ---
+  # type: mysql
+  # host: localhost
+  # port: 3306
+  # username: root
+  # password: secret
+  # database: minecraft   # CMI default db name is "minecraft"
+
 replacers:
+  # SQLite (default): unprefixed table name.
   - table: users
     column: player_uuid
-#    format: undashed   # uncomment if your CMI stores player_uuid without hyphens (verify first)
+    format: dashed
+
+  # MySQL/MariaDB: prefix mysql.tablePrefix (default CMI_). Swap the two blocks:
+  # - table: CMI_users
+  #   column: player_uuid
+  #   format: dashed

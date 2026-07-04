@@ -1,0 +1,19 @@
+# PlayerParticles (Rosewood) — default SQLite plugins/PlayerParticles/playerparticles.db, prefix
+# playerparticles_ (RoseGarden getTablePrefix). Player-uuid columns: playerparticles_settings.player_uuid,
+# _group.owner_uuid, _fixed.owner_uuid, all dashed (_1_InitialMigration.java:80, DataManager.java:118).
+# The group/particle .uuid columns are random object ids (NOT players) — deliberately excluded. For MySQL
+# swap the database block. Run with the server stopped.
+name: playerparticles
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/PlayerParticles/playerparticles.db
+replacers:
+  - table: playerparticles_settings
+    column: player_uuid
+  - table: playerparticles_group
+    column: owner_uuid
+  - table: playerparticles_fixed
+    column: owner_uuid

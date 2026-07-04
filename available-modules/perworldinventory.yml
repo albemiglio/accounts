@@ -1,0 +1,10 @@
+# PerWorldInventory (Gnat008) — per-player inventories in a per-uuid DIRECTORY:
+# plugins/PerWorldInventory/data/<uuid>/ (FlatFile.java:227 new File(FILE_PATH, uuid.toString())), holding
+# <group>.json + last-logout.json; the uuid is the directory name, not inside the json (PlayerSerializer
+# .java:65). Empty extension renames the whole <uuid>/ directory. FlatFile is the only backend. Server stopped.
+name: perworldinventory
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/PerWorldInventory/data
+extension: ""

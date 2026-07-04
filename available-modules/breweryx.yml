@@ -1,0 +1,10 @@
+# BreweryX (BreweryTeam) — default FlatFile: player drunkenness data in plugins/BreweryX/brewery-data.yml
+# under players.<uuid> (dashed, FlatFileStorage.java:353). Whole-token content swap. ⚠ The SQLite/MySQL/
+# Mongo backends re-embed the uuid inside a Base64-JSON `data` blob a column replacer can't touch, so this
+# template targets the FlatFile backend only. Run with the server stopped.
+name: breweryx
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/BreweryX/brewery-data.yml

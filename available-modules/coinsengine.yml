@@ -1,0 +1,16 @@
+# CoinsEngine (nulli0n) — SQL currency balances. NB the current source rebranded to ExcellentEconomy:
+# table economy_users, folder plugins/ExcellentEconomy/ (DataHandler.java:41, DataColumns.java:23). Column
+# `uuid` dashed; each currency is a DOUBLE column on the same row (single table). CLASSIC CoinsEngine
+# installs use table coinsengine_users under plugins/CoinsEngine/ (same column/format) — swap the two names
+# below if you run classic. The SQLite filename comes from the nightcore lib — verify it on your install
+# (or use the MySQL block). Run with the server stopped.
+name: coinsengine
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/ExcellentEconomy/database.db
+replacers:
+  - table: economy_users
+    column: uuid

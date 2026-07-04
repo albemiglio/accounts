@@ -38,7 +38,7 @@ update drops the edit. See [Two ways to deliver a module](writing-a-module-templ
 | `mcmmo.yml` | sql | `mcmmo_users` (`uuid`) | dashed | `SQLDatabaseManager.java`, mcMMO master |
 | `jobs.yml` | sql | `jobs_users` (`player_uuid`) | dashed | `JobsDAO.java`, Jobs master |
 | `quickshop-hikari.yml` | sql | `qs_data` (`owner`) | dashed | `DataTables.java`/`QUserImpl.java`, hikari |
-| `cmi.yml` | sql | `users` (`player_uuid`) | **TEXT — unverified** | CMI runtime SQL (issue #1306) |
+| `cmi.yml` | sql | `users`/`CMI_users` (`player_uuid`) | dashed | CFR-decompiled CMI 9.8.8.3 + live MySQL |
 | `world.yml` | world | a world folder's NBT (pets, heads, boss-bars, ...) | NBT, all 3 forms | — |
 | `vanilla-json.yml` | json | `ops.json`, `whitelist.json`, `banned-players.json`, `usercache.json` | — | — |
 | `huskhomes.yml` | sql | `huskhomes_users/-cooldowns/-teleports/-homes` | dashed | `{sqlite,mysql}_schema.sql`, HuskHomes 4.x |
@@ -117,6 +117,17 @@ update drops the edit. See [Two ways to deliver a module](writing-a-module-templ
 | `votingplugin.yml` | sql | `Users.uuid` (`VotingPlugin_Users` on MySQL) | dashed | `UserTable.java`/`MySQL.java` |
 | `lands.yml` | sql | `lands_players.uuid` (SQLite/MySQL/Postgres) | dashed | decompiled jar v7.16.13 |
 | `mmoprofiles.yml` | file | `userdata/<realUUID>.yml` rename (family index) | filename | MythicLib storage layer |
+| `slimefun-players.yml` + `slimefun-waypoints.yml` | file | `data-storage/Slimefun/Players/<uuid>.yml` + `waypoints/` (server-root) | filename | `LegacyStorage.java` |
+| `factions.yml` | content | `data/players.json` (uuid keys) + `data/factions.json` invites | dashed | `JSONFPlayers.java` |
+| `mvinventories-global.yml` + `mvinventories-names.yml` | file+content | `players/<uuid>.json` + `playernames.json` (inventories are name-keyed) | dashed | `ProfileFilesLocator.java` |
+| `perworldinventory.yml` | file | `data/<uuid>/` per-uuid directory (empty extension) | dirname | `FlatFile.java` |
+| `playerparticles.yml` | sql | `playerparticles_settings/group/fixed` (player/owner uuid) | dashed | `_1_InitialMigration.java` |
+| `beautyquests.yml` | content | `questers/00_index.yml` identifier | dashed | `YamlDataManager.java` |
+| `angelchest.yml` | content | `angelchests/*.yml` `owner`/`killer` value | dashed | `AngelChest.java` |
+| `advancedban.yml` | sql | `Punishments`/`PunishmentHistory` (`uuid`, MySQL only) | **undashed** | `SQLQuery.java`/`UUIDManager.java` |
+| `breweryx.yml` | content | `brewery-data.yml` `players.<uuid>` (FlatFile) | dashed | `FlatFileStorage.java` |
+| `coinsengine.yml` | sql | `economy_users`/`coinsengine_users` (`uuid`) | dashed | `DataColumns.java` |
+| `griefprevention-flatfile-playerdata.yml` + `-claims.yml` | file+content | extensionless `PlayerData/<uuid>` + `ClaimData/*.yml` owner/trust | dashed | `FlatFileDataStore.java` |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

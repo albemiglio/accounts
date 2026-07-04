@@ -1,0 +1,11 @@
+# Slimefun4 — per-player research + backpacks in one YAML per player at
+# data-storage/Slimefun/Players/<uuid>.yml, filename = dashed uuid (LegacyStorage.java:32); the uuid is only
+# the filename (researches/backpacks are keyed internally by id, not uuid — LegacyStorage.java:38,47), so a
+# rename is complete and lossless. IMPORTANT: data-storage/ is relative to the SERVER ROOT, not plugins/
+# (Slimefun.java:287 new File("data-storage/Slimefun/...")). Flatfile is the only backend. Server stopped.
+name: slimefun-players
+platform: SPIGOT
+type: file
+enabled: true
+directory: data-storage/Slimefun/Players
+extension: yml

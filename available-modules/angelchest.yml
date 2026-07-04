@@ -1,0 +1,13 @@
+# AngelChest (mfnalex) — death chests persisted across restarts in plugins/AngelChest/angelchests/*.yml
+# (+ a shadow/ subdir). Filenames are location-based ({player}_{world}_{x}_{y}_{z}.yml), NOT uuid, so this
+# is a content swap of the dashed owner (+ optional killer) value INSIDE each file (AngelChest.java:896,
+# ChestYaml.java:14). uniqueId (random chest id) and worldid (world UID) never equal a player uuid, left
+# alone. recursive covers shadow/. Run with the server stopped.
+name: angelchest
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/AngelChest/angelchests
+    pattern: "*.yml"
+    recursive: true

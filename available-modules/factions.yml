@@ -1,0 +1,13 @@
+# FactionsUUID / SaberFactions — default JSON flatfile backend (MySQL is a stub/TODO). Player data is
+# plugins/Factions/data/players.json, a top-level map keyed by the dashed player uuid (JSONFPlayers.java:41,
+# MemoryFPlayer.java:287). Faction records (data/factions.json) also embed player uuids in invites/altinvites
+# and per-chunk claimOwnership sets (MemoryFaction.java:69,66). Both are whole-token dashed swaps; numeric
+# faction ids and board.json (coords->factionId, no player uuids) are untouched. CAVEAT: assumes the default
+# JSON backend — a MySQL install needs a sql template instead. Run with the server stopped.
+name: factions
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Factions/data/players.json
+  - directory: plugins/Factions/data/factions.json

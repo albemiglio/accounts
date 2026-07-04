@@ -1,0 +1,14 @@
+# BeautyQuests (SkytAsul) — default flatfile. The player identifier (the dashed uuid, by default) lives in
+# plugins/BeautyQuests/questers/00_index.yml under identifiers.<intId>.identifier (YamlDataManager.java:96,
+# PlayerManagerImplementation.java:92); the per-quester data files are named by an opaque integer (no uuid
+# inside), so a content whole-token swap of 00_index.yml is the correct adapter. CAVEAT: only the default
+# case where the identifier == the vanilla uuid (no BeautyQuests account-linking hook). MySQL backend
+# instead: sql on questers.identifier + questers_quests/pools.quester_identifier. Run with the server stopped.
+name: beautyquests
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/BeautyQuests/questers
+    pattern: "*.yml"
+    recursive: false

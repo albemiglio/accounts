@@ -1,0 +1,9 @@
+# Multiverse-Inventories — content half: playernames.json maps "<dashed-uuid>": "<name>" (PlayerNamesMapper
+# .java:38,86). Whole-token dashed swap of the uuid keys. See mvinventories-global.yml for the ⚠ note that
+# the per-world/group inventories themselves are name-keyed and are NOT migrated by uuid. Run stopped.
+name: mvinventories-names
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Multiverse-Inventories/playernames.json

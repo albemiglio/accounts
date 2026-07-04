@@ -1,0 +1,23 @@
+# AdvancedBan (DevLeoko) — MySQL backend ONLY. ⚠ The DEFAULT backend is HSQLDB (jdbc:hsqldb:file, a
+# file-locked embedded engine the accounts engine has no adapter for) — this template applies only if you
+# set UseMySQL: true. Tables Punishments + PunishmentHistory, column `uuid` VARCHAR(35), stored UNDASHED
+# (uuid.toString().replace("-","") — UUIDManager.java:115). IP-bans store an IP in `uuid` and are skipped
+# automatically (they don't match a 32-hex uuid); `operator` is a name, not a uuid. Run with the server stopped.
+name: advancedban
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: mysql
+  host: localhost
+  port: 3306
+  username: minecraft
+  password: secret
+  database: advancedban
+replacers:
+  - table: Punishments
+    column: uuid
+    format: undashed
+  - table: PunishmentHistory
+    column: uuid
+    format: undashed

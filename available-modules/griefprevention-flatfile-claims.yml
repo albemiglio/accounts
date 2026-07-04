@@ -1,0 +1,12 @@
+# GriefPrevention — FLATFILE backend, claim ownership + trust: plugins/GriefPreventionData/ClaimData/<id>.yml
+# holds Owner: <dashed-uuid> (empty for admin claims) and the Builders/Containers/Accessors/Managers trust
+# lists as dashed uuids (FlatFileDataStore.java:542,551). Whole-token content swap. Pair with
+# griefprevention-flatfile-playerdata.yml. Run with the server stopped.
+name: griefprevention-flatfile-claims
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/GriefPreventionData/ClaimData
+    pattern: "*.yml"
+    recursive: false

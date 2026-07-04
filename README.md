@@ -260,13 +260,14 @@ classloader identity and the cast fails.
   checks that every loaded module finds that player where it expects and in the encoding it assumes, and
   flags any template whose `format` is wrong or whose table/path is missing — so you fix it *before*
   migrating instead of discovering a silent miss afterwards. Safe to run on a live server.
-- **H2 backends need the server stopped.** The owning plugin holds an exclusive lock on the `.mv.db`
-  file while it runs, so migrate H2 stores offline — each H2 template pins the exact H2 version its plugin
-  bundles and the engine refuses a file written by a different family. SQLite and MySQL migrate fine live.
-- **World/NBT migration is safest with the world at rest.** On Spigot the live in-memory objects are
-  rewritten too, but the on-disk NBT rewrite touches data that isn't currently held in memory; run it
-  during low activity, with a backup.
-- **The CMI template is unverified** (CMI is closed source) — confirm its UUID column encoding before use.
+- **H2 backends migrate offline.** While the owning plugin runs it holds a lock on the `.mv.db` file, so
+  migrate H2 stores with that server stopped (a few plugins open H2 in `AUTO_SERVER` mode and can be done
+  live — the engine connects if the file allows it). Each H2 template pins the exact H2 version its plugin
+  bundles, and the engine refuses a file written by a different version family. SQLite/MySQL migrate live.
+- **World/NBT is fully handled — back up anyway.** The engine rewrites both the on-disk region/entity NBT
+  and (on Spigot) the live in-memory objects, so tamed pets, placed heads and boss bars all follow the new
+  uuid. It matches the uuid in every encoding, so there's no `format` to get wrong — just run it with a
+  backup, ideally at low activity.
 
 ---
 

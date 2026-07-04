@@ -1,0 +1,9 @@
+# Slimefun4 — GPS waypoints, one YAML per player at data-storage/Slimefun/waypoints/<uuid>.yml, filename =
+# dashed uuid (LegacyStorage.java:34). Uuid only in the filename. Path is relative to the SERVER ROOT (not
+# plugins/). Pair with slimefun-players.yml. Run with the server stopped.
+name: slimefun-waypoints
+platform: SPIGOT
+type: file
+enabled: true
+directory: data-storage/Slimefun/waypoints
+extension: yml

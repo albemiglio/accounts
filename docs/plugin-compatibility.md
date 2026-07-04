@@ -74,6 +74,11 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [AuctionHouse](https://github.com/kiranhart/Auction-House) | ✅ | SQLite (default) / MySQL: 18 seller/buyer/owner/bidder cols across 11 `auctionhouse_*` tables | item/currency blobs out of scope; `*_name` are cached usernames |
 | [BetonQuest](https://github.com/BetonQuest/BetonQuest) | ✅ | SQLite (default) / MySQL: 10 `betonquest_*` columns (disable-foreign-key-checks), dashed | stock single-profile install; custom multi-profile providers need care |
 | [VotingPlugin](https://github.com/BenCodez/VotingPlugin) | ✅ | SQLite (default `Users.db`/table `Users`) / MySQL (`VotingPlugin_Users`): `uuid` dashed | PostgreSQL backend uses a native UUID type (not text-swappable) |
+| [Slimefun4](https://github.com/Slimefun/Slimefun4) | ✅ | flatfile `data-storage/Slimefun/Players/<uuid>.yml` + `waypoints/<uuid>.yml` rename | paths are server-root relative; researches/backpacks keyed internally, not by uuid |
+| [PerWorldInventory](https://github.com/Gnat008/PerWorldInventory) | ✅ | per-uuid **directory** `data/<uuid>/` rename (empty extension) | flatfile only; the group `.json` inside hold no uuid |
+| [PlayerParticles](https://github.com/Rosewood-Development/PlayerParticles) | ✅ | SQLite (default) / MySQL: `playerparticles_settings.player_uuid` + group/fixed `owner_uuid` | group/particle `.uuid` are random object ids (correctly excluded) |
+| [CMI](https://www.zrips.net/cmi/) | ✅ | SQLite (default `cmi.sqlite.db`, table `users`) / MySQL (`CMI_users`): `player_uuid` dashed | verified: CFR-decompiled 9.8.8.3 + live MySQL; homes/economy/bans ride the same row |
+| [GriefPrevention](https://github.com/GriefPrevention/GriefPrevention) | ✅ | MySQL **and** flatfile: extensionless `PlayerData/<uuid>` rename + `ClaimData/*.yml` owner/trust content | — |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -81,9 +86,7 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | Plugin | Status | Covered | Waiting on |
 |--------|:------:|---------|-----------|
 | [mcMMO](https://github.com/mcMMO-Dev/mcMMO) | ⚠️ | MySQL | flatfile is one shared users file |
-| [GriefPrevention](https://github.com/GriefPrevention/GriefPrevention) | ⚠️ | MySQL | flatfile player files have no extension |
 | [QuickShop-Hikari](https://github.com/QuickShop-Community/QuickShop-Hikari) | ⚠️ | MySQL | default H2 backend |
-| [CMI](https://www.zrips.net/cmi/) | ⚠️ | SQL template (closed source) | uuid encoding unverified — check one row first |
 | [Maintenance](https://github.com/kennytv/Maintenance) | ⚠️ | WhitelistedPlayers.yml (uuid keys, all platform paths) | proxies with Maintenance's Redis sync read the whitelist from Redis instead |
 | [LiteBans](https://www.spigotmc.org/resources/litebans.3715/) | ⚠️ | MySQL/MariaDB (12 columns, official schema); H2 template ready | its exact bundled H2 version is unverifiable (closed jar) — the engine's header sniff protects you; PostgreSQL |
 | [AuraSkills](https://github.com/Archy-X/AuraSkills) | ✅ | MySQL **and** the default YAML backend (rename + embedded-uuid rewrite pair) | run with the server stopped |
@@ -100,11 +103,22 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [Lands](https://www.spigotmc.org/resources/lands.53313/) | ⚠️ | `lands_players.uuid` (dashed CHAR(36)) on the default SQLite **and** MySQL/PostgreSQL — verified against the decompiled jar v7.16.13 | land **owner + trusted** players aren't rows: they're the dashed-uuid JSON keys of the ULID-keyed `lands.members` blob (and per-area role JSON), so they stay on the old uuid until a content-rewrite module lands. Run with server stopped |
 | [MMOProfiles](https://phoenixdevt.fr/) | ⚠️ | the real-uuid→profiles **index** (`plugins/MMOProfiles/userdata/<realUUID>.yml`, file rename) — this is the ONLY family module to run here | closed jar unobtainable, so the exact index path is open-layer-derived (**verify on your install**); keying is source-verified. With MMOProfiles active the MMO family (MMOItems/MMOCore/MMOInventory) is **profile-uuid-keyed** and survives the migration — **skip those modules here**; run them by real uuid only on NONE-mode servers |
 | [BentoBox](https://github.com/BentoBoxWorld/BentoBox) | ⚠️ | default JSON: `database/Players/<uuid>.json` rename + content rewrite of the uuid inside Players/Island/Names docs | Island filename is an island id (content-only); the SQL backends store the whole doc in one `json` column — a JSON-blob edit, not covered. Verify the `members` map token on a sample first |
+| [FactionsUUID](https://github.com/drtshock/Factions) | ⚠️ | default JSON: `data/players.json` (uuid keys) + `data/factions.json` (invites/claims) content swap | assumes the default JSON backend; a MySQL install needs a sql template. board.json has no player uuids |
+| [Multiverse-Inventories](https://github.com/Multiverse/Multiverse-Inventories) | ⚠️ | only the global `players/<uuid>.json` + `playernames.json` index | **the per-world/group inventories are name-keyed, not uuid** — a uuid migration doesn't move them (they follow the in-game name) |
+| [BeautyQuests](https://github.com/SkytAsul/BeautyQuests) | ⚠️ | default flatfile: `questers/00_index.yml` identifier (content) | identifier == uuid only without an account-linking hook; MySQL backend needs a sql template |
+| [AngelChest](https://github.com/mfnalex/AngelChest) | ⚠️ | `angelchests/*.yml` `owner`/`killer` value (content) | filename is location-based (not renamed); harmless cosmetic name in it |
+| [AdvancedBan](https://github.com/DevLeoko/AdvancedBan) | ⚠️ | MySQL only: Punishments/PunishmentHistory `uuid` **undashed** | default HSQLDB backend has no engine adapter; IP-ban rows skip automatically |
+| [BreweryX](https://github.com/BreweryTeam/BreweryX) | ⚠️ | FlatFile `brewery-data.yml` `players.<uuid>` (content) | SQL/Mongo backends re-embed the uuid in a Base64-JSON blob (not covered) |
+| [CoinsEngine](https://github.com/nulli0n/CoinsEngine-spigot) | ⚠️ | SQLite/MySQL: `economy_users.uuid` (currencies ride the same row) | rebranded to ExcellentEconomy (table/folder renamed); classic table is `coinsengine_users`; SQLite filename per-install |
 
 ## Not supported yet
 
-Empty — every plugin tracked here now ships a template. Hit a plugin that isn't listed? Run the
-[scanner](scanning-a-plugin.md) on its database to generate a draft module.
+| Plugin | Status | Blocker |
+|--------|:------:|---------|
+| [Heroes](https://www.spigotmc.org/resources/heroes.305/) | ❌ | the only open-source repo is an abandoned Sponge rewrite with an interface-only storage layer; the shipping Spigot plugin is closed source — needs its real DB schema or a flatfile sample to template |
+
+Hit a plugin that isn't listed? Run the [scanner](scanning-a-plugin.md) on its database to generate a
+draft module, then [diagnose](writing-a-module-template.md#dry-run-diagnose-before-you-migrate) it.
 
 ## No player data (verified — nothing to migrate)
 
@@ -163,6 +177,18 @@ CustomScreenMenu. (Nyx itself is the migration engine, not a data plugin that ge
 Run every migration with the affected servers **stopped** unless a template's header says otherwise:
 most plugins cache player data in memory and rewrite their files/rows on autosave, clobbering external
 edits.
+
+## Bedrock / Geyser players (Floodgate)
+
+A Floodgate UUID (`00000000-0000-0000-XXXX-XXXXXXXXXXXX`, the XUID in the low 64 bits) is an ordinary
+128-bit UUID, so **every template above already migrates Bedrock players** — no special handling. The one
+Bedrock-specific case is **account linking**: while a Bedrock player is unlinked, their data is saved under
+the Floodgate UUID; when they link, they start joining under their real **Java** UUID, and that old data is
+stranded. The fix is a normal `migrate(floodgateUuid → javaUuid)` — the same operation `accounts` runs for a
+cracked→premium upgrade. Floodgate has no link event to hook, so the **trigger** lives in the proxy layer
+(Nyx detects the link at login and fires the migration through the Redis broadcast); `accounts` is the sink
+and needs no new code. Pass the player's Java username **without** the Floodgate prefix (default `.`) so
+name-keyed stores match. Floodgate's own `LinkedPlayers` table maps bedrock↔java and does not need re-keying.
 
 Don't see your plugin? See [Writing a module template](writing-a-module-template.md) and
 [contribute it back](../CONTRIBUTING.md#adding-a-plugin-template-the-common-case).
