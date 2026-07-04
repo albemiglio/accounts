@@ -1,0 +1,11 @@
+# CrazyCrates (Crazy-Crew) — per-player virtual keys / offline keys / respins-owed live as dashed-uuid
+# key paths (Players.<uuid>.*, Offline-Players.<uuid>.*) inside the single file plugins/CrazyCrates/
+# data.yml (FileKeys.java:26, BukkitUserManager.java:66,389,670). Whole-token dashed swap. NB a legacy
+# Offline-Players.<name> section is keyed by player NAME (not a uuid) and is correctly left untouched.
+# Run with the server stopped.
+name: crazycrates
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/CrazyCrates/data.yml

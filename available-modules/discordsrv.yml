@@ -1,0 +1,12 @@
+# DiscordSRV — account links (Minecraft uuid <-> Discord id). Default backend is the append-only file
+# plugins/DiscordSRV/accounts.aof, lines "<discordId> <dashed-uuid>" (AppendOnlyFileAccountLinkManager.java
+# :43 regex, :164 write; default at DiscordSRV.java:1094). Whole-token dashed swap of the uuid side.
+# Opt-in MySQL backend instead (Experiment_JdbcAccountLinkBackend): table `accounts`, column `uuid`
+# varchar(36) dashed (JdbcAccountLinkManager.java:152,574) — use a `type: sql` module for that.
+# Run with the server stopped.
+name: discordsrv-links
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/DiscordSRV/accounts.aof

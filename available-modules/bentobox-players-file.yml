@@ -1,0 +1,12 @@
+# BentoBox — island/skyblock framework. Default JSON flatfile backend. This renames the player records:
+# plugins/BentoBox/database/Players/<uuid>.json, filename = dashed player uuid (JSONDatabaseHandler.java
+# :48,120; Players.java:77). Pair with bentobox-content.yml, which rewrites the uuid tokens inside the
+# json (Players `uniqueId`, Island `owner` + `members` map keys, Names `uuid`). NB Island/*.json is named
+# by a random island id (not a player uuid) — only the content pass touches it. SQL backends store the
+# doc as one json column (json-blob edit, not covered here). Run with the server stopped.
+name: bentobox-players-file
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/BentoBox/database/Players
+extension: json

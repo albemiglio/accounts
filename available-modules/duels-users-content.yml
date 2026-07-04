@@ -1,0 +1,11 @@
+# Duels (Realizedd) — content half of the pair: rewrites the dashed `uuid` field inside each
+# plugins/Duels/users/<uuid>.json (Jackson default = dashed, JsonUtil.java:36). Use together with
+# duels-users-file.yml. Run with the server stopped.
+name: duels-users-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/Duels/users
+    pattern: "*.json"
+    recursive: false

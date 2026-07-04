@@ -1,0 +1,16 @@
+# VotingPlugin (BenCodez) — per-player vote data / points / totals. Default backend SQLite: file
+# plugins/VotingPlugin/Users.db, table Users, column uuid = dashed VARCHAR(37) PK (AdvancedCorePlugin.java
+# :1031-1032, UserTable.java:517; UUID.fromString UserTable.java:104). For MySQL/MariaDB the table is
+# VotingPlugin_Users (getName()+"_Users"); swap the database block and table name (+ Database.Prefix if set).
+# NB the PostgreSQL backend stores uuid as a native UUID type — NOT text-swappable (out of scope).
+# Run with the server stopped.
+name: votingplugin
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/VotingPlugin/Users.db
+replacers:
+  - table: Users
+    column: uuid

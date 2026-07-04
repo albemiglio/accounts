@@ -1,0 +1,10 @@
+# Duels (Realizedd) — per-player user data (rating, wins, kits) at plugins/Duels/users/<uuid>.json,
+# filename = dashed uuid (UserManagerImpl.java:72, UserData.java:177). Pair with duels-users-content.yml,
+# which rewrites the `uuid` field repeated INSIDE the json (UserData.java:30-31). No SQL backend; match
+# history is name-keyed (not migrated). Run with the server stopped.
+name: duels-users-file
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/Duels/users
+extension: json

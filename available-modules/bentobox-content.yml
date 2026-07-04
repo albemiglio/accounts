@@ -1,0 +1,13 @@
+# BentoBox — content half of the pair: rewrites every dashed-uuid token inside the JSON docs under
+# plugins/BentoBox/database (Players `uniqueId`, Island `owner` value + `members` map keys, Names `uuid`;
+# Gson default = dashed, AbstractJSONDatabaseHandler.java:40-41). One recursive pass covers Players/,
+# Island/, Names/ and addon tables. Verify the members-map token on a sample Island/*.json before a bulk
+# run. Run with the server stopped.
+name: bentobox-content
+platform: SPIGOT
+type: content
+enabled: true
+targets:
+  - directory: plugins/BentoBox/database
+    pattern: "*.json"
+    recursive: true

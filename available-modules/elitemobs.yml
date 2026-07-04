@@ -1,0 +1,15 @@
+# EliteMobs (MagmaGuy) — player data (currency, skills, quest state). Default backend SQLite at
+# plugins/EliteMobs/data/player_data.db, single table PlayerData, PK PlayerUUID VARCHAR(36) dashed
+# (GenerateDatabase.java:16-17, PlayerData.java:39,862,1097). For the MySQL backend (useMySQL: true)
+# swap the database block; same table/column (default db name "elitemobs"). Run with the server stopped.
+# Residual: quest/cooldown/lockout state lives in serialized-Java BLOB columns of the same row (opaque).
+name: elitemobs-playerdata
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/EliteMobs/data/player_data.db
+replacers:
+  - table: PlayerData
+    column: PlayerUUID

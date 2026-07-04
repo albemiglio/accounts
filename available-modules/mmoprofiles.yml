@@ -1,0 +1,34 @@
+# MMOProfiles (phoenix-dvpmt / Indyuce) — the REAL-player-uuid -> profiles INDEX, default flat-file.
+# This module renames only MMOProfiles' own per-player index files, which are keyed by the REAL player
+# uuid. It is the ONLY MMO-family module you run for a real-uuid migration on an MMOProfiles server (see
+# the caveat block) — the MMOItems/MMOCore/MMOInventory modules must be SKIPPED there, because with
+# MMOProfiles active their data is keyed by PROFILE uuid, which does not change.
+#
+# ⚠ PARTIALLY UNVERIFIED: MMOProfiles is premium/closed and its jar could not be obtained anonymously
+#   (Cloudflare/login walls, no public mirror or archive), so the exact index path/filename lives only in
+#   that jar. Everything about the KEYING is VERIFIED from the open layer:
+#   - Profile-API (fr.phoenixdevt.profiles, decompiled): ProfileProvider.getPlayerData(UUID) is keyed by
+#     the REAL player uuid (ProfileProvider.java:28); ProfileList.getUniqueId() = real uuid; each
+#     PlayerProfile.getUniqueId() = a distinct PROFILE uuid (PlayerProfile.java:31). The index is one-way
+#     real-uuid -> profiles (bridge confirms: AccountsHook MMOProfilesAccountsProvider.java:40-42).
+#   - MythicLib (open) SynchronizedDataHolder.getEffectiveId() (SynchronizedDataHolder.java:72-88): the
+#     storage key is getUniqueId() (REAL uuid) when ProfileMode is NONE or LEGACY, else getProfileId()
+#     (PROFILE uuid). All MMO-family SQL binds are setString(effectiveId.toString()) — DASHED, never
+#     binary (SQLDatabase.java:83-84). Flat files are userdata/<effectiveId>.yml; family SQLite default is
+#     plugins/<Plugin>/userdata.db (SQLDatabase.java:192,222).
+#   The directory below (plugins/MMOProfiles/userdata) matches the MythicLib "userdata/<uuid>.yml"
+#   convention and the prior note; VERIFY it on your install before running (ls plugins/MMOProfiles) — if
+#   your build stores the index elsewhere or in SQL, adjust directory/type accordingly. Filename uuid =
+#   REAL player uuid (dashed); the family retrieveAllPlayerIds() derives the uuid from the filename, so the
+#   rename is authoritative and no in-file uuid field needs rewriting at the MythicLib layer.
+#
+# ⚠ DO NOT also enable mmoitems-*/mmocore-*/mmoinventory-* on this server: those are PROFILE-uuid-keyed
+#   and survive the real-uuid change untouched — rewriting them would corrupt the profile data. Run the
+#   family modules by real uuid ONLY on servers with NO MMOProfiles (ProfileMode NONE), never here.
+# Run with the server stopped (profiles are RAM-cached and autosaved).
+name: mmoprofiles
+platform: SPIGOT
+type: file
+directory: plugins/MMOProfiles/userdata
+extension: yml
+enabled: true

@@ -1,0 +1,101 @@
+# AuctionHouse (kiranhart/Auction-House, "FlightAuctionHouse") — UUID re-key template
+# for the "accounts" engine. Verified against source (shallow clone) + flight lib jar.
+#   Backend default = SQLite (AuctionHouse.java:161-169: DATABASE_USE ? MySQL : SQLiteConnector, default false).
+#   SQLite file = plugins/AuctionHouse/auctionhouse.db
+#     (flight 3.42/3.45 SQLiteConnector: "jdbc:sqlite:<dataFolder>/<pluginname.toLowerCase()>.db").
+#   Table prefix = "auctionhouse_" for BOTH backends:
+#     SQLite uses flight base getTablePrefix() = plugin.getName().toLowerCase()+"_" (DataManagerAbstract).
+#     MySQL uses Settings.DATABASE_TABLE_PREFIX default "auctionhouse_" (Settings.java:499).
+#   Format = DASHED everywhere: UUID.toString on write / UUID.fromString on read
+#     (DataManager.java:299-303 write owner/highest_bidder; 626-627, 1700-1701 read; all cols VARCHAR(36)).
+#   Item/currency payloads are serialized blobs (data/item/itemstack/currency_item) — out of scope, left as-is.
+# RUN WITH THE SERVER STOPPED.
+#
+# Pick ONE database block (sqlite = default). Delete the other.
+
+name: auctionhouse
+platform: SPIGOT
+type: sql
+enabled: true
+
+database:
+  # --- DEFAULT: SQLite ---
+  type: sqlite
+  database: "plugins/AuctionHouse/auctionhouse.db"
+
+  # --- MySQL (uncomment, set type: mysql) ---
+  # type: mysql
+  # host: localhost
+  # port: 3306
+  # username: root
+  # password: password
+  # database: plugin_dev
+
+replacers:
+  # auctions: active/expired listings (v2/_6_BigIntMigration.java:50-55)
+  - table: auctionhouse_auctions
+    column: owner
+    format: dashed
+  - table: auctionhouse_auctions
+    column: highest_bidder
+    format: dashed
+  # transactions: completed sales (v2/_7_TransactionBigIntMigration.java:52,54)
+  - table: auctionhouse_transactions
+    column: seller
+    format: dashed
+  - table: auctionhouse_transactions
+    column: buyer
+    format: dashed
+  # bids: bid history (_27_FixMigration25to26Migration.java:25 / _25_BidHistoryMigration.java:21)
+  - table: auctionhouse_bids
+    column: bidder_uuid
+    format: dashed
+  # player: per-player settings, uuid PK (v2/_15_AuctionPlayerMigration.java:43)
+  - table: auctionhouse_player
+    column: uuid
+    format: dashed
+  # payments: pending payouts (v2/_17_PaymentsMigration.java:44-45)
+  - table: auctionhouse_payments
+    column: uuid
+    format: dashed
+  - table: auctionhouse_payments
+    column: payment_for
+    format: dashed
+  # statistic: per-player stats (v2/_16_StatisticVersionTwoMigration.java:44-45)
+  - table: auctionhouse_statistic
+    column: uuid
+    format: dashed
+  - table: auctionhouse_statistic
+    column: stat_owner
+    format: dashed
+  # bans (v2/_22_BansV2Migration.java:45-46)
+  - table: auctionhouse_bans
+    column: banned_player
+    format: dashed
+  - table: auctionhouse_bans
+    column: banner
+    format: dashed
+  # admin_logs (v2/_11_AdminLogMigration.java:49,51)
+  - table: auctionhouse_admin_logs
+    column: admin
+    format: dashed
+  - table: auctionhouse_admin_logs
+    column: target
+    format: dashed
+  # completed_requests (_31_RequestTransactionMigration.java:25,27)
+  - table: auctionhouse_completed_requests
+    column: requester_uuid
+    format: dashed
+  - table: auctionhouse_completed_requests
+    column: fulfiller_uuid
+    format: dashed
+  # notifications (_34_OfflineNotificationsMigration.java:38)
+  - table: auctionhouse_notifications
+    column: player_uuid
+    format: dashed
+  # watchlist, part of composite PK (_33_WatchlistMigration.java:37,40)
+  - table: auctionhouse_watchlist
+    column: player_uuid
+    format: dashed
+  # NOTE: *_name columns (owner_name, seller_name, bidder_name, ...) are cached
+  # usernames, not uuids — not re-keyed. Item/currency blobs are out of scope.

@@ -1,0 +1,11 @@
+# PlayerVaultsX (drtshock) — per-player vault files. Default flatfile backend: each player's vaults are
+# one YAML named by their dashed uuid at plugins/PlayerVaults/newvaults/<uuid>.yml (VaultManager.java:342,
+# PlayerVaults.java:155). The uuid is only the filename (vault contents are opaque item blobs), so a
+# rename is enough. NB the legacy `uuidvaults` dir is auto-migrated away at boot — do NOT target it.
+# No native SQL backend. Run with the server stopped.
+name: playervaultsx
+platform: SPIGOT
+type: file
+enabled: true
+directory: plugins/PlayerVaults/newvaults
+extension: yml

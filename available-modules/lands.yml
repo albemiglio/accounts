@@ -1,0 +1,34 @@
+# Lands (Angeschossen, SpigotMC #53313) on its default SQLite backend. Verified against the decompiled
+# jar v7.16.13 (2025-08-21). Three modern *-v2 backends — SQLITE / MYSQL / POSTGRESQL (enum HXvGq.java:14)
+# — picked in HXvGq.java:1245-1259: mysql-v2.enabled -> MySQL, sqlite-v2 -> SQLite, else fall through to
+# `new UhzX()` = SQLite. The bundled config ships both v2 flags false, so a fresh install is SQLite; the
+# file is <dataFolder>/Data/database.db (jdbc:sqlite builder Dgduf.java:90). Default table-prefix lands_
+# (config.yml table-prefix_2). The ONLY table with a player-uuid COLUMN is <prefix>players
+# (uuid CHAR(36) PK, name, edit_land, invites, limits, chatmode, flags): bound DASHED via
+# setString(1, dgduf.getUID().toString()) (HXvGq.java:1072) and read UUID.fromString(rs.getString("uuid"))
+# (HXvGq.java:191) — never setBytes/binary anywhere. worlds.uid is a Bukkit WORLD uuid (skip);
+# lands/nations/wars are keyed by 26-char ULIDs, not players.
+# ⚠ Residual gap by design: land OWNER + every TRUSTED player are NOT their own rows — they are the JSON
+#   KEYS (each = UUID.toString(), dashed) of the lands.members TEXT blob (serializer zdwSN() at
+#   Dgduf/RLHXh/ztTjN/RLHXh/RLHXh.java:1703-1710; getOwnerUID reads this same map, no DB column). A
+#   migrated player keeps their `players` row but stays referenced by the OLD uuid inside every land's
+#   members blob (and per-area role JSON) until a content-rewrite module handles it.
+# Run with the server stopped (Lands caches player/land data in RAM and autosaves). For MySQL/Postgres
+# swap the database block below (add `type: postgresql` similarly). Verified against source: yes (jar).
+name: lands
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/Lands/Data/database.db
+# database:
+#   type: mysql
+#   host: localhost
+#   port: 3306
+#   username: minecraft
+#   password: secret
+#   database: lands
+replacers:
+  - table: lands_players
+    column: uuid

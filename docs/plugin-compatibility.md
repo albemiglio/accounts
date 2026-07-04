@@ -65,6 +65,15 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | VendingMachines | ✅ | `UserSavedPrices.yml` dashed-uuid keys (content) | placed-machine `OwnerName` is username-based (not a uuid — correctly untouched); schema from the decompiled jar |
 | [ItemJoin](https://www.spigotmc.org/resources/itemjoin.12661/) | ✅ | SQLite (default) / MySQL: 9 `ij_*` tables, `Player_UUID` dashed | `ij_map_ids` (no uuid) skipped; usually empty in prod; verified vs decompiled ChaosCore + live db |
 | [pvparena](https://www.spigotmc.org/resources/pvp-arena.14477/) | ✅ | SQLite (default) / MySQL: `pvparena_statistics.player_uuid` dashed | ORMLite build (not slipcor's players.yml); `arena_uuid` untouched; idle if `stats: false` |
+| [PlayerVaultsX](https://github.com/drtshock/PlayerVaults) | ✅ | flatfile `newvaults/<uuid>.yml` rename (uuid in filename only) | legacy `uuidvaults` auto-migrated at boot; no SQL backend |
+| [CrazyCrates](https://github.com/Crazy-Crew/CrazyCrates) | ✅ | `data.yml` dashed-uuid keys (content): virtual/offline keys, respins | legacy `Offline-Players.<name>` section is name-keyed (untouched) |
+| [DiscordSRV](https://github.com/DiscordSRV/DiscordSRV) | ✅ | account links: `accounts.aof` `<discordId> <uuid>` (content, default) or `accounts.uuid` (opt-in MySQL) | dashed; deprecated `linkedaccounts.json` auto-imported at boot |
+| [EliteMobs](https://github.com/MagmaGuy/EliteMobs) | ✅ | SQLite (default `player_data.db`) / MySQL: `PlayerData.PlayerUUID` dashed | quest/cooldown state in serialized-Java BLOB columns (opaque) |
+| [Duels](https://github.com/Realizedd/Duels) | ✅ | `users/<uuid>.json` rename + embedded `uuid` (file+content pair) | match history is name-keyed; no SQL backend |
+| [Parties](https://github.com/AlessioDP/Parties) | ✅ | **default H2** (pinned 1.4.200) / SQLite / MySQL: `parties_players.uuid` + `parties_parties.leader` | party ids (`id`/`party`) not re-keyed; members derived (no blob) |
+| [AuctionHouse](https://github.com/kiranhart/Auction-House) | ✅ | SQLite (default) / MySQL: 18 seller/buyer/owner/bidder cols across 11 `auctionhouse_*` tables | item/currency blobs out of scope; `*_name` are cached usernames |
+| [BetonQuest](https://github.com/BetonQuest/BetonQuest) | ✅ | SQLite (default) / MySQL: 10 `betonquest_*` columns (disable-foreign-key-checks), dashed | stock single-profile install; custom multi-profile providers need care |
+| [VotingPlugin](https://github.com/BenCodez/VotingPlugin) | ✅ | SQLite (default `Users.db`/table `Users`) / MySQL (`VotingPlugin_Users`): `uuid` dashed | PostgreSQL backend uses a native UUID type (not text-swappable) |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -88,13 +97,14 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
 | [Vulcan](https://www.spigotmc.org/resources/vulcan-anti-cheat-1-7-1-21-4.83626/) | ⚠️ | optional: `logs/punishments.txt` UUID lines (content) | violation levels are in-memory; `violations.txt` is name-keyed; the AC never reads the logs back by uuid — **not migration-critical**, the template is audit-trail only |
+| [Lands](https://www.spigotmc.org/resources/lands.53313/) | ⚠️ | `lands_players.uuid` (dashed CHAR(36)) on the default SQLite **and** MySQL/PostgreSQL — verified against the decompiled jar v7.16.13 | land **owner + trusted** players aren't rows: they're the dashed-uuid JSON keys of the ULID-keyed `lands.members` blob (and per-area role JSON), so they stay on the old uuid until a content-rewrite module lands. Run with server stopped |
+| [MMOProfiles](https://phoenixdevt.fr/) | ⚠️ | the real-uuid→profiles **index** (`plugins/MMOProfiles/userdata/<realUUID>.yml`, file rename) — this is the ONLY family module to run here | closed jar unobtainable, so the exact index path is open-layer-derived (**verify on your install**); keying is source-verified. With MMOProfiles active the MMO family (MMOItems/MMOCore/MMOInventory) is **profile-uuid-keyed** and survives the migration — **skip those modules here**; run them by real uuid only on NONE-mode servers |
+| [BentoBox](https://github.com/BentoBoxWorld/BentoBox) | ⚠️ | default JSON: `database/Players/<uuid>.json` rename + content rewrite of the uuid inside Players/Island/Names docs | Island filename is an island id (content-only); the SQL backends store the whole doc in one `json` column — a JSON-blob edit, not covered. Verify the `members` map token on a sample first |
 
 ## Not supported yet
 
-| Plugin | Status | Blocker |
-|--------|:------:|---------|
-| [Lands](https://www.spigotmc.org/resources/lands.53313/) | ❌ | closed source, schema not officially documented (sqlite-v2 default / mysql-v2, prefix `lands_`). Run the [scanner](scanning-a-plugin.md) on your own DB to generate a draft module |
-| [MMOProfiles](https://phoenixdevt.fr/) | ❌ | closed source + maven now auth-gated, so the userdata filename/backend can't be verified (flat-YAML `plugins/MMOProfiles/userdata/<realUUID>.yml` derived from the open MythicLib layer — verify on your install). Also: with it installed the MMO family keys data by **profile** uuid, which *survives* a real-uuid migration — run the MMO family modules **only** for NONE-mode/default-profile players, never blanket |
+Empty — every plugin tracked here now ships a template. Hit a plugin that isn't listed? Run the
+[scanner](scanning-a-plugin.md) on its database to generate a draft module.
 
 ## No player data (verified — nothing to migrate)
 
@@ -142,10 +152,13 @@ CustomScreenMenu. (Nyx itself is the migration engine, not a data plugin that ge
    uuid swap inside text files, comments preserved), used by the WorldGuard/Residence/Maintenance/
    MMOCore templates. Still out of its reach: uuids inside SQL blob/JSON *columns* (KingdomsX members,
    MMOCore friends on MySQL) and binary formats.
-3. **Closed source without schema docs** (Lands, MMOProfiles) — the built-in scanner handles these now:
-   `/accounts scan <probe-uuid>` points at a player known to have data and drafts a disabled module for
-   every place their uuid turns up (file/dir name, text content, or any SQLite column). See
-   [Scanning a plugin](scanning-a-plugin.md). PlayerAuctions and others once here now ship real templates.
+3. **Closed source without schema docs** — decompiling the jar (static bytecode read, CFR) recovers the
+   schema even when it's obfuscated: SQL string literals and file paths survive obfuscation. Lands
+   (jar v7.16.13: `lands_players.uuid` dashed, owner/trust in a `members` blob) and MMOProfiles (keying
+   verified from the open MythicLib/Profile-API layer; jar itself paywalled) were both unlocked this way.
+   When a jar is unobtainable, the built-in scanner is the fallback: `/accounts scan <probe-uuid>` points
+   at a player known to have data and drafts a disabled module for every place their uuid turns up
+   (file/dir name, text content, or any SQLite column). See [Scanning a plugin](scanning-a-plugin.md).
 
 Run every migration with the affected servers **stopped** unless a template's header says otherwise:
 most plugins cache player data in memory and rewrite their files/rows on autosave, clobbering external

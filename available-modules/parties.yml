@@ -1,0 +1,19 @@
+# Parties (AlessioDP) — party membership. Default backend H2 (config database-storage-type: h2), file
+# plugins/Parties/database.mv.db -> path base below WITHOUT the .mv.db suffix (the engine appends it),
+# H2 1.4.200 (pom.xml:88), prefix parties_. Two player-uuid columns: parties_players.uuid (PK) and
+# parties_parties.leader (nullable), dashed CHAR(36) (migrations/1__Initial_database.sql; UUIDRowMapper.java
+# :14). parties_parties.id and parties_players.party are PARTY ids — NOT re-keyed. Membership is derived
+# (no blob). For SQLite/MySQL swap the database block. Run with the server stopped (H2 file lock).
+name: parties
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: h2
+  h2-version: "1.4.200"
+  database: plugins/Parties/database
+replacers:
+  - table: parties_players
+    column: uuid
+  - table: parties_parties
+    column: leader

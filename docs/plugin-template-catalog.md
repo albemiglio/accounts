@@ -105,6 +105,18 @@ update drops the edit. See [Two ways to deliver a module](writing-a-module-templ
 | `vendingmachines.yml` | content | `UserSavedPrices.yml` dashed-uuid keys (slot prices) | dashed | decompiled production jar |
 | `itemjoin.yml` | sql | 9 `ij_*` tables (`Player_UUID`) in `database.db` | dashed | ChaosCore `Controller.java` + live db |
 | `pvparena.yml` | sql | `pvparena_statistics.player_uuid` in `database.sqlite` | dashed | `PlayerArenaStats.java` + live db |
+| `playervaultsx.yml` | file | `newvaults/<uuid>.yml` (rename) | filename | `VaultManager.java` |
+| `crazycrates.yml` | content | `data.yml` dashed-uuid keys | dashed | `BukkitUserManager.java` |
+| `discordsrv.yml` | content | `accounts.aof` account links | dashed | `AppendOnlyFileAccountLinkManager.java` |
+| `elitemobs.yml` | sql | `PlayerData.PlayerUUID` in `player_data.db` | dashed | `GenerateDatabase.java` |
+| `duels-users-file.yml` + `-content.yml` | file+content | `users/<uuid>.json` + embedded uuid (pair) | dashed | `UserData.java` |
+| `bentobox-players-file.yml` + `bentobox-content.yml` | file+content | `database/Players/<uuid>.json` + Players/Island/Names uuid tokens | dashed | `JSONDatabaseHandler.java`/`Island.java` |
+| `parties.yml` | sql | `parties_players.uuid` + `parties_parties.leader` (**H2 1.4.200** default) | dashed | initial-schema SQL + `UUIDRowMapper.java` |
+| `auctionhouse.yml` | sql | 18 player-uuid cols across 11 `auctionhouse_*` tables | dashed | v2 migration classes |
+| `betonquest.yml` | sql | 10 `betonquest_*` columns (disable-foreign-key-checks) | dashed | `SQLite.java`/`MySQL.java` |
+| `votingplugin.yml` | sql | `Users.uuid` (`VotingPlugin_Users` on MySQL) | dashed | `UserTable.java`/`MySQL.java` |
+| `lands.yml` | sql | `lands_players.uuid` (SQLite/MySQL/Postgres) | dashed | decompiled jar v7.16.13 |
+| `mmoprofiles.yml` | file | `userdata/<realUUID>.yml` rename (family index) | filename | MythicLib storage layer |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

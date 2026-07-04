@@ -276,6 +276,8 @@ public class H2 extends DB {
         switch (version) {
             case "1.4.197": // LiteBans
                 return "37f5216e14af2772930dff9b8734353f0a80e89ba3f33e065441de6537c5e842";
+            case "1.4.200": // Parties
+                return "3ad9ac4b6aae9cd9d3ac1c447465e1ed06019b851b893dd6a8d76ddb6d85bca6";
             case "2.1.214": // AxVaults
                 return "d623cdc0f61d218cf549a8d09f1c391ff91096116b22e2475475fce4fbe72bd0";
             case "2.2.224": // MobPuppets

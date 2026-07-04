@@ -1,0 +1,37 @@
+# BetonQuest — quest engine. Default backend SQLite at plugins/BetonQuest/database.db (DatabaseComponent
+# .java:71), prefix betonquest_. On a stock install profileID == playerID == active_profile == the player
+# UUID (UUIDProfileProvider.java:44), all stored as the DASHED string (PlayerData.java:166,242). 10 columns
+# across 6 tables carry it; global_tags/global_points/migration have none (skipped). FK ON DELETE CASCADE
+# on profile/player -> disable-foreign-key-checks (a no-op on SQLite, needed on MySQL; MySQL schema is
+# identical, swap the database block). CAVEAT: if a custom multi-profile ProfileProvider is installed,
+# profileID is a per-profile uuid and only player.playerID / player_profile.playerID equal the account
+# uuid — verify no multi-profile addon before running. Run with the server stopped.
+name: betonquest
+platform: SPIGOT
+type: sql
+enabled: true
+disable-foreign-key-checks: true
+database:
+  type: sqlite
+  database: plugins/BetonQuest/database.db
+replacers:
+  - table: betonquest_profile
+    column: profileID
+  - table: betonquest_player
+    column: playerID
+  - table: betonquest_player
+    column: active_profile
+  - table: betonquest_player_profile
+    column: playerID
+  - table: betonquest_player_profile
+    column: profileID
+  - table: betonquest_objectives
+    column: profileID
+  - table: betonquest_tags
+    column: profileID
+  - table: betonquest_points
+    column: profileID
+  - table: betonquest_journal
+    column: profileID
+  - table: betonquest_backpack
+    column: profileID
