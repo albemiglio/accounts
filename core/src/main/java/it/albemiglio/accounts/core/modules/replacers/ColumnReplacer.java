@@ -1,5 +1,7 @@
 package it.albemiglio.accounts.core.modules.replacers;
 
+import it.albemiglio.accounts.core.modules.Diagnosis;
+
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -8,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Logger;
 
@@ -129,6 +132,87 @@ public class ColumnReplacer extends Replacer {
             }
         }
         return false;
+    }
+
+    /**
+     * Read-only: for each target table, is the probe uuid present in {@code column}, and in which
+     * encoding? Reports VERIFIED when it's stored exactly as this replacer configures, FORMAT_MISMATCH
+     * when it's really stored in a different encoding (the migration would miss it), NOT_FOUND when the
+     * player simply has no row here, or MISSING when the table/column doesn't exist.
+     */
+    @Override
+    public List<Diagnosis> diagnose(Connection connection, UUID probe, String module) {
+        List<String> targets;
+        try {
+            targets = tablePattern == null ? Collections.singletonList(table) : matchingTables(connection);
+        } catch (SQLException e) {
+            return Collections.singletonList(Diagnosis.error(module, patternLabel(), e.getMessage()));
+        }
+        if (targets.isEmpty()) {
+            return Collections.singletonList(
+                    Diagnosis.missing(module, patternLabel(), "no table matches '" + tablePattern + "'"));
+        }
+        List<Diagnosis> out = new ArrayList<>();
+        for (String target : targets) {
+            out.add(diagnoseTable(connection, target, probe, module));
+        }
+        return out;
+    }
+
+    private Diagnosis diagnoseTable(Connection connection, String target, UUID probe, String module) {
+        String location = target + "." + column;
+        try {
+            UuidCodec firstMatch = null;
+            int configuredCount = 0;
+            for (UuidCodec codec : UuidCodec.values()) {
+                // prefix + binary is impossible, so a binary column is never the stored form when a prefix is set.
+                if (codec == UuidCodec.BINARY && !prefix.isEmpty()) {
+                    continue;
+                }
+                int n = count(connection, target, codec, probe);
+                if (codec == this.codec) {
+                    configuredCount = n;
+                }
+                if (n > 0 && firstMatch == null) {
+                    firstMatch = codec;
+                }
+            }
+            if (configuredCount > 0) {
+                return Diagnosis.verified(module, location, configuredCount);
+            }
+            if (firstMatch != null) {
+                return Diagnosis.formatMismatch(module, location, formatLabel(this.codec),
+                        firstMatch.name().toLowerCase(Locale.ROOT));
+            }
+            return Diagnosis.notFound(module, location);
+        } catch (SQLException e) {
+            // the table or column doesn't exist as the template configures it
+            return Diagnosis.missing(module, location, "not queryable: " + e.getMessage());
+        }
+    }
+
+    private int count(Connection connection, String target, UuidCodec codec, UUID probe) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM " + target + " WHERE " + column + " = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            if (codec == UuidCodec.BINARY) {
+                codec.bind(ps, 1, probe);
+            } else {
+                ps.setString(1, prefix + codec.encode(probe));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                rs.next();
+                return rs.getInt(1);
+            }
+        }
+    }
+
+    private String formatLabel(UuidCodec codec) {
+        String base = codec.name().toLowerCase(Locale.ROOT);
+        return prefix.isEmpty() ? base : "prefix \"" + prefix + "\" + " + base;
+    }
+
+    private String patternLabel() {
+        return "tables '" + tablePattern + "'." + column;
     }
 
     /** An extra column rewritten by the same UPDATE, computed from the NEW stored string. */

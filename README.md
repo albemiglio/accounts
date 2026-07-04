@@ -255,10 +255,14 @@ classloader identity and the cast fails.
 ## Caveats — read before production
 
 - **Redis is required**, even for a single server: the engine always coordinates through it.
-- **Back up first.** A UUID migration rewrites live player data in place. Take a backup and test on a
-  copy. Verify each template's assumed UUID encoding against a real row before running it.
-- **H2 is not supported** for live migration — the owning plugin holds an exclusive lock on the
-  `.mv.db` file. Point that plugin at SQLite or MySQL instead (both migrate fine).
+- **Back up first, then diagnose.** A UUID migration rewrites player data in place, so take a backup.
+  Then run **`/accounts diagnose <uuid>`** with a real player who has data on this server: read-only, it
+  checks that every loaded module finds that player where it expects and in the encoding it assumes, and
+  flags any template whose `format` is wrong or whose table/path is missing — so you fix it *before*
+  migrating instead of discovering a silent miss afterwards. Safe to run on a live server.
+- **H2 backends need the server stopped.** The owning plugin holds an exclusive lock on the `.mv.db`
+  file while it runs, so migrate H2 stores offline — each H2 template pins the exact H2 version its plugin
+  bundles and the engine refuses a file written by a different family. SQLite and MySQL migrate fine live.
 - **World/NBT migration is safest with the world at rest.** On Spigot the live in-memory objects are
   rewritten too, but the on-disk NBT rewrite touches data that isn't currently held in memory; run it
   during low activity, with a backup.

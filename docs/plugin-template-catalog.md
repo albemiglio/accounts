@@ -1,8 +1,10 @@
 # The plugin-template catalog
 
 These are the ready-made templates shipped in [`available-modules/`](../available-modules/). Each is a
-starting point: copy it into `plugins/Accounts/modules/`, point it at *your* database/folder, and
-**verify the assumed UUID encoding against a real row before running on live data**.
+starting point: copy it into `plugins/Accounts/modules/`, point it at *your* database/folder, and then
+**run [`/accounts diagnose <uuid>`](writing-a-module-template.md#dry-run-diagnose-before-you-migrate)**
+with a real player — it verifies, read-only, that each module finds that player's data in the encoding it
+assumes (and flags a wrong `format` or a missing table/path) before you touch live data.
 
 Looking for a quick ✅/❌ answer instead ("is my plugin covered?") — see the
 [plugin compatibility matrix](plugin-compatibility.md), which also lists the plugins that are known

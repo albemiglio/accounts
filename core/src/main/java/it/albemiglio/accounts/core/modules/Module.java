@@ -108,6 +108,27 @@ public abstract class Module {
     }
 
     /**
+     * Read-only pre-flight for {@code /accounts diagnose <probe-uuid>}: report — without writing anything —
+     * whether this player's data is where each replacer expects it and in the assumed encoding. SQL modules
+     * probe their columns (and catch a wrong {@code format}); file/content/world modules override this.
+     * Lets an operator confirm a migration is safe before running it.
+     */
+    public List<Diagnosis> diagnose(UUID probe) {
+        List<Diagnosis> report = new ArrayList<>();
+        if (database == null) {
+            return report;
+        }
+        try (Connection connection = database.getConnection()) {
+            for (Replacer replacer : replacers) {
+                report.addAll(replacer.diagnose(connection, probe, name));
+            }
+        } catch (SQLException e) {
+            report.add(Diagnosis.error(name, "database", "cannot open: " + e.getMessage()));
+        }
+        return report;
+    }
+
+    /**
      * The engine's toggle statement, or null where there is no enforcement to toggle. H2's
      * {@code SET REFERENTIAL_INTEGRITY} needs admin rights and commits the open transaction, which is
      * why it only ever runs before the first replacer and after commit/rollback.

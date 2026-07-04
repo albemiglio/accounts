@@ -6,6 +6,8 @@ import it.albemiglio.accounts.core.objects.enums.Platform;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -40,5 +42,16 @@ public class FileModule extends Module {
         } catch (IOException e) {
             throw new MigrationException("File migration failed for module " + getName(), e);
         }
+    }
+
+    @Override
+    public List<Diagnosis> diagnose(UUID probe) {
+        String suffix = extension.isEmpty() ? "" : "." + extension;
+        Path target = directory.resolve(probe + suffix);
+        if (Files.exists(target)) {
+            return Collections.singletonList(Diagnosis.verified(getName(), target.toString(), 1));
+        }
+        return Collections.singletonList(
+                Diagnosis.notFound(getName(), directory.resolve("<uuid>" + suffix).toString()));
     }
 }

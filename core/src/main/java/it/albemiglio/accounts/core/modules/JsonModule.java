@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +37,14 @@ public class JsonModule extends Module {
         for (String fileName : VANILLA_FILES) {
             rewrite(serverDir.resolve(fileName), migration.getLeft().toString(), migration.getRight().toString());
         }
+    }
+
+    @Override
+    public List<Diagnosis> diagnose(UUID probe) {
+        // Vanilla JSON stores the uuid only as its lowercase dashed string, so there is no assumed
+        // format that could be wrong; the swap is literal and collision-free.
+        return Collections.singletonList(Diagnosis.info(getName(), serverDir.toString(),
+                "vanilla dashed-uuid swap — no assumed format to verify; test on a copy"));
     }
 
     private void rewrite(Path file, String oldId, String newId) {

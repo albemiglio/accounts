@@ -13,8 +13,10 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -70,6 +72,57 @@ public class ContentModule extends Module {
                     throw new MigrationException("Content migration failed for module " + getName(), e);
                 }
             }
+        }
+    }
+
+    @Override
+    public List<Diagnosis> diagnose(UUID probe) {
+        Pattern token = Pattern.compile(
+                "(?<![0-9a-fA-F-])" + Pattern.quote(probe.toString()) + "(?![0-9a-fA-F-])");
+        List<Diagnosis> report = new ArrayList<>();
+        for (Target target : targets) {
+            int occurrences = countInTarget(target, token);
+            String location = target.path.toString();
+            report.add(occurrences > 0
+                    ? Diagnosis.verified(getName(), location, occurrences)
+                    : Diagnosis.notFound(getName(), location));
+        }
+        return report;
+    }
+
+    private int countInTarget(Target target, Pattern token) {
+        if (Files.isRegularFile(target.path)) {
+            return countInFile(target.path, token);
+        }
+        if (Files.isDirectory(target.path)) {
+            PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + target.pattern);
+            try (Stream<Path> files = Files.find(target.path, target.recursive ? Integer.MAX_VALUE : 1,
+                    (file, attrs) -> attrs.isRegularFile() && matcher.matches(file.getFileName()))) {
+                return files.mapToInt(file -> countInFile(file, token)).sum();
+            } catch (IOException | UncheckedIOException e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private int countInFile(Path file, Pattern token) {
+        try {
+            String content;
+            try {
+                content = StandardCharsets.UTF_8.newDecoder()
+                        .decode(ByteBuffer.wrap(Files.readAllBytes(file))).toString();
+            } catch (CharacterCodingException e) {
+                return 0;
+            }
+            int count = 0;
+            Matcher matcher = token.matcher(content);
+            while (matcher.find()) {
+                count++;
+            }
+            return count;
+        } catch (IOException e) {
+            return 0;
         }
     }
 

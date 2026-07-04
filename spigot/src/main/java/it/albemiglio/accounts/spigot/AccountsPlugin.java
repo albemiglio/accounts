@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.spigot;
 
+import it.albemiglio.accounts.core.modules.Diagnosis;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.nbt.NbtModule;
 import it.albemiglio.accounts.core.objects.Task;
@@ -30,6 +31,7 @@ import java.util.UUID;
 public final class AccountsPlugin extends JavaPlugin {
 
     private AccountsEngine engine;
+    private List<Module> modules;
 
     @Override
     public void onEnable() {
@@ -58,6 +60,7 @@ public final class AccountsPlugin extends JavaPlugin {
             modules.add(liveWorld);
         }
 
+        this.modules = modules;
         this.engine = AccountsEngine.start(
                 config.getString("redis.host", "localhost"),
                 config.getInt("redis.port", 6379),
@@ -87,6 +90,9 @@ public final class AccountsPlugin extends JavaPlugin {
         }
         if (args.length > 0 && args[0].equalsIgnoreCase("scan")) {
             return scan(sender, args);
+        }
+        if (args.length > 0 && args[0].equalsIgnoreCase("diagnose")) {
+            return diagnose(sender, args);
         }
         try {
             Task task = MigrationArgs.parse(args);
@@ -137,6 +143,61 @@ public final class AccountsPlugin extends JavaPlugin {
             } catch (IOException e) {
                 lines.add("Scan failed: " + e.getMessage());
             }
+            getServer().getScheduler().runTask(this, () -> lines.forEach(sender::sendMessage));
+        });
+        return true;
+    }
+
+    /**
+     * {@code /accounts diagnose <probe-uuid>} — read-only pre-flight. For a player known to have data on
+     * this server, checks every loaded module: is their uuid where the module expects it, and in the
+     * assumed encoding? Surfaces FORMAT_MISMATCH / MISSING findings so an operator can confirm a migration
+     * is safe (and won't silently miss data) before running it. Writes nothing; safe on a live server.
+     */
+    private boolean diagnose(CommandSender sender, String[] args) {
+        if (args.length != 2) {
+            sender.sendMessage("Usage: /accounts diagnose <probe-uuid>  (a player known to have data here)");
+            return true;
+        }
+        final UUID probe;
+        try {
+            probe = UUID.fromString(args[1]);
+        } catch (IllegalArgumentException e) {
+            sender.sendMessage("Not a valid uuid: " + args[1]);
+            return true;
+        }
+        sender.sendMessage("Diagnosing " + modules.size() + " module(s) against " + probe + " (read-only)…");
+        getServer().getScheduler().runTaskAsynchronously(this, () -> {
+            List<String> flagged = new ArrayList<>();
+            int verified = 0;
+            int blockers = 0;
+            int scanAll = 0;
+            int empty = 0;
+            for (Module module : modules) {
+                for (Diagnosis d : module.diagnose(probe)) {
+                    switch (d.getStatus()) {
+                        case VERIFIED:
+                            verified++;
+                            break;
+                        case INFO:
+                            scanAll++;
+                            break;
+                        case NOT_FOUND:
+                            empty++;
+                            break;
+                        default: // FORMAT_MISMATCH, MISSING, ERROR
+                            blockers++;
+                            flagged.add("  ⚠ " + d.line());
+                    }
+                }
+            }
+            List<String> lines = new ArrayList<>();
+            lines.add("Diagnosis vs " + probe + ": " + verified + " verified, " + blockers + " to FIX, "
+                    + scanAll + " scan-all, " + empty + " with no data for this player.");
+            lines.addAll(flagged);
+            lines.add(blockers == 0
+                    ? "✓ Looks safe — every module found this player's data in the expected encoding (or has none). Back up first anyway."
+                    : "⚠ Fix the flagged modules (wrong 'format', or a missing table/path) before migrating.");
             getServer().getScheduler().runTask(this, () -> lines.forEach(sender::sendMessage));
         });
         return true;

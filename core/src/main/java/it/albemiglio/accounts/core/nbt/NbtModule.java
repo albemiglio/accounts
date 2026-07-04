@@ -1,6 +1,7 @@
 package it.albemiglio.accounts.core.nbt;
 
 import it.albemiglio.accounts.core.io.AtomicFiles;
+import it.albemiglio.accounts.core.modules.Diagnosis;
 import it.albemiglio.accounts.core.modules.MigrationException;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Pair;
@@ -127,5 +128,13 @@ public class NbtModule extends Module {
         } catch (IOException e) {
             throw new MigrationException("NBT migration failed writing " + file, e);
         }
+    }
+
+    @Override
+    public List<Diagnosis> diagnose(UUID probe) {
+        // World data is matched by the raw 128 bits in every known NBT encoding (int-array, dashed
+        // string, long pair), so there is no assumed format that could be wrong — nothing to verify.
+        return Collections.singletonList(Diagnosis.info(getName(), worldDir.toString(),
+                "scan-all (every uuid encoding) — no assumed format to verify; test on a copy"));
     }
 }

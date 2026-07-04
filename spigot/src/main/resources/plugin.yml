@@ -8,6 +8,7 @@ commands:
     description: Account migration admin command
     usage: |-
       /accounts migrate <fromUuid> <toUuid> [username]
+      /accounts diagnose <probe-uuid>
       /accounts scan <probe-uuid>
     permission: accounts.migrate
 permissions:

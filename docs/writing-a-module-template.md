@@ -284,6 +284,32 @@ operators can always tweak or disable what a jar ships — and it's the update-s
 
 ---
 
+## Dry-run: diagnose before you migrate
+
+A migration rewrites data in place, so before running one, confirm every module you've loaded is actually
+pointed at this player's data in the encoding it assumes:
+
+```
+/accounts diagnose <probe-uuid>
+```
+
+Give it a **real player who has data on this server**. For each loaded module the engine checks,
+**read-only**, whether that uuid is present where the module would rewrite it — and in which encoding —
+then reports:
+
+- **verified** — found in exactly the configured `format`; that module is safe to run.
+- **to FIX** — resolve before migrating:
+  - *FORMAT_MISMATCH* — the uuid is there, but stored in a different encoding than the template's
+    `format` (e.g. the data is `dashed` while the template says `undashed`). A blind migration would
+    silently miss it — fix `format` and re-run.
+  - *MISSING* — the table/column/path the template names doesn't exist here (wrong file name, wrong
+    table, or the plugin isn't installed on this backend).
+- **scan-all** — world/vanilla-JSON modules match every encoding by design, so there's nothing to verify.
+- **no data for this player** — normal for someone who never used that plugin.
+
+It writes nothing and is safe on a live server. Run it, clear anything under *to FIX*, back up, then
+migrate — this replaces verifying each template's encoding against a real row by hand.
+
 ## Scanning an unknown plugin
 
 For a closed-source plugin with no template, you don't have to reverse-engineer its storage. The
