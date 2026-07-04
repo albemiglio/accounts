@@ -166,8 +166,8 @@ class H2DatabaseTest {
     @Test
     void unpinnedVersionSkipsChecksumVerification(@TempDir Path dir) throws Exception {
         String base = realStore(dir);
-        // 2.3.232 has no embedded pin; the classpath jar stands in for it (any 2.2+ opens format 3).
-        H2 db = new H2(null, 0, "sa", "", base, "2.3.232", cacheWithClasspathJar(dir, "2.3.232"));
+        // 2.3.230 has no embedded pin; the classpath jar stands in for it (any 2.2+ opens format 3).
+        H2 db = new H2(null, 0, "sa", "", base, "2.3.230", cacheWithClasspathJar(dir, "2.3.230"));
         try (Connection c = db.getConnection();
              Statement st = c.createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM \"axvaults_data\"")) {
