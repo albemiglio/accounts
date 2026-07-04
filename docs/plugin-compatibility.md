@@ -63,6 +63,8 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [CombatLogX](https://github.com/SirBlobman/CombatLogX) | ✅ | playerdata/`<uuid>`.data.yml rename (punish-count / toggles) | live combat tags are in-memory (nothing to migrate) |
 | [Vehicles](https://www.spigotmc.org/resources/vehicles.90130/) | ✅ | per-model SQLite `databases/<Model>/database.db`, vehicle.owner dashed | one db file per model → copy the module per model; trunk blob out of scope |
 | VendingMachines | ✅ | `UserSavedPrices.yml` dashed-uuid keys (content) | placed-machine `OwnerName` is username-based (not a uuid — correctly untouched); schema from the decompiled jar |
+| [ItemJoin](https://www.spigotmc.org/resources/itemjoin.12661/) | ✅ | SQLite (default) / MySQL: 9 `ij_*` tables, `Player_UUID` dashed | `ij_map_ids` (no uuid) skipped; usually empty in prod; verified vs decompiled ChaosCore + live db |
+| [pvparena](https://www.spigotmc.org/resources/pvp-arena.14477/) | ✅ | SQLite (default) / MySQL: `pvparena_statistics.player_uuid` dashed | ORMLite build (not slipcor's players.yml); `arena_uuid` untouched; idle if `stats: false` |
 | [Vanilla server](https://www.minecraft.net/) | ✅ | ops/whitelist/bans/usercache JSON + full world NBT | — |
 
 ## Partially supported
@@ -86,8 +88,6 @@ means the schema was read from the plugin's own code or official schema docs, ne
 | [GriefDefender](https://github.com/bloodmc/GriefDefenderAPI) | ⚠️ | file storage fully: extensionless playerdata rename + claim HOCON content rewrite | SQL storage-method undocumented (closed jar) |
 | [ajLeaderboards](https://github.com/ajgeiss0702/ajLeaderboards) | ⚠️ | MySQL/MariaDB boards (table-pattern `ajlb_%`, uuid col `id`) + ajlb_extras | default H2/SQLite: boards have no common prefix + the file is locked — switch to MySQL first. Board `id` is a PK: clear a pre-existing dest row |
 | [Vulcan](https://www.spigotmc.org/resources/vulcan-anti-cheat-1-7-1-21-4.83626/) | ⚠️ | optional: `logs/punishments.txt` UUID lines (content) | violation levels are in-memory; `violations.txt` is name-keyed; the AC never reads the logs back by uuid — **not migration-critical**, the template is audit-trail only |
-| [ItemJoin](https://www.spigotmc.org/resources/itemjoin.12661/) | ⚠️ | SQLite/MySQL `ij_*` tables (`Player_UUID`, 9 player tables, dashed) | usually empty in prod; the default SQLite filename lives in the shaded ChaosCore lib — verify it (or use MySQL) before enabling. `table-pattern: "ij_%"` auto-skips the non-player `ij_map_ids` |
-| [pvparena](https://github.com/slipcor/pvparena) | ⚠️ | stats by uuid: slipcor mainline `players.yml` (`<arena>.<uuid>`, dashed) **or** a DB fork's `pvparena_statistics.player_uuid` | empty in prod; confirm which build (file vs SQL) and the format from one row before migrating |
 
 ## Not supported yet
 

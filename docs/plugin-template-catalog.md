@@ -101,6 +101,8 @@ update drops the edit. See [Two ways to deliver a module](writing-a-module-templ
 | `combatlogx.yml` | file | `playerdata/<uuid>.data.yml` (rename) | filename | `PlayerDataManager` (BlueSlimeCore) |
 | `vulcan-punishments.yml` | content | `logs/punishments.txt` `UUID:` lines (optional audit trail) | dashed | log-format parser + docs |
 | `vendingmachines.yml` | content | `UserSavedPrices.yml` dashed-uuid keys (slot prices) | dashed | decompiled production jar |
+| `itemjoin.yml` | sql | 9 `ij_*` tables (`Player_UUID`) in `database.db` | dashed | ChaosCore `Controller.java` + live db |
+| `pvparena.yml` | sql | `pvparena_statistics.player_uuid` in `database.sqlite` | dashed | `PlayerArenaStats.java` + live db |
 
 The batch-added templates (HuskHomes onward) carry their full provenance, caveats and "server stopped"
 requirements in their own header comments — read the file before running it.

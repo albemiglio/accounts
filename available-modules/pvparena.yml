@@ -1,0 +1,17 @@
+# pvparena — the DB-backed ORMLite build (NOT slipcor mainline's players.yml). Verified against the
+# decompiled model + the live production database.sqlite schema. Stats live in table pvparena_statistics,
+# column player_uuid (dashed UUID.toString(); PlayerArenaStats.java:19,23, round-tripped via
+# UUID.fromString). Default backend SQLite, file plugins/pvparena/database.sqlite (config.yml:25 type:
+# sqlite, SQLiteConnector.java:15,34). For the MySQL backend swap the database block (config.yml:26-30);
+# same table/column/format. arena_uuid is an arena id, NOT a player — it is deliberately not migrated.
+# Often idle in prod (stats: false), but the table exists. Run with the server stopped.
+name: pvparena
+platform: SPIGOT
+type: sql
+enabled: true
+database:
+  type: sqlite
+  database: plugins/pvparena/database.sqlite
+replacers:
+  - table: pvparena_statistics
+    column: player_uuid
