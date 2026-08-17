@@ -4,74 +4,227 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
   :root {
-    --bg: #fbfbfa; --fg: #1c1c1a; --muted: #6b6b66; --line: #e6e5e1;
-    --card: #ffffff; --wait: #b4531f; --done: #2f6d46;
+    --bg: #0d0f0e;
+    --panel: #141716;
+    --panel-2: #191d1b;
+    --line: #262b28;
+    --fg: #e8e9e6;
+    --muted: #7d857f;
+    --dim: #545b56;
+    --go: #63b58a;
+    --wait: #d9a441;
+    --late: #d97757;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg: #161614; --fg: #f0efec; --muted: #99968f; --line: #2c2a27;
-            --card: #1e1c1a; --wait: #e0925f; --done: #7fc39a; }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f6f3; --panel: #fff; --panel-2: #fafaf8; --line: #e4e4de;
+      --fg: #16181a; --muted: #6d726d; --dim: #9aa09a;
+      --go: #2f7d55; --wait: #a8722a; --late: #b3512f;
+    }
   }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 2.5rem 1.25rem; background: var(--bg); color: var(--fg);
-         font: 15px/1.5 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 60rem; margin: 0 auto; }
-  h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
-  .sub { color: var(--muted); font-size: .85rem; margin: .35rem 0 2rem; }
-  .row { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
-         padding: 1rem 1.15rem; margin-bottom: .75rem; }
-  .who { font-weight: 600; }
-  .ids { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem;
-         color: var(--muted); margin-top: .2rem; word-break: break-all; }
-  .bar { height: 4px; background: var(--line); border-radius: 2px; margin: .8rem 0 .6rem; overflow: hidden; }
-  .bar > i { display: block; height: 100%; background: var(--done); }
-  .chips { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; font-size: .8rem; }
-  .chip { border: 1px solid var(--line); border-radius: 999px; padding: .1rem .55rem; color: var(--wait); }
-  .count { color: var(--muted); margin-right: .35rem; }
-  .empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 10px;
-           padding: 2.5rem 1rem; text-align: center; }
-  .err { color: var(--wait); }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--fg);
+    font-family: var(--sans); font-size: 15px; line-height: 1.5;
+    background-image: radial-gradient(120% 80% at 50% -10%, rgba(127,160,140,.07), transparent 60%);
+  }
+  main { max-width: 62rem; margin: 0 auto; padding: 3rem 1.25rem 5rem; }
+
+  /* ---- header ------------------------------------------------------------ */
+  header { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+           padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .label { font-family: var(--mono); font-size: .7rem; letter-spacing: .16em;
+           text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 1.15rem; font-weight: 600; letter-spacing: -.015em; }
+  .spacer { flex: 1 1 auto; }
+  .stat { font-family: var(--mono); font-size: .78rem; color: var(--muted); }
+  .stat b { color: var(--fg); font-weight: 600; }
+  .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--go);
+           display: inline-block; margin-right: .45rem; vertical-align: middle;
+           animation: beat 2.4s ease-in-out infinite; }
+  .pulse.off { background: var(--late); animation: none; }
+  @keyframes beat { 0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(99,181,138,.45); }
+                    50% { opacity: .55; box-shadow: 0 0 0 5px rgba(99,181,138,0); } }
+
+  /* ---- rows -------------------------------------------------------------- */
+  #list { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .7rem; }
+  .row { border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+         padding: 1rem 1.15rem 1.05rem; overflow: hidden;
+         animation: in .45s cubic-bezier(.2,.7,.3,1) both; }
+  .row.leaving { animation: out .5s cubic-bezier(.4,0,.6,1) both; }
+  @keyframes in  { from { opacity: 0; transform: translateY(-6px) scale(.995); } }
+  @keyframes out { to { opacity: 0; transform: translateY(4px); max-height: 0; padding-block: 0;
+                        margin-bottom: -.7rem; border-color: transparent; } }
+  .row.late { border-color: color-mix(in srgb, var(--late) 45%, var(--line)); }
+  .row.done { border-color: color-mix(in srgb, var(--go) 45%, var(--line)); }
+
+  .top { display: flex; align-items: baseline; gap: .6rem; }
+  .who { font-weight: 600; letter-spacing: -.01em; }
+  .clock { margin-left: auto; font-family: var(--mono); font-size: .75rem; color: var(--muted);
+           font-variant-numeric: tabular-nums; }
+  .row.late .clock { color: var(--late); }
+  .row.done .clock { color: var(--go); }
+  .ids { font-family: var(--mono); font-size: .72rem; color: var(--dim); margin-top: .25rem;
+         white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ids .arrow { color: var(--muted); padding: 0 .35rem; }
+
+  /* one cell per instance: the shape of the row IS the shape of the network */
+  .cells { display: grid; gap: 3px; margin: .85rem 0 .6rem; }
+  .cell { height: 5px; border-radius: 2px; background: var(--panel-2);
+          border: 1px solid var(--line); position: relative; overflow: hidden; }
+  .cell.on { background: var(--go); border-color: var(--go);
+             animation: fill .5s cubic-bezier(.2,.7,.3,1) both; }
+  @keyframes fill { from { transform: scaleX(0); transform-origin: left; } }
+  .cell.off::after { content: ""; position: absolute; inset: 0;
+                     background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--wait) 40%, transparent), transparent);
+                     transform: translateX(-100%); animation: sweep 2.6s linear infinite; }
+  @keyframes sweep { to { transform: translateX(100%); } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: .3rem .45rem; align-items: center;
+           font-family: var(--mono); font-size: .74rem; }
+  .chips .n { color: var(--muted); margin-right: .3rem; font-variant-numeric: tabular-nums; }
+  .chip { display: inline-flex; align-items: center; gap: .3rem; padding: .05rem .5rem;
+          border: 1px solid var(--line); border-radius: 999px; color: var(--dim); }
+  .chip.pending { color: var(--wait); border-color: color-mix(in srgb, var(--wait) 35%, var(--line)); }
+  .chip .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+  .chip.pending .dot { animation: beat 1.8s ease-in-out infinite; }
+
+  .empty { border: 1px dashed var(--line); border-radius: 12px; padding: 3.5rem 1rem;
+           text-align: center; color: var(--muted); }
+  .empty .label { display: block; margin-bottom: .5rem; }
+  .err { color: var(--late); }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
 </style>
 <main>
-  <h1>Migrations in flight</h1>
-  <p class="sub" id="sub">loading…</p>
+  <header>
+    <h1>Migrations in flight</h1>
+    <span class="spacer"></span>
+    <span class="stat"><span class="pulse" id="pulse"></span><span id="state">connecting</span></span>
+    <span class="stat" id="done-count"></span>
+  </header>
   <div id="list"></div>
 </main>
 <script>
   const token = new URLSearchParams(location.search).get('token') || '';
   const list = document.getElementById('list');
-  const sub = document.getElementById('sub');
+  const stateEl = document.getElementById('state');
+  const pulseEl = document.getElementById('pulse');
+  const doneEl = document.getElementById('done-count');
 
-  function chips(names) {
-    return names.length
-      ? names.map(n => `<span class="chip">${esc(n)}</span>`).join('')
-      : '<span class="count">nothing outstanding</span>';
-  }
+  const seen = new Map();      // key -> {firstSeen, node, data}
+  let completed = 0;
+  const key = m => m.from + '>' + m.to;
   const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+  const shortId = id => id.length > 13 ? id.slice(0, 8) + '…' + id.slice(-4) : id;
+  const since = ms => {
+    const s = Math.floor(ms / 1000);
+    return s < 60 ? s + 's' : Math.floor(s / 60) + 'm ' + String(s % 60).padStart(2, '0') + 's';
+  };
 
-  async function tick() {
+  function render(m, node) {
+    const pending = m.waitingOn || [];
+    const applied = m.applied || [];
+    const cells = Array.from({length: m.expectedCount}, (_, i) =>
+      `<span class="cell ${i < m.appliedCount ? 'on' : 'off'}"></span>`).join('');
+    node.innerHTML = `
+      <div class="top">
+        <span class="who">${esc(m.username || 'unknown player')}</span>
+        <span class="label">transfer</span>
+        <span class="clock" data-clock></span>
+      </div>
+      <div class="ids" title="${esc(m.from)} → ${esc(m.to)}">
+        ${esc(shortId(m.from))}<span class="arrow">→</span>${esc(shortId(m.to))}
+      </div>
+      <div class="cells" style="grid-template-columns: repeat(${m.expectedCount}, 1fr)">${cells}</div>
+      <div class="chips">
+        <span class="n">${m.appliedCount}/${m.expectedCount} applied</span>
+        ${applied.map(n => `<span class="chip"><i class="dot"></i>${esc(n)}</span>`).join('')}
+        ${pending.map(n => `<span class="chip pending"><i class="dot"></i>${esc(n)}</span>`).join('')}
+      </div>`;
+  }
+
+  function tickClocks() {
+    const now = Date.now();
+    for (const [, entry] of seen) {
+      const clock = entry.node.querySelector('[data-clock]');
+      if (!clock) continue;
+      const age = now - entry.firstSeen;
+      clock.textContent = 'open ' + since(age);
+      entry.node.classList.toggle('late', age > 45000 && !entry.node.classList.contains('done'));
+    }
+  }
+
+  function retire(entry, k) {
+    // Show it finished before it goes: a row that just vanishes reads as a glitch, not as success.
+    entry.node.classList.add('done');
+    const bar = entry.node.querySelector('.cells');
+    if (bar) bar.querySelectorAll('.cell').forEach(c => { c.className = 'cell on'; });
+    const chips = entry.node.querySelector('.chips');
+    const total = entry.data.expectedCount;
+    if (chips) chips.innerHTML = `<span class="n">${total}/${total} applied</span>` +
+      (entry.data.applied || []).concat(entry.data.waitingOn || [])
+        .map(n => `<span class="chip"><i class="dot"></i>${esc(n)}</span>`).join('');
+    const clock = entry.node.querySelector('[data-clock]');
+    if (clock) clock.textContent = 'complete';
+    seen.delete(k);
+    completed++;
+    doneEl.textContent = completed + ' completed this session';
+    setTimeout(() => {
+      entry.node.classList.add('leaving');
+      setTimeout(() => entry.node.remove(), 520);
+    }, 1600);
+  }
+
+  async function poll() {
     try {
       const r = await fetch('api/migrations?token=' + encodeURIComponent(token), {cache: 'no-store'});
       if (!r.ok) throw new Error(r.status === 401 ? 'token rejected' : 'HTTP ' + r.status);
-      const data = await r.json();
-      const rows = data.inFlight || [];
-      sub.textContent = rows.length
-        ? `${rows.length} transfer${rows.length > 1 ? 's' : ''} still open · refreshed ${new Date().toLocaleTimeString()}`
-        : `refreshed ${new Date().toLocaleTimeString()}`;
-      sub.className = 'sub';
-      list.innerHTML = rows.length ? rows.map(m => `
-        <div class="row">
-          <div class="who">${esc(m.username || 'unknown player')}</div>
-          <div class="ids">${esc(m.from)} → ${esc(m.to)}</div>
-          <div class="bar"><i style="width:${m.expectedCount ? (100 * m.appliedCount / m.expectedCount) : 0}%"></i></div>
-          <div class="chips"><span class="count">${m.appliedCount}/${m.expectedCount} applied · waiting on</span>
-            ${chips(m.waitingOn || [])}</div>
-        </div>`).join('')
-        : '<div class="empty">No migration in flight.</div>';
+      const rows = (await r.json()).inFlight || [];
+      pulseEl.classList.remove('off');
+      stateEl.textContent = rows.length
+        ? rows.length + (rows.length > 1 ? ' transfers open' : ' transfer open')
+        : 'idle';
+
+      const live = new Set();
+      for (const m of rows) {
+        const k = key(m);
+        live.add(k);
+        let entry = seen.get(k);
+        if (!entry) {
+          const node = document.createElement('div');
+          node.className = 'row';
+          list.prepend(node);
+          entry = {firstSeen: Date.now(), node, data: m};
+          seen.set(k, entry);
+        }
+        if (JSON.stringify(entry.data) !== JSON.stringify(m) || !entry.node.innerHTML) {
+          entry.data = m;
+          render(m, entry.node);
+        }
+      }
+      for (const [k, entry] of Array.from(seen)) {
+        if (!live.has(k)) retire(entry, k);
+      }
+      if (!seen.size && !list.querySelector('.row')) {
+        list.innerHTML = '<div class="empty"><span class="label">no transfer open</span>' +
+          'Every migration on record has been applied by every instance.</div>';
+      } else {
+        const empty = list.querySelector('.empty');
+        if (empty && seen.size) empty.remove();
+      }
     } catch (e) {
-      sub.textContent = 'cannot read migrations: ' + e.message;
-      sub.className = 'sub err';
+      pulseEl.classList.add('off');
+      stateEl.innerHTML = '<span class="err">' + esc(e.message) + '</span>';
     }
   }
-  tick();
-  setInterval(tick, 3000);
+
+  poll();
+  setInterval(poll, 2000);
+  setInterval(tickClocks, 1000);
 </script>
