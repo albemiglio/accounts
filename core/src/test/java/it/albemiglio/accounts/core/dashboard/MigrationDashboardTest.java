@@ -74,7 +74,8 @@ class MigrationDashboardTest {
             Response response = get(dashboard.port(), "/?token=s3cret", null);
 
             assertEquals(200, response.status);
-            assertTrue(response.body.contains("Migrations in flight"), response.body);
+            // Anchored on the page's identity, not its wording: the copy is free to change.
+            assertTrue(response.body.contains("<title>accounts — migrations</title>"), response.body);
         }
     }
 
