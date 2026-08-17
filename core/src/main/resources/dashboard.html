@@ -1,0 +1,77 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>accounts — migrations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #1c1c1a; --muted: #6b6b66; --line: #e6e5e1;
+    --card: #ffffff; --wait: #b4531f; --done: #2f6d46;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #161614; --fg: #f0efec; --muted: #99968f; --line: #2c2a27;
+            --card: #1e1c1a; --wait: #e0925f; --done: #7fc39a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 2.5rem 1.25rem; background: var(--bg); color: var(--fg);
+         font: 15px/1.5 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 60rem; margin: 0 auto; }
+  h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .sub { color: var(--muted); font-size: .85rem; margin: .35rem 0 2rem; }
+  .row { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+         padding: 1rem 1.15rem; margin-bottom: .75rem; }
+  .who { font-weight: 600; }
+  .ids { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .78rem;
+         color: var(--muted); margin-top: .2rem; word-break: break-all; }
+  .bar { height: 4px; background: var(--line); border-radius: 2px; margin: .8rem 0 .6rem; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--done); }
+  .chips { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; font-size: .8rem; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: .1rem .55rem; color: var(--wait); }
+  .count { color: var(--muted); margin-right: .35rem; }
+  .empty { color: var(--muted); border: 1px dashed var(--line); border-radius: 10px;
+           padding: 2.5rem 1rem; text-align: center; }
+  .err { color: var(--wait); }
+</style>
+<main>
+  <h1>Migrations in flight</h1>
+  <p class="sub" id="sub">loading…</p>
+  <div id="list"></div>
+</main>
+<script>
+  const token = new URLSearchParams(location.search).get('token') || '';
+  const list = document.getElementById('list');
+  const sub = document.getElementById('sub');
+
+  function chips(names) {
+    return names.length
+      ? names.map(n => `<span class="chip">${esc(n)}</span>`).join('')
+      : '<span class="count">nothing outstanding</span>';
+  }
+  const esc = s => String(s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+
+  async function tick() {
+    try {
+      const r = await fetch('api/migrations?token=' + encodeURIComponent(token), {cache: 'no-store'});
+      if (!r.ok) throw new Error(r.status === 401 ? 'token rejected' : 'HTTP ' + r.status);
+      const data = await r.json();
+      const rows = data.inFlight || [];
+      sub.textContent = rows.length
+        ? `${rows.length} transfer${rows.length > 1 ? 's' : ''} still open · refreshed ${new Date().toLocaleTimeString()}`
+        : `refreshed ${new Date().toLocaleTimeString()}`;
+      sub.className = 'sub';
+      list.innerHTML = rows.length ? rows.map(m => `
+        <div class="row">
+          <div class="who">${esc(m.username || 'unknown player')}</div>
+          <div class="ids">${esc(m.from)} → ${esc(m.to)}</div>
+          <div class="bar"><i style="width:${m.expectedCount ? (100 * m.appliedCount / m.expectedCount) : 0}%"></i></div>
+          <div class="chips"><span class="count">${m.appliedCount}/${m.expectedCount} applied · waiting on</span>
+            ${chips(m.waitingOn || [])}</div>
+        </div>`).join('')
+        : '<div class="empty">No migration in flight.</div>';
+    } catch (e) {
+      sub.textContent = 'cannot read migrations: ' + e.message;
+      sub.className = 'sub err';
+    }
+  }
+  tick();
+  setInterval(tick, 3000);
+</script>
