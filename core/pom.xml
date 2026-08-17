@@ -29,6 +29,13 @@
     </repositories>
 
     <dependencies>
+        <!-- The public API types (MigrationStatus) are part of what the engine reports, so core builds
+             them directly instead of every platform module re-mapping its own copy. -->
+        <dependency>
+            <groupId>it.albemiglio</groupId>
+            <artifactId>accounts-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>

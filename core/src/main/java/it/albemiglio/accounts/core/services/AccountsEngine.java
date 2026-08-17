@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.core.services;
 
+import it.albemiglio.accounts.api.MigrationStatus;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.Task;
@@ -7,6 +8,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -72,6 +74,16 @@ public final class AccountsEngine implements AutoCloseable {
         task.setUsername(username == null ? "" : username);
         task.setCurrFailures(0);
         service.migrate(task);
+    }
+
+    /** Where a migration has got to: who still owes it, who has applied it. */
+    public MigrationStatus status(UUID from, UUID to) {
+        return service.status(from, to);
+    }
+
+    /** Every migration started and not finished across the network. */
+    public List<MigrationStatus> inFlight() {
+        return service.inFlight();
     }
 
     /** Whether the migration from -> to is fully applied across every expected instance. */

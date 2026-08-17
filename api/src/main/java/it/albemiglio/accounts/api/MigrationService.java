@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.api;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -22,4 +23,17 @@ public interface MigrationService {
      * blocks the player's premium login while this is true, so they can't re-enter mid-transfer.
      */
     boolean isMigrationInProgress(UUID from, UUID to);
+
+    /**
+     * Where the migration {@code from -> to} has got to: who still has to apply it, who already has.
+     * Never null — a migration nobody ever recorded comes back with empty sets, which reads as neither
+     * complete nor in progress.
+     */
+    MigrationStatus migrationStatus(UUID from, UUID to);
+
+    /**
+     * Every migration that has been started and is not finished yet, most recent first. This is the
+     * feed an admin view (or an operator debugging a stuck transfer) reads.
+     */
+    List<MigrationStatus> migrationsInFlight();
 }

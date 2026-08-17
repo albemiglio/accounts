@@ -6,6 +6,7 @@ import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,6 +78,36 @@ public final class RedisMigrationStore implements MigrationStore {
         }
         try (Jedis jedis = pool.getResource()) {
             jedis.sadd(EXPECTED + migrationId, instances.toArray(new String[0]));
+        }
+    }
+
+    // EXISTS-then-SADD from Java would race between instances receiving the same broadcast; as a script
+    // Redis runs it atomically, so exactly one caller fills the set.
+    private static final String CLAIM_BARRIER =
+            "if redis.call('exists', KEYS[1]) == 1 then return 0 end "
+            + "redis.call('sadd', KEYS[1], unpack(ARGV)) "
+            + "return 1";
+
+    @Override
+    public boolean recordExpectedIfAbsent(String migrationId, Set<String> instances) {
+        if (instances.isEmpty()) {
+            return false;
+        }
+        try (Jedis jedis = pool.getResource()) {
+            Object claimed = jedis.eval(CLAIM_BARRIER, Collections.singletonList(EXPECTED + migrationId),
+                    new ArrayList<>(instances));
+            return Long.valueOf(1L).equals(claimed);
+        }
+    }
+
+    @Override
+    public Collection<Task> all() {
+        try (Jedis jedis = pool.getResource()) {
+            List<Task> out = new ArrayList<>();
+            for (String raw : jedis.hgetAll(MIGRATIONS).values()) {
+                out.add(Task.fromString(raw));
+            }
+            return out;
         }
     }
 
