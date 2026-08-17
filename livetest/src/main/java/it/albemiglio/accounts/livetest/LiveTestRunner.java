@@ -11,10 +11,15 @@ import it.albemiglio.accounts.core.services.MigrationStore;
 import it.albemiglio.accounts.core.services.RedisInstanceRegistry;
 import it.albemiglio.accounts.core.services.RedisMigrationPublisher;
 import it.albemiglio.accounts.core.services.RedisMigrationStore;
+import it.albemiglio.accounts.core.services.RedisMigrationSubscriber;
 import org.yaml.snakeyaml.Yaml;
 import redis.clients.jedis.JedisPool;
 
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,7 +96,7 @@ public final class LiveTestRunner {
     }
 
     /** Drives the real broadcast service when Redis is up; otherwise (sqlite mode) the in-memory store. */
-    private static void runMigration(Task task, List<Module> modules, boolean sqlite) {
+    private static void runMigration(Task task, List<Module> modules, boolean sqlite) throws Exception {
         String instanceId = "livetest-1";
 
         if (sqlite) {
@@ -116,10 +121,77 @@ public final class LiveTestRunner {
             InstanceMigrator migrator = new InstanceMigrator(instanceId, modules, store);
             BroadcastMigrationService svc =
                     new BroadcastMigrationService(instanceId, migrator, store, publisher, registry);
-            svc.migrate(task);
-            check(svc.isComplete(InstanceMigrator.migrationId(task)),
-                    "Redis completion barrier did not close (migration not fully applied)");
+            RedisMigrationSubscriber subscriber = new RedisMigrationSubscriber(pool, svc);
+            subscriber.start();
+            // PUBLISH is fire-and-forget: a message sent before the subscriber is listening is dropped by
+            // Redis and nothing records it. Real caveat, not just a test detail — see the README.
+            check(waitForSubscriber(pool), "the accounts subscriber never attached to the channel");
+            publishTheWayNyxDoes(redisHost, redisPort, task);
+            // NOT the completion barrier: handle() (the path an externally published migration takes)
+            // never calls recordExpected, so isComplete stays false forever for a Nyx-driven migration.
+            // What must hold is that this instance actually applied it — the assertions below then check
+            // the data itself in MySQL and on disk.
+            check(waitForApplied(store, instanceId, InstanceMigrator.migrationId(task)),
+                    "the migration Nyx published was never applied by this instance");
+            subscriber.stop();
         }
+    }
+
+    /**
+     * Publishes the migration the way the Nyx proxy does it: a plain socket writing a RESP PUBLISH, no
+     * Jedis, no accounts code. That is the whole integration between the two products — a channel name
+     * and one line of text — and until this ran here nothing checked the two sides still agree. Keep the
+     * frame identical to Nyx's RedisMigrationSink: "from;to;username;failures", empty username, 0 failures.
+     */
+    private static void publishTheWayNyxDoes(String host, int port, Task task) throws Exception {
+        String channel = "accounts:broadcast";
+        String message = task.getMigration().getLeft() + ";" + task.getMigration().getRight() + ";;0";
+        System.out.println("  publishing as Nyx would: " + channel + " <- " + message);
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 2000);
+            socket.setSoTimeout(2000);
+            OutputStream out = socket.getOutputStream();
+            out.write(resp("PUBLISH", channel, message));
+            out.flush();
+            check(socket.getInputStream().read() != '-', "Redis rejected the Nyx-style PUBLISH");
+        }
+    }
+
+    /** RESP array of bulk strings — the wire encoding Nyx hand-rolls so it needs no Redis client. */
+    private static byte[] resp(String... args) {
+        StringBuilder sb = new StringBuilder("*").append(args.length).append("\r\n");
+        for (String a : args) {
+            sb.append('$').append(a.getBytes(StandardCharsets.UTF_8).length).append("\r\n").append(a).append("\r\n");
+        }
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /** Redis drops a PUBLISH with no listener, so the rig waits for the subscription to be registered. */
+    private static boolean waitForSubscriber(JedisPool pool) throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            try (redis.clients.jedis.Jedis jedis = pool.getResource()) {
+                java.util.List<String> numsub = jedis.pubsubNumSub("accounts:broadcast")
+                        .entrySet().stream().map(e -> e.getValue().toString())
+                        .collect(java.util.stream.Collectors.toList());
+                if (!numsub.isEmpty() && !"0".equals(numsub.get(0))) {
+                    return true;
+                }
+            }
+            Thread.sleep(100);
+        }
+        return false;
+    }
+
+    /** The publish is fire-and-forget, so the apply lands on the subscriber thread a moment later. */
+    private static boolean waitForApplied(MigrationStore store, String instanceId, String migrationId)
+            throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            if (store.appliedInstances(migrationId).contains(instanceId)) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return false;
     }
 
     // --- assertions against the real backends ---
