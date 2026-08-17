@@ -123,9 +123,16 @@ public final class LiveTestRunner {
                     new BroadcastMigrationService(instanceId, migrator, store, publisher, registry);
             RedisMigrationSubscriber subscriber = new RedisMigrationSubscriber(pool, svc);
             subscriber.start();
+            // PUBLISH is fire-and-forget: a message sent before the subscriber is listening is dropped by
+            // Redis and nothing records it. Real caveat, not just a test detail — see the README.
+            check(waitForSubscriber(pool), "the accounts subscriber never attached to the channel");
             publishTheWayNyxDoes(redisHost, redisPort, task);
-            check(waitForCompletion(svc, InstanceMigrator.migrationId(task)),
-                    "Redis completion barrier did not close (migration not fully applied)");
+            // NOT the completion barrier: handle() (the path an externally published migration takes)
+            // never calls recordExpected, so isComplete stays false forever for a Nyx-driven migration.
+            // What must hold is that this instance actually applied it — the assertions below then check
+            // the data itself in MySQL and on disk.
+            check(waitForApplied(store, instanceId, InstanceMigrator.migrationId(task)),
+                    "the migration Nyx published was never applied by this instance");
             subscriber.stop();
         }
     }
@@ -159,11 +166,27 @@ public final class LiveTestRunner {
         return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 
+    /** Redis drops a PUBLISH with no listener, so the rig waits for the subscription to be registered. */
+    private static boolean waitForSubscriber(JedisPool pool) throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            try (redis.clients.jedis.Jedis jedis = pool.getResource()) {
+                java.util.List<String> numsub = jedis.pubsubNumSub("accounts:broadcast")
+                        .entrySet().stream().map(e -> e.getValue().toString())
+                        .collect(java.util.stream.Collectors.toList());
+                if (!numsub.isEmpty() && !"0".equals(numsub.get(0))) {
+                    return true;
+                }
+            }
+            Thread.sleep(100);
+        }
+        return false;
+    }
+
     /** The publish is fire-and-forget, so the apply lands on the subscriber thread a moment later. */
-    private static boolean waitForCompletion(BroadcastMigrationService svc, String migrationId)
+    private static boolean waitForApplied(MigrationStore store, String instanceId, String migrationId)
             throws InterruptedException {
         for (int i = 0; i < 100; i++) {
-            if (svc.isComplete(migrationId)) {
+            if (store.appliedInstances(migrationId).contains(instanceId)) {
                 return true;
             }
             Thread.sleep(100);
