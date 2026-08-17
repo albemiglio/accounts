@@ -61,4 +61,19 @@ class TaskTest {
     void fromStringRejectsMalformedPayload() {
         assertThrows(IllegalArgumentException.class, () -> Task.fromString("not-a-migration-task"));
     }
+
+    /**
+     * The exact line the Nyx proxy publishes on the broadcast channel: it knows the two uuids and
+     * nothing else, so the username is empty and there are no failures yet. Nothing else pinned this
+     * shape — a parser tweak that reads fine here would silently drop every migration Nyx sends.
+     */
+    @Test
+    void parsesTheLineNyxPublishes() {
+        Task t = Task.fromString(OLD + ";" + NEW + ";;0");
+
+        assertEquals(OLD, t.getMigration().getLeft());
+        assertEquals(NEW, t.getMigration().getRight());
+        assertEquals("", t.getUsername());
+        assertEquals(0, t.getCurrFailures());
+    }
 }

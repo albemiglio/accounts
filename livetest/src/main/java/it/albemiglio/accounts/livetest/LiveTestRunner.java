@@ -11,10 +11,15 @@ import it.albemiglio.accounts.core.services.MigrationStore;
 import it.albemiglio.accounts.core.services.RedisInstanceRegistry;
 import it.albemiglio.accounts.core.services.RedisMigrationPublisher;
 import it.albemiglio.accounts.core.services.RedisMigrationStore;
+import it.albemiglio.accounts.core.services.RedisMigrationSubscriber;
 import org.yaml.snakeyaml.Yaml;
 import redis.clients.jedis.JedisPool;
 
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,7 +96,7 @@ public final class LiveTestRunner {
     }
 
     /** Drives the real broadcast service when Redis is up; otherwise (sqlite mode) the in-memory store. */
-    private static void runMigration(Task task, List<Module> modules, boolean sqlite) {
+    private static void runMigration(Task task, List<Module> modules, boolean sqlite) throws Exception {
         String instanceId = "livetest-1";
 
         if (sqlite) {
@@ -116,10 +121,54 @@ public final class LiveTestRunner {
             InstanceMigrator migrator = new InstanceMigrator(instanceId, modules, store);
             BroadcastMigrationService svc =
                     new BroadcastMigrationService(instanceId, migrator, store, publisher, registry);
-            svc.migrate(task);
-            check(svc.isComplete(InstanceMigrator.migrationId(task)),
+            RedisMigrationSubscriber subscriber = new RedisMigrationSubscriber(pool, svc);
+            subscriber.start();
+            publishTheWayNyxDoes(redisHost, redisPort, task);
+            check(waitForCompletion(svc, InstanceMigrator.migrationId(task)),
                     "Redis completion barrier did not close (migration not fully applied)");
+            subscriber.stop();
         }
+    }
+
+    /**
+     * Publishes the migration the way the Nyx proxy does it: a plain socket writing a RESP PUBLISH, no
+     * Jedis, no accounts code. That is the whole integration between the two products — a channel name
+     * and one line of text — and until this ran here nothing checked the two sides still agree. Keep the
+     * frame identical to Nyx's RedisMigrationSink: "from;to;username;failures", empty username, 0 failures.
+     */
+    private static void publishTheWayNyxDoes(String host, int port, Task task) throws Exception {
+        String channel = "accounts:broadcast";
+        String message = task.getMigration().getLeft() + ";" + task.getMigration().getRight() + ";;0";
+        System.out.println("  publishing as Nyx would: " + channel + " <- " + message);
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 2000);
+            socket.setSoTimeout(2000);
+            OutputStream out = socket.getOutputStream();
+            out.write(resp("PUBLISH", channel, message));
+            out.flush();
+            check(socket.getInputStream().read() != '-', "Redis rejected the Nyx-style PUBLISH");
+        }
+    }
+
+    /** RESP array of bulk strings — the wire encoding Nyx hand-rolls so it needs no Redis client. */
+    private static byte[] resp(String... args) {
+        StringBuilder sb = new StringBuilder("*").append(args.length).append("\r\n");
+        for (String a : args) {
+            sb.append('$').append(a.getBytes(StandardCharsets.UTF_8).length).append("\r\n").append(a).append("\r\n");
+        }
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /** The publish is fire-and-forget, so the apply lands on the subscriber thread a moment later. */
+    private static boolean waitForCompletion(BroadcastMigrationService svc, String migrationId)
+            throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            if (svc.isComplete(migrationId)) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return false;
     }
 
     // --- assertions against the real backends ---
