@@ -4,6 +4,7 @@ import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.modules.YamlModuleFactory;
 import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.Task;
+import it.albemiglio.accounts.api.MigrationStatus;
 import it.albemiglio.accounts.core.services.BroadcastMigrationService;
 import it.albemiglio.accounts.core.services.InstanceMigrator;
 import it.albemiglio.accounts.core.services.MigrationPublisher;
@@ -127,12 +128,18 @@ public final class LiveTestRunner {
             // Redis and nothing records it. Real caveat, not just a test detail — see the README.
             check(waitForSubscriber(pool), "the accounts subscriber never attached to the channel");
             publishTheWayNyxDoes(redisHost, redisPort, task);
-            // NOT the completion barrier: handle() (the path an externally published migration takes)
-            // never calls recordExpected, so isComplete stays false forever for a Nyx-driven migration.
-            // What must hold is that this instance actually applied it — the assertions below then check
-            // the data itself in MySQL and on disk.
-            check(waitForApplied(store, instanceId, InstanceMigrator.migrationId(task)),
+            String migrationId = InstanceMigrator.migrationId(task);
+            check(waitForApplied(store, instanceId, migrationId),
                     "the migration Nyx published was never applied by this instance");
+            // The publisher is Nyx, which knows nothing about who must apply: the barrier has to be
+            // opened by the receiver, or the network could never report this migration as finished.
+            check(waitForCompletion(svc, migrationId),
+                    "the completion barrier never closed for the migration Nyx published");
+            MigrationStatus status = svc.status(task.getMigration().getLeft(), task.getMigration().getRight());
+            check(status.complete() && status.waitingOn().isEmpty(),
+                    "status API disagrees with the barrier: " + status);
+            check(svc.inFlight().isEmpty(), "a finished migration is still reported as in flight");
+            System.out.println("  status API                   " + status + "  OK");
             subscriber.stop();
         }
     }
@@ -164,6 +171,18 @@ public final class LiveTestRunner {
             sb.append('$').append(a.getBytes(StandardCharsets.UTF_8).length).append("\r\n").append(a).append("\r\n");
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /** The barrier closes on the subscriber thread, a moment after the apply. */
+    private static boolean waitForCompletion(BroadcastMigrationService svc, String migrationId)
+            throws InterruptedException {
+        for (int i = 0; i < 100; i++) {
+            if (svc.isComplete(migrationId)) {
+                return true;
+            }
+            Thread.sleep(100);
+        }
+        return false;
     }
 
     /** Redis drops a PUBLISH with no listener, so the rig waits for the subscription to be registered. */
@@ -333,6 +352,16 @@ public final class LiveTestRunner {
         }
         @Override public void recordExpected(String id, Set<String> insts) {
             expected.computeIfAbsent(id, k -> new HashSet<>()).addAll(insts);
+        }
+        @Override public boolean recordExpectedIfAbsent(String id, Set<String> insts) {
+            if (insts.isEmpty() || expected.containsKey(id)) {
+                return false;
+            }
+            expected.put(id, new HashSet<>(insts));
+            return true;
+        }
+        @Override public Collection<Task> all() {
+            return new ArrayList<>(migrations.values());
         }
         @Override public Set<String> expectedInstances(String id) {
             return expected.getOrDefault(id, new HashSet<>());

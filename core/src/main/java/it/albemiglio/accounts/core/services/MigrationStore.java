@@ -21,6 +21,17 @@ public interface MigrationStore extends MigrationLog {
     /** Records the instances that must apply this migration for it to be considered complete. */
     void recordExpected(String migrationId, Set<String> instances);
 
+    /**
+     * Opens the barrier only if no one has yet, and says whether this caller is the one who opened it.
+     * A migration published from outside accounts (Nyx over Redis) reaches every instance at once, so
+     * each receiver would otherwise snapshot its own view and the union could name instances that are
+     * never going to apply it — a barrier that never closes. First writer wins, atomically.
+     */
+    boolean recordExpectedIfAbsent(String migrationId, Set<String> instances);
+
+    /** Every migration on record, for reporting progress. */
+    Collection<Task> all();
+
     Set<String> expectedInstances(String migrationId);
 
     Set<String> appliedInstances(String migrationId);

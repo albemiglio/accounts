@@ -37,6 +37,8 @@ class RedisMigrationSubscriberTest {
         @Override public boolean hasApplied(String migrationId, String instanceId) { return false; }
         @Override public void markApplied(String migrationId, String instanceId) { }
         @Override public void markFailed(String migrationId, String instanceId) { }
+        @Override public boolean recordExpectedIfAbsent(String id, Set<String> instances) { return false; }
+        @Override public Collection<Task> all() { return List.of(); }
     }
 
     private static BroadcastMigrationService service(CountingStore store) {

@@ -1,8 +1,12 @@
 package it.albemiglio.accounts.core.services;
 
+import it.albemiglio.accounts.api.MigrationStatus;
 import it.albemiglio.accounts.core.objects.Task;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Drives migrations in the broadcast model: every accounts instance runs one of these. Initiating a
@@ -51,12 +55,43 @@ public final class BroadcastMigrationService {
     }
 
     /**
-     * A migration broadcast by another instance (or by Nyx) arrived. Records it too, so durability
-     * does not depend on who published it: any online instance persists it for the offline ones.
+     * A migration broadcast by another instance (or by Nyx) arrived. Records it too, so durability does
+     * not depend on who published it: any online instance persists it for the offline ones. It also
+     * opens the completion barrier if the publisher could not — Nyx publishes over Redis without any
+     * view of who must apply, and without a barrier the migration would be tracked as neither in
+     * progress nor complete, forever.
      */
     public void handle(Task task) {
+        String migrationId = InstanceMigrator.migrationId(task);
         store.record(task);
+        store.recordExpectedIfAbsent(migrationId, registry.activeInstances());
         migrator.apply(task);
+    }
+
+    /** Where one migration has got to; empty sets when nothing was ever recorded for it. */
+    public MigrationStatus status(UUID from, UUID to) {
+        String migrationId = InstanceMigrator.migrationId(from, to);
+        Task recorded = null;
+        for (Task task : store.all()) {
+            if (InstanceMigrator.migrationId(task).equals(migrationId)) {
+                recorded = task;
+                break;
+            }
+        }
+        return new MigrationStatus(from, to, recorded == null ? "" : recorded.getUsername(),
+                store.expectedInstances(migrationId), store.appliedInstances(migrationId));
+    }
+
+    /** Every recorded migration that has not finished across the network yet. */
+    public List<MigrationStatus> inFlight() {
+        List<MigrationStatus> out = new ArrayList<>();
+        for (Task task : store.all()) {
+            MigrationStatus status = status(task.getMigration().getLeft(), task.getMigration().getRight());
+            if (!status.complete()) {
+                out.add(status);
+            }
+        }
+        return out;
     }
 
     /** Apply everything this instance still owes (called on startup, idempotent). */

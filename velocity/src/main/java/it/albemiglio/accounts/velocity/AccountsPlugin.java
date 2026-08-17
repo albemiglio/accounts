@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import it.albemiglio.accounts.api.MigrationService;
+import it.albemiglio.accounts.api.MigrationStatus;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.InstanceId;
 import it.albemiglio.accounts.core.services.ModuleService;
@@ -21,6 +22,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -91,6 +93,18 @@ public class AccountsPlugin implements MigrationService {
     @Override
     public boolean isMigrationInProgress(UUID from, UUID to) {
         return engine != null && engine.isInProgress(from, to);
+    }
+
+    @Override
+    public MigrationStatus migrationStatus(UUID from, UUID to) {
+        return engine == null
+                ? new MigrationStatus(from, to, "", java.util.Collections.emptySet(), java.util.Collections.emptySet())
+                : engine.status(from, to);
+    }
+
+    @Override
+    public List<MigrationStatus> migrationsInFlight() {
+        return engine == null ? java.util.Collections.emptyList() : engine.inFlight();
     }
 
     private Map<String, Object> loadConfig() throws IOException {

@@ -1,5 +1,6 @@
 package it.albemiglio.accounts.core.services;
 
+import it.albemiglio.accounts.api.MigrationStatus;
 import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Pair;
 import it.albemiglio.accounts.core.objects.Task;
@@ -76,6 +77,20 @@ class BroadcastMigrationServiceTest {
         @Override
         public void recordExpected(String migrationId, Set<String> instances) {
             expected.put(migrationId, new HashSet<>(instances));
+        }
+
+        @Override
+        public boolean recordExpectedIfAbsent(String migrationId, Set<String> instances) {
+            if (instances.isEmpty() || expected.containsKey(migrationId)) {
+                return false;
+            }
+            expected.put(migrationId, new HashSet<>(instances));
+            return true;
+        }
+
+        @Override
+        public Collection<Task> all() {
+            return new ArrayList<>(recorded.values());
         }
 
         @Override
@@ -219,5 +234,85 @@ class BroadcastMigrationServiceTest {
                 new InstanceMigrator("a", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
 
         assertFalse(service.isInProgress("nope>nope"));
+    }
+
+    @Test
+    void handleOpensTheBarrierNobodyElseCould() {
+        // A migration published by Nyx carries no barrier: without this the network could never tell
+        // that it finished, so isComplete would stay false for a migration that is fully applied.
+        RecordingModule module = new RecordingModule();
+        FakeStore store = new FakeStore();
+        BroadcastMigrationService service = service(module, store, new RecordingPublisher());
+
+        service.handle(task(OLD, NEW));
+
+        String id = InstanceMigrator.migrationId(task(OLD, NEW));
+        assertEquals(Set.of("inst-1"), store.expectedInstances(id));
+        assertTrue(service.isComplete(id));
+    }
+
+    @Test
+    void handleLeavesAnExistingBarrierAlone() {
+        // Every instance receives the same broadcast; if each stamped its own view, the union could name
+        // an instance that is never going to apply it and the migration would hang forever.
+        FakeStore store = new FakeStore();
+        String id = InstanceMigrator.migrationId(task(OLD, NEW));
+        store.recordExpected(id, Set.of("proxy", "hub-1"));
+
+        service(new RecordingModule(), store, new RecordingPublisher()).handle(task(OLD, NEW));
+
+        assertEquals(Set.of("proxy", "hub-1"), store.expectedInstances(id));
+    }
+
+    @Test
+    void statusNamesWhoIsStillHoldingTheMigrationOpen() {
+        FakeStore store = new FakeStore();
+        String id = InstanceMigrator.migrationId(task(OLD, NEW));
+        store.record(task(OLD, NEW));
+        store.recordExpected(id, Set.of("proxy", "hub-1"));
+        store.markApplied(id, "proxy");
+        BroadcastMigrationService service = new BroadcastMigrationService("proxy",
+                new InstanceMigrator("proxy", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
+
+        MigrationStatus status = service.status(OLD, NEW);
+
+        assertEquals(Set.of("hub-1"), status.waitingOn());
+        assertEquals("Notch", status.username());
+        assertTrue(status.inProgress());
+        assertFalse(status.complete());
+    }
+
+    @Test
+    void inFlightListsTheUnfinishedAndDropsTheFinished() {
+        FakeStore store = new FakeStore();
+        UUID other = new UUID(0L, 3L);
+        String stuck = InstanceMigrator.migrationId(task(OLD, NEW));
+        String done = InstanceMigrator.migrationId(task(OLD, other));
+        store.record(task(OLD, NEW));
+        store.record(task(OLD, other));
+        store.recordExpected(stuck, Set.of("proxy", "hub-1"));
+        store.recordExpected(done, Set.of("proxy"));
+        store.markApplied(stuck, "proxy");
+        store.markApplied(done, "proxy");
+        BroadcastMigrationService service = new BroadcastMigrationService("proxy",
+                new InstanceMigrator("proxy", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
+
+        List<MigrationStatus> inFlight = service.inFlight();
+
+        assertEquals(1, inFlight.size());
+        assertEquals(NEW, inFlight.get(0).to());
+    }
+
+    @Test
+    void aMigrationWithNoBarrierIsNeverReportedComplete() {
+        FakeStore store = new FakeStore();
+        store.record(task(OLD, NEW));
+        BroadcastMigrationService service = new BroadcastMigrationService("proxy",
+                new InstanceMigrator("proxy", List.of(), store), store, new RecordingPublisher(), new FakeRegistry());
+
+        MigrationStatus status = service.status(OLD, NEW);
+
+        assertFalse(status.complete());
+        assertFalse(status.inProgress());
     }
 }
