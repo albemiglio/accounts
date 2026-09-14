@@ -74,8 +74,7 @@ public class AccountsPlugin implements MigrationService {
 
             CommandManager commands = proxy.getCommandManager();
             CommandMeta meta = commands.metaBuilder("accounts").build();
-            commands.register(meta, new MigrateCommand(engine, moduleService.getModules(),
-                    this::dashboardLink));
+            commands.register(meta, new MigrateCommand(engine, this::dashboardLink));
 
             logger.info("Accounts ready: {} module(s) loaded", moduleService.getModules().size());
         } catch (Exception e) {
