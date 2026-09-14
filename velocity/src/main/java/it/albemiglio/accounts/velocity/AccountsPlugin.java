@@ -70,26 +70,7 @@ public class AccountsPlugin implements MigrationService {
                     InstanceId.loadOrCreate(dataDirectory),
                     moduleService.getModules());
 
-            Map<String, Object> dashboardConfig = section(config, "dashboard");
-            if (Boolean.TRUE.equals(dashboardConfig.get("enabled"))) {
-                String bind = (String) dashboardConfig.getOrDefault("bind", "127.0.0.1");
-                int dashboardPort = ((Number) dashboardConfig.getOrDefault("port", 8081)).intValue();
-                boolean allowActions = Boolean.TRUE.equals(dashboardConfig.get("actions"));
-                this.dashboard = MigrationDashboard.start(bind, dashboardPort,
-                        (String) dashboardConfig.getOrDefault("token", ""), engine::inFlight, engine::timings,
-                        new EngineActions(engine, allowActions));
-                if (allowActions) {
-                    logger.warn("Dashboard actions are ON: anyone holding a panel token can move player "
-                            + "data, not just read it.");
-                }
-                // The bind address is where it listens; the link is where an operator reaches it, which
-                // on a loopback bind is the far end of their tunnel and not this address at all.
-                String linkBase = (String) dashboardConfig.getOrDefault("link-base", "");
-                this.dashboardLink = linkBase == null || linkBase.trim().isEmpty()
-                        ? "http://" + bind + ":" + this.dashboard.port()
-                        : linkBase.trim().replaceAll("/+$", "");
-                logger.info("Migration dashboard on http://{}:{} (token required)", bind, this.dashboard.port());
-            }
+            startDashboard(section(config, "dashboard"));
 
             CommandManager commands = proxy.getCommandManager();
             CommandMeta meta = commands.metaBuilder("accounts").build();
@@ -100,6 +81,39 @@ public class AccountsPlugin implements MigrationService {
         } catch (Exception e) {
             logger.error("Accounts failed to start", e);
         }
+    }
+
+    /**
+     * A proxy host runs more than this plugin, so the panel's port may already be taken. Say which one
+     * and carry on: no network loses its account migrations because a status page could not bind.
+     */
+    private void startDashboard(Map<String, Object> dashboardConfig) {
+        if (!Boolean.TRUE.equals(dashboardConfig.get("enabled"))) {
+            return;
+        }
+        String bind = (String) dashboardConfig.getOrDefault("bind", "127.0.0.1");
+        int port = ((Number) dashboardConfig.getOrDefault("port", 8081)).intValue();
+        boolean allowActions = Boolean.TRUE.equals(dashboardConfig.get("actions"));
+        try {
+            this.dashboard = MigrationDashboard.start(bind, port,
+                    (String) dashboardConfig.getOrDefault("token", ""), engine::inFlight, engine::timings,
+                    new EngineActions(engine, allowActions));
+        } catch (IOException | RuntimeException e) {
+            logger.warn("Migration dashboard is off: cannot listen on {}:{} ({}). Migrations are unaffected"
+                    + " — point dashboard.port at a free port to get the panel back.", bind, port, e.toString());
+            return;
+        }
+        if (allowActions) {
+            logger.warn("Dashboard actions are ON: anyone holding a panel token can move player "
+                    + "data, not just read it.");
+        }
+        // The bind address is where it listens; the link is where an operator reaches it, which
+        // on a loopback bind is the far end of their tunnel and not this address at all.
+        String linkBase = (String) dashboardConfig.getOrDefault("link-base", "");
+        this.dashboardLink = linkBase == null || linkBase.trim().isEmpty()
+                ? "http://" + bind + ":" + this.dashboard.port()
+                : linkBase.trim().replaceAll("/+$", "");
+        logger.info("Migration dashboard on http://{}:{} (token required)", bind, this.dashboard.port());
     }
 
     /**
