@@ -2,7 +2,6 @@ package it.albemiglio.accounts.velocity;
 
 import com.velocitypowered.api.command.SimpleCommand;
 import it.albemiglio.accounts.core.modules.DiagnosisReport;
-import it.albemiglio.accounts.core.modules.Module;
 import it.albemiglio.accounts.core.objects.Task;
 import it.albemiglio.accounts.core.services.AccountsEngine;
 import it.albemiglio.accounts.core.services.MigrationArgs;
@@ -11,7 +10,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -29,16 +27,14 @@ public final class MigrateCommand implements SimpleCommand {
             + " | /accounts diagnose <probe-uuid> | /accounts dashboard";
 
     private final AccountsEngine engine;
-    private final Collection<Module> modules;
     private final Supplier<String> dashboardLink;
 
-    public MigrateCommand(AccountsEngine engine, Collection<Module> modules) {
-        this(engine, modules, () -> null);
+    public MigrateCommand(AccountsEngine engine) {
+        this(engine, () -> null);
     }
 
-    public MigrateCommand(AccountsEngine engine, Collection<Module> modules, Supplier<String> dashboardLink) {
+    public MigrateCommand(AccountsEngine engine, Supplier<String> dashboardLink) {
         this.engine = engine;
-        this.modules = modules;
         this.dashboardLink = dashboardLink;
     }
 
@@ -96,10 +92,12 @@ public final class MigrateCommand implements SimpleCommand {
             return;
         }
         invocation.source().sendMessage(Component.text(
-                "Diagnosing " + modules.size() + " module(s) against " + probe + " (read-only)…"));
-        // Off the calling thread: the probe queries every module's database.
+                "Asking every server about " + probe + " (read-only)…"));
+        // Off the calling thread: this waits on the other servers, each of which queries its databases.
         CompletableFuture.runAsync(() -> {
-            List<String> lines = DiagnosisReport.of(modules, probe);
+            // The proxy carries a handful of network-wide modules; the ranks, homes and balances an
+            // operator is asking about live on the backends, so the question goes to all of them.
+            List<String> lines = DiagnosisReport.ofAnswers(probe, engine.diagnose(probe));
             lines.forEach(line -> invocation.source().sendMessage(Component.text(line)));
         });
     }
